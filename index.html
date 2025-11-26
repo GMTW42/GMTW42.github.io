@@ -1044,7 +1044,7 @@
                 <p style="margin-top: 20px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
                     📧 <a href="/cdn-cgi/l/email-protection#ed868283998c8699ad8a80999adfdddfdbc38988d29e988f87888e99d0ac838088818998838ac8dfddaaa0b9bac8dfdddfdddfdbcb8f828994d0a58c818182c8dfaec8ddacc8ddac848e85c8dfdd80c8aedec8afdb8e859988c8dfdd80848e85c8dfdd8a889f8388c8dfdd8bc8aedec8afae9fc8dfdd898c9ec8dfddaaa0b9bac8dfdddfdddfdbc8dfdd8c83808881898883c3" style="color: #1B5E20; text-decoration: underline;"><span class="__cf_email__" data-cfemail="97fcf8f9e3f6fce3d7f0fae3e0a5a7a5a1b9f3f2">[email&#160;protected]</span></a><br>
-                    🌐 www.gmtw2026.de
+                    🌐 https://gmtw42.github.io/
                 </p>
                 <button class="btn-interact" id="restart-btn" style="margin-top: 20px;">
                     ↺ NOCHMAL FAHREN
@@ -1226,7 +1226,7 @@
                 <p style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
                     📧 <a href="mailto:kontakt@gmtw2026.de?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #fff; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
-                    🌐 www.gmtw2026.de
+                    🌐 https://gmtw42.github.io/
                 </p>
             `;
             document.body.appendChild(popup);
@@ -1247,7 +1247,14 @@
         function gameLoop() {
             const y = window.scrollY;
             const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-            const progress = clamp((y / maxScroll) * 100, 0, 100);
+            let progress = clamp((y / maxScroll) * 100, 0, 100);
+            
+            // Auto-snap to 100% when at bottom (within 50px)
+            const isAtBottom = (y + window.innerHeight) >= (document.documentElement.scrollHeight - 50);
+            if (isAtBottom && progress >= 95) {
+                progress = 100;
+            }
+            
             const delta = y - lastY;
             const speed = Math.abs(delta);
 
@@ -1329,8 +1336,8 @@
                 achievements.add('finished');
             }
 
-            // Game Button at 100%
-            if (progress >= 100 && !achievements.has('game-unlocked')) {
+            // Game Button at 99% or 100% (mobile-friendly)
+            if (progress >= 99 && !achievements.has('game-unlocked')) {
                 const gameBtn = document.getElementById('game-btn');
                 if (gameBtn) {
                     gameBtn.style.display = 'inline-block';
@@ -1397,6 +1404,32 @@
             setTimeout(() => {
                 loadingScreen.classList.add('hidden');
             }, 1500);
+            
+            // Force 100% when scrolling at bottom (mobile fix)
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    const isAtBottom = (window.scrollY + window.innerHeight) >= (document.documentElement.scrollHeight - 10);
+                    if (isAtBottom) {
+                        const currentProgress = ((window.scrollY / Math.max(document.documentElement.scrollHeight - window.innerHeight, 1)) * 100);
+                        if (currentProgress >= 95) {
+                            document.getElementById('progress').textContent = '100';
+                            document.getElementById('progress-fill').style.width = '100%';
+                            
+                            // Trigger game button if not already shown
+                            if (!achievements.has('game-unlocked')) {
+                                const gameBtn = document.getElementById('game-btn');
+                                if (gameBtn) {
+                                    gameBtn.style.display = 'inline-block';
+                                    showAchievement('🎮 Bonus freigeschaltet!', 'Du kannst jetzt das Einrad-Spiel spielen!');
+                                    achievements.add('game-unlocked');
+                                }
+                            }
+                        }
+                    }
+                }, 100);
+            });
             
             // Start game loop
             requestAnimationFrame(gameLoop);
