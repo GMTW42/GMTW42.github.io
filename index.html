@@ -215,7 +215,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 850vh;
+            height: 750vh;
             z-index: 20;
         }
 
@@ -253,7 +253,7 @@
             width: 12px;
             height: 80px;
             background: linear-gradient(to right, #3E2723 0%, #4E342E 50%, #3E2723 100%);
-            margin: -30px auto 20px;
+            margin: -15px auto 20px;
             box-shadow: 2px 0 4px rgba(0,0,0,0.3);
         }
 
@@ -612,25 +612,61 @@
         @media (max-width: 768px) {
             .hud {
                 flex-direction: column;
-                padding: 15px;
+                padding: 8px 10px;
+                gap: 8px;
+                background: rgba(0,0,0,0.9);
+                max-height: 30vh;
+                overflow: visible;
             }
 
             .score-panel {
                 width: 100%;
+                padding: 8px;
+                font-size: 0.65rem;
+            }
+
+            .score-panel div {
+                font-size: 0.65rem;
+            }
+
+            .progress-bar {
+                height: 6px;
             }
 
             .controls-panel {
                 width: 100%;
                 justify-content: center;
-            }
-
-            .info-card {
-                padding: 20px;
+                gap: 8px;
+                flex-wrap: wrap;
             }
 
             .checkpoint {
                 gap: 25px;
                 padding: 15px 10px;
+                margin-top: 250px !important;
+                width: 95%;
+            }
+
+            .checkpoint:first-of-type {
+                margin-top: 280px !important;
+            }
+
+            .checkpoint > div[style*="font-size"] {
+                font-size: 2.5rem !important;
+                margin-bottom: 10px;
+            }
+
+            .sign-post {
+                font-size: 0.75rem;
+                padding: 12px 25px;
+                margin-bottom: 5px;
+            }
+
+            .info-card {
+                padding: 20px;
+                margin-top: 30px;
+                position: relative;
+                z-index: 1;
             }
 
             .info-card h2 {
@@ -660,17 +696,63 @@
                 right: 10px;
                 left: 10px;
                 max-width: none;
+                top: 220px;
             }
         }
 
         @media (max-width: 480px) {
+            .hud {
+                padding: 6px 8px;
+                max-height: 25vh;
+            }
+
+            .score-panel {
+                padding: 6px 10px;
+                font-size: 0.6rem;
+                min-width: 120px;
+            }
+
+            .score-panel div {
+                font-size: 0.6rem;
+            }
+
+            .controls-panel {
+                gap: 6px;
+            }
+
+            .btn-interact {
+                font-size: 0.6rem;
+                padding: 8px 14px;
+            }
+
+            .checkpoint {
+                margin-top: 220px !important;
+                width: 98%;
+                gap: 20px;
+            }
+
+            .checkpoint:first-of-type {
+                margin-top: 260px !important;
+            }
+
+            .checkpoint > div[style*="font-size"] {
+                font-size: 2rem !important;
+                margin-bottom: 8px;
+            }
+
             .sign-post {
                 font-size: 0.7rem;
                 padding: 10px 20px;
+                margin-bottom: 3px;
             }
 
             #hero-stage img {
                 width: 120px;
+            }
+
+            .info-card {
+                padding: 15px;
+                margin-top: 25px;
             }
 
             .info-card h2 {
@@ -679,6 +761,10 @@
 
             .info-card p, .info-card li {
                 font-size: 0.85rem;
+            }
+
+            .achievement-popup {
+                top: 200px;
             }
         }
 
@@ -810,7 +896,7 @@
         </div>
 
         <!-- ANREISE -->
-        <div class="checkpoint" style="top: 110vh;">
+        <div class="checkpoint" style="top: 140vh;">
             <div style="font-size: 4rem;">🚗🛣️</div>
             <div class="sign-post">Anreise & Ankunft</div>
             <div class="sign-pole"></div>
@@ -831,7 +917,7 @@
         </div>
 
         <!-- MUNI -->
-        <div class="checkpoint" style="top: 210vh;">
+        <div class="checkpoint" style="top: 220vh;">
             <div style="font-size: 4rem;">🌲🌲🌲</div>
             <div class="sign-post">Muni Zone</div>
             <div class="sign-pole"></div>
@@ -855,7 +941,7 @@
         </div>
 
         <!-- TRIAL -->
-        <div class="checkpoint" style="top: 310vh;">
+        <div class="checkpoint" style="top: 300vh;">
             <div style="font-size: 4rem;">🧱⚖️</div>
             <div class="sign-post">Trial Park</div>
             <div class="sign-pole"></div>
@@ -879,7 +965,7 @@
         </div>
 
         <!-- CAMP LIFE -->
-        <div class="checkpoint" style="top: 410vh;">
+        <div class="checkpoint" style="top: 380vh;">
             <div style="font-size: 4rem;">⛺🔥</div>
             <div class="sign-post">Camp Life</div>
             <div class="sign-pole"></div>
@@ -899,7 +985,7 @@
         </div>
 
         <!-- DOWNHILL -->
-        <div class="checkpoint" style="top: 510vh;">
+        <div class="checkpoint" style="top: 460vh;">
             <div style="font-size: 4rem;">⛰️💨</div>
             <div class="sign-post">Massen-Downhill</div>
             <div class="sign-pole"></div>
@@ -919,7 +1005,7 @@
         </div>
 
         <!-- ABREISE -->
-        <div class="checkpoint" style="top: 610vh;">
+        <div class="checkpoint" style="top: 540vh;">
             <div style="font-size: 4rem;">👋🏡</div>
             <div class="sign-post">Auf Wiedersehen</div>
             <div class="sign-pole"></div>
@@ -938,7 +1024,7 @@
         </div>
 
         <!-- MEDIA -->
-        <div class="checkpoint" style="top: 710vh;">
+        <div class="checkpoint" style="top: 620vh;">
             <div style="font-size: 4rem; text-align: center;">📸🎥</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>📺 Media Galerie</h2>
@@ -950,14 +1036,14 @@
         </div>
 
         <!-- FINISH -->
-        <div class="checkpoint" style="top: 810vh;">
+        <div class="checkpoint" style="top: 700vh;">
             <div style="font-size: 6rem; text-align: center;">🏁</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>🎉 Ziel erreicht!</h2>
                 <p style="font-size: 1.1rem;">Wir sehen uns vom <strong>03. - 06. April 2026</strong><br>am Hengsteysee!</p>
                 <p style="margin-top: 20px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #1B5E20; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
+                    📧 <a href="/cdn-cgi/l/email-protection#ed868283998c8699ad8a80999adfdddfdbc38988d29e988f87888e99d0ac838088818998838ac8dfddaaa0b9bac8dfdddfdddfdbcb8f828994d0a58c818182c8dfaec8ddacc8ddac848e85c8dfdd80c8aedec8afdb8e859988c8dfdd80848e85c8dfdd8a889f8388c8dfdd8bc8aedec8afae9fc8dfdd898c9ec8dfddaaa0b9bac8dfdddfdddfdbc8dfdd8c83808881898883c3" style="color: #1B5E20; text-decoration: underline;"><span class="__cf_email__" data-cfemail="97fcf8f9e3f6fce3d7f0fae3e0a5a7a5a1b9f3f2">[email&#160;protected]</span></a><br>
                     🌐 www.gmtw2026.de
                 </p>
                 <button class="btn-interact" id="restart-btn" style="margin-top: 20px;">
@@ -977,7 +1063,7 @@
         </button>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // ============================================
         // GAME ENGINE & CORE SYSTEMS
         // ============================================
@@ -1139,7 +1225,7 @@
                 </p>
                 <p style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #fff; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
+                    📧 <a href="mailto:kontakt@gmtw2026.de?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #fff; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
                     🌐 www.gmtw2026.de
                 </p>
             `;
@@ -1321,7 +1407,7 @@
             }, 2500);
         }
 
-        // ============================================
+        // ====================================================
         // START THE APPLICATION
         // ============================================
         
