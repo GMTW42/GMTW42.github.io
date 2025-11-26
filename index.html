@@ -215,7 +215,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 750vh;
+            height: 900vh;
             z-index: 20;
         }
 
@@ -228,8 +228,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 30px;
+            gap: 0;
             padding: 0 10px;
+            min-height: 100vh;
+        }
+
+        .checkpoint > * {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkpoint > *:last-child {
+            margin-bottom: 0;
         }
 
         /* Decorative Signs */
@@ -247,14 +257,20 @@
             font-size: 0.9rem;
             letter-spacing: 2px;
             position: relative;
+            z-index: 2;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .sign-pole {
             width: 12px;
             height: 80px;
             background: linear-gradient(to right, #3E2723 0%, #4E342E 50%, #3E2723 100%);
-            margin: -15px auto 20px;
+            margin: -30px auto 0;
             box-shadow: 2px 0 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
         }
 
         /* Info Cards */
@@ -271,7 +287,11 @@
             transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: left;
             position: relative;
-            overflow: hidden;
+            z-index: 10;
+            clear: both;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: auto;
         }
 
         .info-card::before {
@@ -641,32 +661,32 @@
             }
 
             .checkpoint {
-                gap: 25px;
-                padding: 15px 10px;
                 margin-top: 250px !important;
                 width: 95%;
+                min-height: 100vh;
             }
 
             .checkpoint:first-of-type {
                 margin-top: 280px !important;
             }
 
+            .checkpoint > * {
+                margin-bottom: 2rem;
+            }
+
             .checkpoint > div[style*="font-size"] {
                 font-size: 2.5rem !important;
-                margin-bottom: 10px;
+                margin-bottom: 1rem;
             }
 
             .sign-post {
                 font-size: 0.75rem;
                 padding: 12px 25px;
-                margin-bottom: 5px;
             }
 
             .info-card {
                 padding: 20px;
-                margin-top: 30px;
-                position: relative;
-                z-index: 1;
+                width: 100%;
             }
 
             .info-card h2 {
@@ -728,22 +748,25 @@
             .checkpoint {
                 margin-top: 220px !important;
                 width: 98%;
-                gap: 20px;
+                min-height: 90vh;
             }
 
             .checkpoint:first-of-type {
                 margin-top: 260px !important;
             }
 
+            .checkpoint > * {
+                margin-bottom: 1.8rem;
+            }
+
             .checkpoint > div[style*="font-size"] {
                 font-size: 2rem !important;
-                margin-bottom: 8px;
+                margin-bottom: 0.8rem;
             }
 
             .sign-post {
                 font-size: 0.7rem;
                 padding: 10px 20px;
-                margin-bottom: 3px;
             }
 
             #hero-stage img {
@@ -752,7 +775,7 @@
 
             .info-card {
                 padding: 15px;
-                margin-top: 25px;
+                width: 100%;
             }
 
             .info-card h2 {
@@ -860,7 +883,7 @@
         </div>
 
         <div class="controls-panel">
-            <a href="/cdn-cgi/l/email-protection#cca7a3a2b8ada7b88caba1b8bbfefcfefae2a8a9f3bfb9aea6a9afb8f18da2a1a9a0a8b9a2abe9fefc8b81989be9fefcfefcfefaeaaea3a8b5f184ada0a0a3e9fe8fe9fc8de9fc8da5afa4e9fefca1e98fffe98efaafa4b8a9e9fefca1a5afa4e9fefcaba9bea2a9e9fefcaae98fffe98e8fbee9fefca8adbfe9fefc8b81989be9fefcfefcfefae9fefcada2a1a9a0a8a9a2e2" class="btn-interact" id="registration-btn" style="text-decoration: none; display: inline-block;">🎪 ANMELDUNG</a>
+            <a href="mailto:kontakt@gmtw2026.de?subject=Anmeldung%20GMTW%202026&body=Hallo%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20f%C3%BCr%20das%20GMTW%202026%20anmelden%3A%0A%0AName%3A%20%0A%0AZelt%20oder%20Camper%3A%20%0A%0AWeitere%20Personen%3A%20%0A%0AAnreise%20(Datum%2FUhrzeit)%3A%20%0A%0AViele%20Gr%C3%BC%C3%9Fe" class="btn-interact" id="registration-btn" style="text-decoration: none; display: inline-block;">🎪 ANMELDUNG</a>
             <button class="btn-interact" id="inventory-btn">🎒 PACKLISTE</button>
             <a href="https://raw.githack.com/ErSieCode/1Rad/main/Einrad_mini_game.html" target="_blank" class="btn-interact" id="game-btn" style="text-decoration: none; display: none;">🎮 PLAY THE GAME</a>
         </div>
@@ -896,7 +919,7 @@
         </div>
 
         <!-- ANREISE -->
-        <div class="checkpoint" style="top: 140vh;">
+        <div class="checkpoint" style="top: 160vh;">
             <div style="font-size: 4rem;">🚗🛣️</div>
             <div class="sign-post">Anreise & Ankunft</div>
             <div class="sign-pole"></div>
@@ -917,7 +940,7 @@
         </div>
 
         <!-- MUNI -->
-        <div class="checkpoint" style="top: 220vh;">
+        <div class="checkpoint" style="top: 280vh;">
             <div style="font-size: 4rem;">🌲🌲🌲</div>
             <div class="sign-post">Muni Zone</div>
             <div class="sign-pole"></div>
@@ -941,7 +964,7 @@
         </div>
 
         <!-- TRIAL -->
-        <div class="checkpoint" style="top: 300vh;">
+        <div class="checkpoint" style="top: 400vh;">
             <div style="font-size: 4rem;">🧱⚖️</div>
             <div class="sign-post">Trial Park</div>
             <div class="sign-pole"></div>
@@ -965,7 +988,7 @@
         </div>
 
         <!-- CAMP LIFE -->
-        <div class="checkpoint" style="top: 380vh;">
+        <div class="checkpoint" style="top: 520vh;">
             <div style="font-size: 4rem;">⛺🔥</div>
             <div class="sign-post">Camp Life</div>
             <div class="sign-pole"></div>
@@ -985,7 +1008,7 @@
         </div>
 
         <!-- DOWNHILL -->
-        <div class="checkpoint" style="top: 460vh;">
+        <div class="checkpoint" style="top: 640vh;">
             <div style="font-size: 4rem;">⛰️💨</div>
             <div class="sign-post">Massen-Downhill</div>
             <div class="sign-pole"></div>
@@ -1005,7 +1028,7 @@
         </div>
 
         <!-- ABREISE -->
-        <div class="checkpoint" style="top: 540vh;">
+        <div class="checkpoint" style="top: 750vh;">
             <div style="font-size: 4rem;">👋🏡</div>
             <div class="sign-post">Auf Wiedersehen</div>
             <div class="sign-pole"></div>
@@ -1024,7 +1047,7 @@
         </div>
 
         <!-- MEDIA -->
-        <div class="checkpoint" style="top: 620vh;">
+        <div class="checkpoint" style="top: 820vh;">
             <div style="font-size: 4rem; text-align: center;">📸🎥</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>📺 Media Galerie</h2>
@@ -1036,15 +1059,15 @@
         </div>
 
         <!-- FINISH -->
-        <div class="checkpoint" style="top: 700vh;">
+        <div class="checkpoint" style="top: 870vh;">
             <div style="font-size: 6rem; text-align: center;">🏁</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>🎉 Ziel erreicht!</h2>
                 <p style="font-size: 1.1rem;">Wir sehen uns vom <strong>03. - 06. April 2026</strong><br>am Hengsteysee!</p>
                 <p style="margin-top: 20px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="/cdn-cgi/l/email-protection#ed868283998c8699ad8a80999adfdddfdbc38988d29e988f87888e99d0ac838088818998838ac8dfddaaa0b9bac8dfdddfdddfdbcb8f828994d0a58c818182c8dfaec8ddacc8ddac848e85c8dfdd80c8aedec8afdb8e859988c8dfdd80848e85c8dfdd8a889f8388c8dfdd8bc8aedec8afae9fc8dfdd898c9ec8dfddaaa0b9bac8dfdddfdddfdbc8dfdd8c83808881898883c3" style="color: #1B5E20; text-decoration: underline;"><span class="__cf_email__" data-cfemail="97fcf8f9e3f6fce3d7f0fae3e0a5a7a5a1b9f3f2">[email&#160;protected]</span></a><br>
-                    🌐 https://gmtw42.github.io/
+                    📧 <a href="mailto:kontakt@gmtw2026.de?subject=Anmeldung%20GMTW%202026&body=Hallo%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20f%C3%BCr%20das%20GMTW%202026%20anmelden%3A%0A%0AName%3A%20%0A%0AZelt%20oder%20Camper%3A%20%0A%0AWeitere%20Personen%3A%20%0A%0AAnreise%20(Datum%2FUhrzeit)%3A%20%0A%0AViele%20Gr%C3%BC%C3%9Fe" style="color: #1B5E20; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
+                    🌐 https://gmtw42.github.io
                 </p>
                 <button class="btn-interact" id="restart-btn" style="margin-top: 20px;">
                     ↺ NOCHMAL FAHREN
@@ -1225,8 +1248,8 @@
                 </p>
                 <p style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="mailto:kontakt@gmtw2026.de?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #fff; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
-                    🌐 https://gmtw42.github.io/
+                    📧 <a href="mailto:kontakt@gmtw2026.de?subject=Anmeldung%20GMTW%202026&body=Hallo%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20f%C3%BCr%20das%20GMTW%202026%20anmelden%3A%0A%0AName%3A%20%0A%0AZelt%20oder%20Camper%3A%20%0A%0AWeitere%20Personen%3A%20%0A%0AAnreise%20(Datum%2FUhrzeit)%3A%20%0A%0AViele%20Gr%C3%BC%C3%9Fe" style="color: #fff; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
+                    🌐 https://gmtw42.github.io
                 </p>
             `;
             document.body.appendChild(popup);
