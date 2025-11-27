@@ -215,7 +215,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 900vh;
+            height: 850vh;
             z-index: 20;
         }
 
@@ -228,18 +228,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0;
+            gap: 30px;
             padding: 0 10px;
-            min-height: 100vh;
-        }
-
-        .checkpoint > * {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .checkpoint > *:last-child {
-            margin-bottom: 0;
         }
 
         /* Decorative Signs */
@@ -257,20 +247,14 @@
             font-size: 0.9rem;
             letter-spacing: 2px;
             position: relative;
-            z-index: 2;
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .sign-pole {
             width: 12px;
             height: 80px;
             background: linear-gradient(to right, #3E2723 0%, #4E342E 50%, #3E2723 100%);
-            margin: -30px auto 0;
+            margin: -30px auto 20px;
             box-shadow: 2px 0 4px rgba(0,0,0,0.3);
-            position: relative;
-            z-index: 1;
         }
 
         /* Info Cards */
@@ -287,11 +271,7 @@
             transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: left;
             position: relative;
-            z-index: 10;
-            clear: both;
-            width: 100%;
-            box-sizing: border-box;
-            overflow: auto;
+            overflow: hidden;
         }
 
         .info-card::before {
@@ -632,61 +612,25 @@
         @media (max-width: 768px) {
             .hud {
                 flex-direction: column;
-                padding: 8px 10px;
-                gap: 8px;
-                background: rgba(0,0,0,0.9);
-                max-height: 30vh;
-                overflow: visible;
+                padding: 15px;
             }
 
             .score-panel {
                 width: 100%;
-                padding: 8px;
-                font-size: 0.65rem;
-            }
-
-            .score-panel div {
-                font-size: 0.65rem;
-            }
-
-            .progress-bar {
-                height: 6px;
             }
 
             .controls-panel {
                 width: 100%;
                 justify-content: center;
-                gap: 8px;
-                flex-wrap: wrap;
-            }
-
-            .checkpoint {
-                margin-top: 250px !important;
-                width: 95%;
-                min-height: 100vh;
-            }
-
-            .checkpoint:first-of-type {
-                margin-top: 280px !important;
-            }
-
-            .checkpoint > * {
-                margin-bottom: 2rem;
-            }
-
-            .checkpoint > div[style*="font-size"] {
-                font-size: 2.5rem !important;
-                margin-bottom: 1rem;
-            }
-
-            .sign-post {
-                font-size: 0.75rem;
-                padding: 12px 25px;
             }
 
             .info-card {
                 padding: 20px;
-                width: 100%;
+            }
+
+            .checkpoint {
+                gap: 25px;
+                padding: 15px 10px;
             }
 
             .info-card h2 {
@@ -716,54 +660,10 @@
                 right: 10px;
                 left: 10px;
                 max-width: none;
-                top: 220px;
             }
         }
 
         @media (max-width: 480px) {
-            .hud {
-                padding: 6px 8px;
-                max-height: 25vh;
-            }
-
-            .score-panel {
-                padding: 6px 10px;
-                font-size: 0.6rem;
-                min-width: 120px;
-            }
-
-            .score-panel div {
-                font-size: 0.6rem;
-            }
-
-            .controls-panel {
-                gap: 6px;
-            }
-
-            .btn-interact {
-                font-size: 0.6rem;
-                padding: 8px 14px;
-            }
-
-            .checkpoint {
-                margin-top: 220px !important;
-                width: 98%;
-                min-height: 90vh;
-            }
-
-            .checkpoint:first-of-type {
-                margin-top: 260px !important;
-            }
-
-            .checkpoint > * {
-                margin-bottom: 1.8rem;
-            }
-
-            .checkpoint > div[style*="font-size"] {
-                font-size: 2rem !important;
-                margin-bottom: 0.8rem;
-            }
-
             .sign-post {
                 font-size: 0.7rem;
                 padding: 10px 20px;
@@ -773,21 +673,12 @@
                 width: 120px;
             }
 
-            .info-card {
-                padding: 15px;
-                width: 100%;
-            }
-
             .info-card h2 {
                 font-size: 1rem;
             }
 
             .info-card p, .info-card li {
                 font-size: 0.85rem;
-            }
-
-            .achievement-popup {
-                top: 200px;
             }
         }
 
@@ -883,7 +774,7 @@
         </div>
 
         <div class="controls-panel">
-            <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20f%C3%BCr%20das%20GMTW%202026%20anmelden%3A%0A%0AName%3A%20%0A%0AZelt%20oder%20Camper%3A%20%0A%0AWeitere%20Personen%3A%20%0A%0AAnreise%20(Datum%2FUhrzeit)%3A%20%0A%0AViele%20Gr%C3%BC%C3%9Fe" class="btn-interact" id="registration-btn" style="text-decoration: none; display: inline-block;">🎪 ANMELDUNG</a>
+            <a href="/cdn-cgi/l/email-protection#cca7a3a2b8ada7b88caba1b8bbfefcfefae2a8a9f3bfb9aea6a9afb8f18da2a1a9a0a8b9a2abe9fefc8b81989be9fefcfefcfefaeaaea3a8b5f184ada0a0a3e9fe8fe9fc8de9fc8da5afa4e9fefca1e98fffe98efaafa4b8a9e9fefca1a5afa4e9fefcaba9bea2a9e9fefcaae98fffe98e8fbee9fefca8adbfe9fefc8b81989be9fefcfefcfefae9fefcada2a1a9a0a8a9a2e2" class="btn-interact" id="registration-btn" style="text-decoration: none; display: inline-block;">🎪 ANMELDUNG</a>
             <button class="btn-interact" id="inventory-btn">🎒 PACKLISTE</button>
             <a href="https://raw.githack.com/ErSieCode/1Rad/main/Einrad_mini_game.html" target="_blank" class="btn-interact" id="game-btn" style="text-decoration: none; display: none;">🎮 PLAY THE GAME</a>
         </div>
@@ -910,7 +801,7 @@
         <div class="checkpoint" style="top: 15vh;">
             <div style="font-size: 3.5rem; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));">🎪</div>
             <div class="info-card readable-text visible">
-                <h2>🎮 Willkommen zum GMTW 2026!</h2>
+                <h2>👷‍♂️🏗️ SEITE BEFINDET SICH IM UMBAU!🏗️👷‍♀</h2>
                 <p><strong>📅 03. - 06. April 2026</strong><br>
                 📍 Campingplatz Hohensyburg am Hengsteysee</p>
                 <p>Mach dich bereit für das Einrad-Event des Jahres! Scroll nach unten und entdecke alle Highlights.</p>
@@ -919,7 +810,7 @@
         </div>
 
         <!-- ANREISE -->
-        <div class="checkpoint" style="top: 160vh;">
+        <div class="checkpoint" style="top: 110vh;">
             <div style="font-size: 4rem;">🚗🛣️</div>
             <div class="sign-post">Anreise & Ankunft</div>
             <div class="sign-pole"></div>
@@ -940,7 +831,7 @@
         </div>
 
         <!-- MUNI -->
-        <div class="checkpoint" style="top: 280vh;">
+        <div class="checkpoint" style="top: 210vh;">
             <div style="font-size: 4rem;">🌲🌲🌲</div>
             <div class="sign-post">Muni Zone</div>
             <div class="sign-pole"></div>
@@ -964,7 +855,7 @@
         </div>
 
         <!-- TRIAL -->
-        <div class="checkpoint" style="top: 400vh;">
+        <div class="checkpoint" style="top: 310vh;">
             <div style="font-size: 4rem;">🧱⚖️</div>
             <div class="sign-post">Trial Park</div>
             <div class="sign-pole"></div>
@@ -988,7 +879,7 @@
         </div>
 
         <!-- CAMP LIFE -->
-        <div class="checkpoint" style="top: 520vh;">
+        <div class="checkpoint" style="top: 410vh;">
             <div style="font-size: 4rem;">⛺🔥</div>
             <div class="sign-post">Camp Life</div>
             <div class="sign-pole"></div>
@@ -1008,7 +899,7 @@
         </div>
 
         <!-- DOWNHILL -->
-        <div class="checkpoint" style="top: 640vh;">
+        <div class="checkpoint" style="top: 510vh;">
             <div style="font-size: 4rem;">⛰️💨</div>
             <div class="sign-post">Massen-Downhill</div>
             <div class="sign-pole"></div>
@@ -1028,7 +919,7 @@
         </div>
 
         <!-- ABREISE -->
-        <div class="checkpoint" style="top: 750vh;">
+        <div class="checkpoint" style="top: 610vh;">
             <div style="font-size: 4rem;">👋🏡</div>
             <div class="sign-post">Auf Wiedersehen</div>
             <div class="sign-pole"></div>
@@ -1047,7 +938,7 @@
         </div>
 
         <!-- MEDIA -->
-        <div class="checkpoint" style="top: 820vh;">
+        <div class="checkpoint" style="top: 710vh;">
             <div style="font-size: 4rem; text-align: center;">📸🎥</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>📺 Media Galerie</h2>
@@ -1059,15 +950,15 @@
         </div>
 
         <!-- FINISH -->
-        <div class="checkpoint" style="top: 870vh;">
+        <div class="checkpoint" style="top: 810vh;">
             <div style="font-size: 6rem; text-align: center;">🏁</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>🎉 Ziel erreicht!</h2>
                 <p style="font-size: 1.1rem;">Wir sehen uns vom <strong>03. - 06. April 2026</strong><br>am Hengsteysee!</p>
                 <p style="margin-top: 20px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20f%C3%BCr%20das%20GMTW%202026%20anmelden%3A%0A%0AName%3A%20%0A%0AZelt%20oder%20Camper%3A%20%0A%0AWeitere%20Personen%3A%20%0A%0AAnreise%20(Datum%2FUhrzeit)%3A%20%0A%0AViele%20Gr%C3%BC%C3%9Fe" style="color: #1B5E20; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
-                    🌐 https://gmtw42.github.io
+                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #1B5E20; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
+                    🌐 www.gmtw2026.de
                 </p>
                 <button class="btn-interact" id="restart-btn" style="margin-top: 20px;">
                     ↺ NOCHMAL FAHREN
@@ -1086,7 +977,7 @@
         </button>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // ============================================
         // GAME ENGINE & CORE SYSTEMS
         // ============================================
@@ -1248,8 +1139,8 @@
                 </p>
                 <p style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="mailto:GermanMuniandTriaIWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20f%C3%BCr%20das%20GMTW%202026%20anmelden%3A%0A%0AName%3A%20%0A%0AZelt%20oder%20Camper%3A%20%0A%0AWeitere%20Personen%3A%20%0A%0AAnreise%20(Datum%2FUhrzeit)%3A%20%0A%0AViele%20Gr%C3%BC%C3%9Fe" style="color: #fff; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
-                    🌐 https://gmtw42.github.io
+                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #fff; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
+                    🌐 www.gmtw2026.de
                 </p>
             `;
             document.body.appendChild(popup);
@@ -1270,14 +1161,7 @@
         function gameLoop() {
             const y = window.scrollY;
             const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-            let progress = clamp((y / maxScroll) * 100, 0, 100);
-            
-            // Auto-snap to 100% when at bottom (within 50px)
-            const isAtBottom = (y + window.innerHeight) >= (document.documentElement.scrollHeight - 50);
-            if (isAtBottom && progress >= 95) {
-                progress = 100;
-            }
-            
+            const progress = clamp((y / maxScroll) * 100, 0, 100);
             const delta = y - lastY;
             const speed = Math.abs(delta);
 
@@ -1359,8 +1243,8 @@
                 achievements.add('finished');
             }
 
-            // Game Button at 99% or 100% (mobile-friendly)
-            if (progress >= 99 && !achievements.has('game-unlocked')) {
+            // Game Button at 100%
+            if (progress >= 100 && !achievements.has('game-unlocked')) {
                 const gameBtn = document.getElementById('game-btn');
                 if (gameBtn) {
                     gameBtn.style.display = 'inline-block';
@@ -1395,6 +1279,7 @@
         // ============================================
         // EVENT LISTENERS
         // ============================================
+
         
         // Button Listeners
         document.getElementById('inventory-btn').addEventListener('click', toggleInventory);
@@ -1428,42 +1313,16 @@
                 loadingScreen.classList.add('hidden');
             }, 1500);
             
-            // Force 100% when scrolling at bottom (mobile fix)
-            let scrollTimeout;
-            window.addEventListener('scroll', () => {
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
-                    const isAtBottom = (window.scrollY + window.innerHeight) >= (document.documentElement.scrollHeight - 10);
-                    if (isAtBottom) {
-                        const currentProgress = ((window.scrollY / Math.max(document.documentElement.scrollHeight - window.innerHeight, 1)) * 100);
-                        if (currentProgress >= 95) {
-                            document.getElementById('progress').textContent = '100';
-                            document.getElementById('progress-fill').style.width = '100%';
-                            
-                            // Trigger game button if not already shown
-                            if (!achievements.has('game-unlocked')) {
-                                const gameBtn = document.getElementById('game-btn');
-                                if (gameBtn) {
-                                    gameBtn.style.display = 'inline-block';
-                                    showAchievement('🎮 Bonus freigeschaltet!', 'Du kannst jetzt das Einrad-Spiel spielen!');
-                                    achievements.add('game-unlocked');
-                                }
-                            }
-                        }
-                    }
-                }, 100);
-            });
-            
             // Start game loop
             requestAnimationFrame(gameLoop);
             
             // Welcome achievement
             setTimeout(() => {
-                showAchievement('🎪 Willkommen!', 'Viel Spaß beim GMTW 2026!');
+                showAchievement('🎪 Willkommen!',  '🏗️SEITE BEFINDET SICH IM UMBAU!🏗️');
             }, 2500);
         }
 
-        // ====================================================
+        // ============================================
         // START THE APPLICATION
         // ============================================
         
