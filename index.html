@@ -17,7 +17,8 @@
             --grass: #66BB6A;
             --grass-dark: #388E3C;
             --dirt: #5D4037;
-            --card-bg: rgba(246, 255, 242, 0.98);
+            /* DEINE FARBANPASSUNG */
+            --card-bg: rgba(249, 252, 228, 0.98); 
             --text-main: #212121;
             --accent: #FF6F00;
             --accent-hover: #F57C00;
@@ -42,7 +43,7 @@
 
         .readable-text { 
             font-family: 'Roboto', sans-serif; 
-            line-height: 1.8; 
+            line-height: 1.6; 
             letter-spacing: 0;
         }
 
@@ -138,7 +139,6 @@
             box-shadow: 0 -4px 8px rgba(0,0,0,0.3);
         }
 
-        /* Grass Details */
         .layer-ground::before {
             content: '';
             position: absolute;
@@ -161,14 +161,8 @@
         }
 
         @keyframes particle-float {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--px), var(--py)) scale(0);
-                opacity: 0;
-            }
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
         }
 
         /* ============================================
@@ -182,8 +176,6 @@
             z-index: 10;
             pointer-events: none;
             image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
             filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.3));
             will-change: transform, bottom;
         }
@@ -192,12 +184,9 @@
             width: 200px;
             height: auto;
             image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
             display: block;
         }
 
-        /* Riding Animation */
         #hero-stage.is-riding img {
             animation: riding-bounce 0.4s ease-in-out infinite;
         }
@@ -215,7 +204,8 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 920vh; /* Increased for better finish scrolling */
+            /* Extra Platz für bessere Abstände auf Mobile */
+            height: 1300vh; 
             z-index: 20;
         }
 
@@ -228,7 +218,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 30px;
+            gap: 20px;
             padding: 0 10px;
         }
 
@@ -240,9 +230,7 @@
             padding: 15px 30px;
             text-align: center;
             text-transform: uppercase;
-            box-shadow: 
-                6px 6px 0 rgba(0,0,0,0.5),
-                inset 0 2px 0 rgba(255,255,255,0.2);
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.2);
             margin-bottom: 0;
             font-size: 0.9rem;
             letter-spacing: 2px;
@@ -251,21 +239,19 @@
 
         .sign-pole {
             width: 12px;
-            height: 80px;
+            height: 60px;
             background: linear-gradient(to right, #3E2723 0%, #4E342E 50%, #3E2723 100%);
-            margin: -30px auto 20px;
+            margin: -20px auto 10px;
             box-shadow: 2px 0 4px rgba(0,0,0,0.3);
         }
 
-        /* Info Cards - Desktop Optimized */
+        /* Info Cards */
         .info-card {
             background: var(--card-bg);
             border: 5px solid #212121;
             padding: 40px; 
             border-radius: 12px;
-            box-shadow: 
-                12px 12px 0 rgba(0,0,0,0.3),
-                inset 0 2px 0 rgba(255,255,255,0.5);
+            box-shadow: 12px 12px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.5);
             opacity: 0;
             transform: translateY(40px) scale(0.95);
             transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -282,10 +268,7 @@
             left: 0;
             right: 0;
             height: 5px;
-            background: linear-gradient(90deg, 
-                var(--accent) 0%, 
-                #FFB300 50%, 
-                var(--accent) 100%);
+            background: linear-gradient(90deg, var(--accent) 0%, #FFB300 50%, var(--accent) 100%);
         }
 
         .info-card.visible {
@@ -304,7 +287,7 @@
         }
 
         .info-card p {
-            font-size: 1.15rem; 
+            font-size: 1.1rem; 
             color: #333;
             margin-bottom: 1em;
             line-height: 1.6;
@@ -316,7 +299,7 @@
         }
 
         .info-card li {
-            font-size: 1.1rem; 
+            font-size: 1.05rem; 
             color: #444;
             margin-bottom: 12px;
             position: relative;
@@ -342,38 +325,41 @@
             background: #FFF3E0;
             border-left: 5px solid var(--accent);
             font-style: normal;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         /* ============================================
-           HUD & UI
+           HUD & UI (Optimized for Mobile)
            ============================================ */
         .hud {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            padding: 20px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            z-index: 100;
-            pointer-events: none;
-            flex-wrap: wrap;
+            align-items: center; /* Center vertically */
+            z-index: 5000;
+            pointer-events: none; /* Let clicks pass through empty space */
+            flex-wrap: nowrap;
             gap: 15px;
+            /* Semi-transparent background for readability on mobile */
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%); 
         }
 
         .score-panel {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             color: #fff;
-            padding: 15px 20px;
-            border: 3px solid #FFB300;
-            font-size: 0.75rem;
+            padding: 10px 15px;
+            border: 2px solid #FFB300;
+            font-size: 0.7rem;
             box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            min-width: 150px;
+            gap: 5px;
+            min-width: 140px;
+            pointer-events: auto; /* Buttons need clicks */
         }
 
         .score-item {
@@ -382,29 +368,21 @@
             align-items: center;
         }
 
-        .score-label {
-            color: #FFB300;
-        }
-
-        .score-value {
-            color: #fff;
-            font-weight: bold;
-        }
+        .score-label { color: #FFB300; }
+        .score-value { color: #fff; font-weight: bold; }
 
         .progress-bar {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: rgba(255,255,255,0.2);
             border-radius: 4px;
             overflow: hidden;
-            margin-top: 5px;
+            margin-top: 3px;
         }
 
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #4CAF50, #8BC34A);
-            transition: width 0.3s ease;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
             width: 0%;
         }
 
@@ -412,52 +390,35 @@
             pointer-events: auto;
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
         .btn-interact {
             cursor: pointer;
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
             color: #fff;
+            /* DEINE RAND-ANPASSUNG */
             border: 4px solid #f0fff5;
-            padding: 12px 24px;
+            padding: 10px 15px;
             font-family: inherit;
             font-size: 0.7rem;
-            text-decoration: none; /* Important for links */
+            text-decoration: none;
             display: inline-block;
-            box-shadow: 5px 5px 0 #000;
+            box-shadow: 4px 4px 0 #000;
             transition: all 0.1s;
             text-transform: uppercase;
             letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
             text-align: center;
-        }
-
-        .btn-interact::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.2);
-            transition: left 0.3s;
+            font-weight: bold;
         }
 
         .btn-interact:hover {
-            background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
             transform: translateY(-2px);
-            box-shadow: 7px 7px 0 #000;
-        }
-
-        .btn-interact:hover::before {
-            left: 100%;
+            box-shadow: 6px 6px 0 #000;
         }
 
         .btn-interact:active {
             transform: translate(3px, 3px);
-            box-shadow: 2px 2px 0 #000;
+            box-shadow: 1px 1px 0 #000;
         }
 
         /* ============================================
@@ -468,7 +429,7 @@
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.95);
-            z-index: 2000;
+            z-index: 6000;
             flex-direction: column;
             color: #fff;
             padding: 30px;
@@ -476,16 +437,13 @@
             animation: fadeIn 0.3s ease;
             overflow-y: auto;
             overflow-x: hidden;
-            align-items: center; /* Center content */
+            align-items: center;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         #inventory h2 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 10px;
             color: #FFB300;
             text-shadow: 2px 2px 0 #000;
@@ -503,7 +461,7 @@
 
         .inventory-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 15px;
             margin: 20px 0;
             width: 100%;
@@ -513,30 +471,20 @@
 
         .inventory-item {
             aspect-ratio: 1;
-            border: 4px solid #fff;
+            border: 3px solid #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             background: linear-gradient(135deg, #333 0%, #222 100%);
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
-            position: relative;
             border-radius: 8px;
             padding: 5px;
-        }
-
-        .inventory-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 5px 10px 20px rgba(0,0,0,0.5);
-            background: #444;
         }
 
         .inventory-item.checked {
             background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
             border-color: #4CAF50;
-            transform: scale(1.02);
         }
 
         .inventory-item.checked::after {
@@ -553,253 +501,127 @@
             align-items: center;
             justify-content: center;
             font-size: 0.8rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             font-weight: bold;
         }
 
-        .item-icon {
-            font-size: 2.5rem;
-            margin-bottom: 5px;
-        }
-        
-        .item-img-custom {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            margin-bottom: 5px;
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
-        }
-
-        .item-name {
-            font-size: 0.65rem;
-            font-family: 'Roboto', sans-serif;
-            margin-top: 5px;
-            text-align: center;
-            line-height: 1.2;
-            font-weight: bold;
-            padding: 0 2px;
-        }
+        .item-icon { font-size: 2rem; margin-bottom: 5px; }
+        .item-img-custom { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); }
+        .item-name { font-size: 0.6rem; font-family: 'Roboto', sans-serif; margin-top: 5px; text-align: center; line-height: 1.2; font-weight: bold; }
 
         /* ============================================
-           ACHIEVEMENTS & COLLECTIBLES
+           ACHIEVEMENTS
            ============================================ */
         .achievement-popup {
             position: fixed;
-            top: 100px;
+            top: 130px; /* Moved down to avoid mobile HUD */
             right: 20px;
             background: linear-gradient(135deg, #FFB300 0%, #FF6F00 100%);
             color: #fff;
-            padding: 20px;
-            border: 4px solid #fff;
+            padding: 15px;
+            border: 3px solid #fff;
             border-radius: 8px;
             box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
-            z-index: 1000;
-            max-width: 300px;
+            z-index: 5500;
+            max-width: 280px;
             animation: slideInFromRight 0.5s ease forwards;
             pointer-events: none;
         }
 
-        @keyframes slideInFromRight {
-            from { 
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to { 
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .achievement-popup.hiding {
-            animation: slideOutToRight 0.5s ease forwards;
-        }
-
-        @keyframes slideOutToRight {
-            from { 
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to { 
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
-        .achievement-popup h3 {
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-
-        .achievement-popup p {
-            font-family: 'Roboto', sans-serif;
-            font-size: 0.8rem;
-        }
+        @keyframes slideInFromRight { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .achievement-popup.hiding { animation: slideOutToRight 0.5s ease forwards; }
+        @keyframes slideOutToRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(400px); opacity: 0; } }
+        .achievement-popup h3 { font-size: 0.8rem; margin-bottom: 8px; }
+        .achievement-popup p { font-family: 'Roboto', sans-serif; font-size: 0.75rem; line-height: 1.4; }
 
         /* ============================================
-           RESPONSIVE DESIGN (Smartphone Optimizations)
+           RESPONSIVE DESIGN (MOBILE OPTIMIZATION)
            ============================================ */
         @media (max-width: 768px) {
+            /* HUD: Compact Layout for Mobile */
             .hud {
-                flex-direction: column;
-                padding: 15px;
+                flex-direction: column; /* Stack Score on top of buttons */
+                padding: 5px 10px;
+                gap: 5px;
+                background: rgba(0,0,0,0.75); /* Darker BG for contrast */
+                align-items: stretch;
             }
 
             .score-panel {
                 width: 100%;
+                flex-direction: row; /* Horizontal score layout */
+                justify-content: space-between;
+                align-items: center;
+                padding: 5px 10px;
+                min-width: 0;
             }
+            
+            .score-panel > div { flex: 1; text-align: center; }
+            .score-panel .progress-bar { display: none; } /* Hide progress bar in HUD on tiny screens to save space */
 
             .controls-panel {
                 width: 100%;
-                justify-content: center;
-            }
-
-            /* Resetting Info Card for Mobile to be smaller */
-            .info-card {
-                padding: 25px;
-                border-radius: 8px;
-            }
-
-            .checkpoint {
-                gap: 25px;
-                padding: 15px 10px;
-            }
-
-            .info-card h2 {
-                font-size: 1.2rem;
-                margin-bottom: 15px;
-            }
-
-            .info-card p, .info-card li {
-                font-size: 0.95rem; /* Standard readable size for mobile */
-                line-height: 1.5;
-            }
-            
-            .info-card em {
-                font-size: 0.9rem;
-                padding: 10px;
+                justify-content: space-between;
+                gap: 5px;
             }
 
             .btn-interact {
-                font-size: 0.65rem;
-                padding: 10px 18px;
-            }
-
-            #hero-stage img {
-                width: 150px;
-            }
-            
-            .achievement-popup {
-                right: 10px;
-                left: 10px;
-                max-width: none;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .sign-post {
-                font-size: 0.7rem;
-                padding: 10px 20px;
-            }
-
-            #hero-stage img {
-                width: 120px;
-            }
-
-            /* Mobile Inventory Optimizations */
-            .inventory-grid {
-                grid-template-columns: repeat(3, 1fr); /* 3 columns on mobile */
-                gap: 10px;
-            }
-            
-            .inventory-item {
+                font-size: 0.55rem; /* Smaller text */
+                padding: 8px 4px;
+                flex: 1; /* Distribute space evenly */
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                min-width: 0;
                 border-width: 2px;
             }
             
-            .item-icon {
-                font-size: 1.8rem;
-            }
-            
-            .item-img-custom {
-                width: 40px;
-                height: 40px;
+            /* Add top padding to body or first element so content isn't hidden behind fixed HUD */
+            .content-scroll-wrapper {
+                padding-top: 100px; 
             }
 
-            .item-name {
-                font-size: 0.55rem;
+            /* Adjust Checkpoints */
+            .checkpoint {
+                width: 95%;
+                padding: 0 5px;
             }
-            
-            #inventory {
-                padding: 15px;
-            }
-            
-            #inventory h2 {
-                font-size: 1.2rem;
-            }
-        }
 
-        /* ============================================
-           SPECIAL EFFECTS
-           ============================================ */
-        .star {
-            position: fixed;
-            pointer-events: none;
-            z-index: 5;
-            animation: twinkle 2s ease-in-out forwards;
-        }
+            .info-card {
+                padding: 20px 15px;
+            }
 
-        @keyframes twinkle {
-            0% { opacity: 0; transform: scale(0); }
-            50% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0); }
+            .info-card h2 { font-size: 1.1rem; }
+            .info-card p, .info-card li { font-size: 0.95rem; }
+
+            /* Hero Size */
+            #hero-stage img { width: 140px; }
+
+            /* Inventory Grid Mobile */
+            .inventory-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .inventory-item { border-width: 2px; }
+            .item-icon { font-size: 1.5rem; }
+            .item-img-custom { width: 35px; height: 35px; }
+
+            /* Achievement Position */
+            .achievement-popup { top: 110px; right: 10px; left: 10px; max-width: none; }
         }
 
         /* Loading Screen */
         #loading-screen {
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            transition: opacity 1s ease;
+            position: fixed; inset: 0; background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; transition: opacity 1s ease;
         }
-
-        #loading-screen img {
-            position: absolute;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            z-index: 1;
-        }
-
-        #loading-screen .loading-spinner,
-        #loading-screen h2 {
-            position: relative;
-            z-index: 2;
-        }
-
-        #loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        #loading-screen img { position: absolute; inset: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: 1; }
+        #loading-screen .loading-spinner, #loading-screen h2 { position: relative; z-index: 2; }
+        #loading-screen.hidden { opacity: 0; pointer-events: none; }
         .loading-spinner {
-            width: 80px;
-            height: 80px;
-            border: 8px solid rgba(255,255,255,0.3);
-            border-top-color: #FFB300;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            box-shadow: 0 0 20px rgba(255,179,0,0.5);
+            width: 60px; height: 60px; border: 6px solid rgba(255,255,255,0.3); border-top-color: #FFB300;
+            border-radius: 50%; animation: spin 1s linear infinite; box-shadow: 0 0 20px rgba(255,179,0,0.5);
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
     </style>
 </head>
@@ -809,10 +631,10 @@
     <div id="loading-screen">
         <img src="https://raw.githubusercontent.com/Digid0t/DigiDot_8/main/muni_1.png" alt="GMTW Loading">
         <div class="loading-spinner"></div>
-        <h2 style="margin-top: 30px; font-size: 1.3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);">GMTW 2026 LÄDT...</h2>
+        <h2 style="margin-top: 30px; font-size: 1rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">GMTW 2026...</h2>
     </div>
 
-    <!-- HUD -->
+    <!-- HUD (Optimized for Mobile) -->
     <div class="hud">
         <div class="score-panel">
             <div class="score-item">
@@ -820,18 +642,19 @@
                 <span class="score-value"><span id="dist">0</span>m</span>
             </div>
             <div class="score-item">
-                <span class="score-label">FORTSCHRITT:</span>
+                <span class="score-label"></span>
                 <span class="score-value"><span id="progress">0</span>%</span>
             </div>
+            <!-- Progress bar hidden on mobile via CSS to save space -->
             <div class="progress-bar">
                 <div class="progress-fill" id="progress-fill"></div>
             </div>
         </div>
 
         <div class="controls-panel">
-            <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" class="btn-interact" id="registration-btn" style="text-decoration: none; display: inline-block;">🎪 ANMELDUNG</a>
-            <button class="btn-interact" id="inventory-btn">🎒 PACKLISTE</button>
-            <a href="https://raw.githack.com/ErSieCode/1Rad/main/Einrad_mini_game.html" target="_blank" class="btn-interact" id="game-btn" style="text-decoration: none; display: none;">🎮 PLAY THE GAME</a>
+            <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026" class="btn-interact">Anmeldung</a>
+            <button class="btn-interact" id="inventory-btn">Packliste</button>
+            <a href="https://raw.githack.com/ErSieCode/1Rad/main/Einrad_mini_game.html" target="_blank" class="btn-interact" id="game-btn" style="display: none;">Game</a>
         </div>
     </div>
 
@@ -849,17 +672,17 @@
         <img src="https://raw.githubusercontent.com/Digid0t/DigiDot_8/main/waschbaer_%20einrad.png" alt="GMTL Waschbär auf Einrad" id="hero-img">
     </div>
 
-    <!-- Content Checkpoints -->
+    <!-- Content Checkpoints (Spaced out for mobile) -->
     <div class="content-scroll-wrapper">
         
         <!-- 1. START -->
-        <div class="checkpoint" style="top: 15vh;">
+        <div class="checkpoint" style="top: 20vh;"> 
             <div style="font-size: 3.5rem; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));">🎪</div>
             <div class="info-card readable-text visible">
                 <h2>Willkommen zum GMTW 2026!</h2>
                 <p><strong>📅 03. – 06. April 2026</strong><br>
                 📍 <a href="https://camping-hohensyburg.de/" target="_blank" style="color: inherit; text-decoration: underline;">Campingplatz Hohensyburg</a> in Dortmund</p>
-                <p><strong>Voraussetzungen:</strong> Keine, es sind alle Skill-Level willkommen. Ihr braucht lediglich Spaß am Einradfahren :)</p>
+                <p><strong>Voraussetzungen:</strong> Keine, es sind alle Skill-Level willkommen. Ihr braucht lediglich Spaß am Einradfahren 🦄</p>
                 <hr style="margin: 10px 0; border-color: rgba(0,0,0,0.2);">
                 <p style="font-size: 0.9em;"><strong>📝 Anmeldung:</strong> Per E-Mail (siehe Button oben).<br>
                 <strong>Frist:</strong> bis 20. März 2026.<br>
@@ -868,8 +691,8 @@
             </div>
         </div>
 
-        <!-- 2. ANREISE -->
-        <div class="checkpoint" style="top: 110vh;">
+        <!-- 2. ANREISE (More spacing) -->
+        <div class="checkpoint" style="top: 140vh;">
             <div style="font-size: 4rem;">📍🚗</div>
             <div class="sign-post">Anreise & Ankunft</div>
             <div class="sign-pole"></div>
@@ -889,7 +712,7 @@
         </div>
 
         <!-- 3. CAMP LIFE -->
-        <div class="checkpoint" style="top: 210vh;">
+        <div class="checkpoint" style="top: 280vh;">
             <div style="font-size: 4rem;">⛺🔥</div>
             <div class="sign-post">Camp Life</div>
             <div class="sign-pole"></div>
@@ -908,7 +731,7 @@
         </div>
 
         <!-- 4. DONNERSTAG -->
-        <div class="checkpoint" style="top: 310vh;">
+        <div class="checkpoint" style="top: 420vh;">
             <div style="font-size: 4rem;">📅👋</div>
             <div class="sign-post">Donnerstag</div>
             <div class="sign-pole"></div>
@@ -923,9 +746,8 @@
             </div>
         </div>
 
-        <!-- 5. FREITAG (Updated Icon Size) -->
-        <div class="checkpoint" style="top: 410vh;">
-            <!-- Icon Row -->
+        <!-- 5. FREITAG -->
+        <div class="checkpoint" style="top: 560vh;">
             <div style="font-size: 4rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 ⛰️
                 <img src="https://raw.githack.com/GMTW42/GMTW42.github.io/main/Muni_logo.webp" alt="Muni Logo" style="height: 1.5em; width: auto; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));">
@@ -946,7 +768,7 @@
         </div>
 
         <!-- 6. SAMSTAG -->
-        <div class="checkpoint" style="top: 510vh;">
+        <div class="checkpoint" style="top: 700vh;">
             <div style="font-size: 4rem;">🌲🏞️</div>
             <div class="sign-post">Samstag</div>
             <div class="sign-pole"></div>
@@ -958,13 +780,13 @@
                     <li><strong>09:30:</strong> Muni-Touren & Trial Parcours.</li>
                     <li><strong>13:00:</strong> Mittagspause im Camp.</li>
                     <li><strong>14:00:</strong> Spaß Speed-Trial Wettbewerb für die die möchten, Stillstand Battles, Rail Challenges oder einfach normal Trialen & üben.</li>
-                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️ </li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️</li>
                 </ul>
             </div>
         </div>
 
         <!-- 7. SONNTAG -->
-        <div class="checkpoint" style="top: 610vh;">
+        <div class="checkpoint" style="top: 840vh;">
             <div style="font-size: 4rem;">⚖️🧙</div>
             <div class="sign-post">Sonntag</div>
             <div class="sign-pole"></div>
@@ -982,7 +804,7 @@
         </div>
 
         <!-- 8. MONTAG (Abreise) -->
-        <div class="checkpoint" style="top: 710vh;">
+        <div class="checkpoint" style="top: 980vh;">
             <div style="font-size: 4rem;">👋🏡</div>
             <div class="sign-post">Montag</div>
             <div class="sign-pole"></div>
@@ -1000,52 +822,46 @@
         </div>
 
         <!-- 9. MEDIA -->
-        <div class="checkpoint" style="top: 800vh;">
+        <div class="checkpoint" style="top: 1100vh;">
             <div style="font-size: 4rem; text-align: center;">📸🎥</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>📺 Media Galerie</h2>
-                <p style="font-size: 1rem;">Erlebe die Highlights!</p>
-                <a href="https://raw.githack.com/Digid0t/DigiDot_8/main/gmtw_media.html" target="_blank" class="btn-interact" style="margin-top: 20px; text-decoration: none; display: inline-block;">
-                    🎬 ZUR MEDIA GALERIE
+                <p style="font-size: 1rem;">👨‍💻 Erlebe die Highlights 2025! 🤳</p>
+                <a href="https://raw.githack.com/Digid0t/DigiDot_8/main/gmtw_media.html" target="_blank" class="btn-interact" style="margin-top: 20px;">
+                    🎬 ZUR GALERIE
                 </a>
             </div>
         </div>
 
-        <!-- 10. FINISH (Hochgeschoben und Inhalt erweitert) -->
-        <div class="checkpoint" style="top: 860vh;">
+        <!-- 10. FINISH (Raised up for more space at bottom) -->
+        <div class="checkpoint" style="top: 1200vh;">
             <div style="font-size: 6rem; text-align: center;">🏁</div>
             <div class="info-card readable-text visible" style="text-align: center;">
-                <h2>🎉 Ziel erreicht!</h2>
+                <h2>🎉 Ziel erreicht! 🏞️</h2>
                 <p style="font-size: 1.1rem;">Wir sehen uns vom <strong>03. – 06. April 2026</strong><br>in Dortmund!</p>
                 
                 <hr style="margin: 20px 0; border-color: rgba(0,0,0,0.1);">
 
-                <!-- Buttons Container -->
+                <!-- Buttons Container - Wraps nicely on mobile -->
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
-                    <!-- ANMELDEN BUTTON -->
-                    <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" class="btn-interact" style="flex: 1 1 auto; min-width: 120px;">
+                    <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" class="btn-interact" style="flex: 1 1 120px;">
                         📝 Anmelden
                     </a>
-                    
-                    <!-- PACKLISTE BUTTON -->
-                    <button id="finish-inventory-btn" class="btn-interact" style="flex: 1 1 auto; min-width: 120px;">
+                    <button id="finish-inventory-btn" class="btn-interact" style="flex: 1 1 120px;">
                         🎒 Packliste
                     </button>
-                    
-                    <!-- KARTE BUTTON -->
-                    <a href="https://www.google.com/maps/place/Campingplatz+Hohensyburg/@51.4201336,7.4925054,17z/data=!4m9!3m8!1s0x47b93d0a8f8d6eb5:0x3c0dc758bedf1d96!5m2!4m1!1i2!8m2!3d51.4201303!4d7.4950857!16s%2Fg%2F11b73qw9pg?authuser=0&entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoKLDEwMDc5MjA2N0gBUAM%3D" target="_blank" class="btn-interact" style="flex: 1 1 auto; min-width: 120px;">
+                    <a href="https://www.google.com/maps/place/Campingplatz+Hohensyburg/@51.4201336,7.4925054,17z/data=!4m9!3m8!1s0x47b93d0a8f8d6eb5:0x3c0dc758bedf1d96!5m2!4m1!1i2!8m2!3d51.4201303!4d7.4950857!16s%2Fg%2F11b73qw9pg?authuser=0&entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoKLDEwMDc5MjA2N0gBUAM%3D" target="_blank" class="btn-interact" style="flex: 1 1 120px;">
                         🗺️ Karte
                     </a>
                 </div>
 
-                <p style="margin-bottom: 20px;">
-                    <strong>Kontakt:</strong><br>
-                    <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026" style="color: #1B5E20; text-decoration: underline;">GermanMuniandTrialWeekend@proton.me</a>
-                </p>
-
-                <p style="font-size: 0.9em;">
+                <p style="font-size: 0.85em; margin-bottom: 10px;">
                     <strong>Campingplatz & Preise:</strong><br>
                     <a href="https://camping-hohensyburg.de/" target="_blank" style="color: #1B5E20; text-decoration: underline;">camping-hohensyburg.de</a>
+                </p>
+                
+                <p style="font-size: 0.8em; margin-top: 10px;">
+                     <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026" style="color: #1B5E20; text-decoration: underline;">Kontakt per Mail</a>
                 </p>
 
                 <button class="btn-interact" id="restart-btn" style="margin-top: 20px; background: #555; border-color: #999;">
@@ -1059,108 +875,59 @@
     <div id="inventory">
         <h2>🎒 PACKLISTE</h2>
         <p>Klicke die Gegenstände an, um sie einzupacken!</p>
-        
-        <!-- Grid container -->
         <div class="inventory-grid" id="inventory-grid"></div>
-        
         <button class="btn-interact" id="close-inventory-btn" style="margin-top: 20px;">
             ✓ FERTIG GEPACKT
         </button>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // ============================================
         // GAME ENGINE & CORE SYSTEMS
         // ============================================
 
-        // Element References
         const hero = document.getElementById('hero-stage');
-        const heroImg = document.getElementById('hero-img');
-        const bgMount = document.getElementById('bg-mountains');
-        const bgTrees = document.getElementById('bg-trees');
-        const bgBushes = document.getElementById('bg-bushes');
-        const bgGround = document.getElementById('bg-ground');
         const cards = document.querySelectorAll('.reveal');
         const cloudsContainer = document.getElementById('clouds');
         const loadingScreen = document.getElementById('loading-screen');
 
-        // State
         let lastY = 0;
         let achievements = new Set();
         let isNightMode = false;
 
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-        function clamp(value, min, max) {
-            return Math.min(Math.max(value, min), max);
-        }
+        function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
 
-        // ============================================
-        // CLOUD GENERATION
-        // ============================================
         function createClouds() {
-            const cloudCount = 5;
-            for (let i = 0; i < cloudCount; i++) {
+            for (let i = 0; i < 5; i++) {
                 const cloud = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                 cloud.classList.add('pixel-cloud');
-                
-                const width = 80 + Math.random() * 40;
-                const height = 30 + Math.random() * 20;
-                
-                cloud.setAttribute('width', width);
-                cloud.setAttribute('height', height);
+                cloud.setAttribute('width', 80 + Math.random() * 40);
+                cloud.setAttribute('height', 30 + Math.random() * 20);
                 cloud.setAttribute('viewBox', '0 0 100 40');
                 cloud.style.top = (Math.random() * 30) + '%';
                 cloud.style.left = (-200 + Math.random() * window.innerWidth) + 'px';
-                
-                const duration = 30 + Math.random() * 30;
-                cloud.style.animationDuration = duration + 's';
-                cloud.style.animationDelay = (-Math.random() * duration) + 's';
-                
-                cloud.innerHTML = `
-                    <rect x="20" y="10" width="60" height="30" rx="5"/>
-                    <rect x="40" y="0" width="30" height="10" rx="5"/>
-                `;
-                
+                cloud.style.animationDuration = (30 + Math.random() * 30) + 's';
+                cloud.style.animationDelay = (-Math.random() * 30) + 's';
+                cloud.innerHTML = `<rect x="20" y="10" width="60" height="30" rx="5"/><rect x="40" y="0" width="30" height="10" rx="5"/>`;
                 cloudsContainer.appendChild(cloud);
             }
         }
 
-        // ============================================
-        // INVENTORY SYSTEM
-        // ============================================
         const items = [
-            // Image item
             {image: 'https://raw.githack.com/GMTW42/GMTW42.github.io/main/Muni_logo.webp', name: 'Einrad'},
-            
-            // Standard items
-            {icon: '⛑️', name: 'Helm'},
-            {icon: '🛡️', name: 'Schoner'},
-            {icon: '👟', name: 'Schuhe'},
-            {icon: '👕', name: 'Sportzeug'},
-            {icon: '⛺', name: 'Zelt'},
-            {icon: '🛏️', name: 'Schlafsack'},
-            {icon: '🧣', name: 'Isomatte'},
-            {icon: '😴', name: 'Kissen'},
-            {icon: '🍴', name: 'Geschirr/Becher'},
-            {icon: '🍜', name: 'Essen'},
-            {icon: '💳', name: 'Krankenkasse'},
-            {icon: '🆔', name: 'Ausweis'},
-            {icon: '🔦', name: 'Lampe'},
-            {icon: '🚿', name: 'Waschzeug'},
-            {icon: '🔧', name: 'Werkzeug'},
-            {icon: '📱', name: 'Handy/Powerbank'},
-            {icon: '🎲', name: 'Spiele'},
-            {icon: '🧻', name: 'Handtuch'},
+            {icon: '⛑️', name: 'Helm'}, {icon: '🛡️', name: 'Schoner'}, {icon: '👟', name: 'Schuhe'},
+            {icon: '👕', name: 'Sportzeug'}, {icon: '⛺', name: 'Zelt'}, {icon: '🛏️', name: 'Schlafsack'},
+            {icon: '🧣', name: 'Isomatte'}, {icon: '😴', name: 'Kissen'}, {icon: '🍴', name: 'Geschirr/Becher'},
+            {icon: '🍜', name: 'Essen'}, {icon: '💳', name: 'Krankenkasse'}, {icon: '🆔', name: 'Ausweis'},
+            {icon: '🔦', name: 'Lampe'}, {icon: '🚿', name: 'Waschzeug'}, {icon: '🔧', name: 'Werkzeug'},
+            {icon: '📱', name: 'Handy/Powerbank'}, {icon: '🎲', name: 'Spiele'}, {icon: '🧻', name: 'Handtuch'},
         ];
 
         const invGrid = document.getElementById('inventory-grid');
         const packedItems = new Set();
 
         function createParticles(x, y) {
-            const particleCount = 8;
-            for (let i = 0; i < particleCount; i++) {
+            for (let i = 0; i < 8; i++) {
                 const p = document.createElement('div');
                 p.classList.add('particle');
                 p.style.left = x + 'px';
@@ -1168,123 +935,55 @@
                 p.style.width = (4 + Math.random() * 4) + 'px';
                 p.style.height = p.style.width;
                 p.style.background = `hsl(${Math.random() * 60 + 40}, 100%, 50%)`;
-                
                 const angle = Math.random() * Math.PI * 2;
                 const dist = 50 + Math.random() * 50;
                 p.style.setProperty('--px', Math.cos(angle) * dist + 'px');
                 p.style.setProperty('--py', Math.sin(angle) * dist + 'px');
-                
                 document.body.appendChild(p);
                 setTimeout(() => { if(p.parentNode) p.parentNode.removeChild(p); }, 1500);
             }
         }
 
         function initInventory() {
-            invGrid.innerHTML = ''; // Clear existing
-            
+            invGrid.innerHTML = '';
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'inventory-item';
-                
-                let contentHtml = '';
-                if (item.image) {
-                    contentHtml = `<img src="${item.image}" class="item-img-custom" alt="${item.name}">`;
-                } else {
-                    contentHtml = `<div class="item-icon">${item.icon}</div>`;
-                }
-                
-                div.innerHTML = `
-                    ${contentHtml}
-                    <div class="item-name">${item.name}</div>
-                `;
-                
+                let contentHtml = item.image ? `<img src="${item.image}" class="item-img-custom" alt="${item.name}">` : `<div class="item-icon">${item.icon}</div>`;
+                div.innerHTML = `${contentHtml}<div class="item-name">${item.name}</div>`;
                 div.addEventListener('click', function() {
                     this.classList.toggle('checked');
-                    
                     if (this.classList.contains('checked')) {
                         packedItems.add(item.name);
                         const rect = this.getBoundingClientRect();
                         createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-                    } else {
-                        packedItems.delete(item.name);
-                    }
-                    
-                    // Achievement check
+                    } else { packedItems.delete(item.name); }
                     if (packedItems.size === items.length && !achievements.has('allPacked')) {
                         showAchievement('🎒 Perfekt gepackt!', 'Du hast alle Items eingepackt!');
                         achievements.add('allPacked');
                     }
                 });
-                
                 invGrid.appendChild(div);
             });
         }
 
         function toggleInventory() {
             const inv = document.getElementById('inventory');
-            if (inv.style.display === 'none' || inv.style.display === '') {
-                inv.style.display = 'flex';
-            } else {
-                inv.style.display = 'none';
-            }
+            inv.style.display = (inv.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        // ============================================
-        // ACHIEVEMENT SYSTEM
-        // ============================================
         function showAchievement(title, description) {
             const popup = document.createElement('div');
             popup.className = 'achievement-popup';
-            popup.innerHTML = `
-                <h3>📜 ${title}</h3>
-                <p>${description}</p>
-            `;
+            popup.innerHTML = `<h3>📜 ${title}</h3><p>${description}</p>`;
             document.body.appendChild(popup);
-            
-            setTimeout(() => {
-                popup.classList.add('hiding');
-                setTimeout(() => {
-                    if (popup.parentNode) {
-                        popup.parentNode.removeChild(popup);
-                    }
-                }, 500);
-            }, 3000);
+            setTimeout(() => { popup.classList.add('hiding'); setTimeout(() => { if (popup.parentNode) popup.parentNode.removeChild(popup); }, 500); }, 3000);
         }
 
-        // ============================================
-        // FINAL INFO POPUP
-        // ============================================
         function showFinalInfo() {
-            const popup = document.createElement('div');
-            popup.className = 'achievement-popup';
-            popup.style.maxWidth = '400px';
-            popup.style.padding = '25px';
-            popup.innerHTML = `
-                <h3 style="margin-bottom: 15px;">🎉 Ziel erreicht!🏞️</h3>
-                <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;">
-                    <strong>Wir sehen uns vom 03. - 06. April 2026</strong><br>
-                    in Dortmund!
-                </p>
-                <p style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px;">
-                    <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026" style="color: #fff; text-decoration: underline;">Kontakt per Mail</a>
-                </p>
-            `;
-            document.body.appendChild(popup);
-            
-            setTimeout(() => {
-                popup.classList.add('hiding');
-                setTimeout(() => {
-                    if (popup.parentNode) {
-                        popup.parentNode.removeChild(popup);
-                    }
-                }, 500);
-            }, 8000);
+            // Can be used for extra logic when reaching end
         }
 
-        // ============================================
-        // MAIN SCROLL LOOP
-        // ============================================
         function gameLoop() {
             const y = window.scrollY;
             const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
@@ -1292,90 +991,58 @@
             const delta = y - lastY;
             const speed = Math.abs(delta);
 
-            // Update HUD
             document.getElementById('dist').textContent = Math.floor(y / 10);
             document.getElementById('progress').textContent = Math.floor(progress);
             document.getElementById('progress-fill').style.width = progress + '%';
 
-            // Parallax Effects
-            bgMount.style.transform = `translateY(${y * 0.2}px)`;
-            bgTrees.style.transform = `translateY(${y * 0.4}px)`;
-            bgBushes.style.transform = `translateY(${y * 0.6}px)`;
-            bgGround.style.backgroundPositionX = `-${y * 0.5}px`;
+            document.getElementById('bg-mountains').style.transform = `translateY(${y * 0.2}px)`;
+            document.getElementById('bg-trees').style.transform = `translateY(${y * 0.4}px)`;
+            document.getElementById('bg-bushes').style.transform = `translateY(${y * 0.6}px)`;
+            document.getElementById('bg-ground').style.backgroundPositionX = `-${y * 0.5}px`;
 
-            // Riding Animation
-            if (speed > 1) {
-                hero.classList.add('is-riding');
-            } else {
-                hero.classList.remove('is-riding');
-            }
+            if (speed > 1) { hero.classList.add('is-riding'); } else { hero.classList.remove('is-riding'); }
 
-            // Dynamic Hero Positioning based on scroll
-            let heroLeftPosition = 50; // Default center
-            if (progress < 10) {
-                heroLeftPosition = 50; // Center at start
-            } else if (progress >= 10 && progress < 30) {
-                heroLeftPosition = 20; // Left
-            } else if (progress >= 30 && progress < 50) {
-                heroLeftPosition = 80; // Right
-            } else if (progress >= 50 && progress < 70) {
-                heroLeftPosition = 20; // Left
-            } else if (progress >= 70 && progress < 90) {
-                heroLeftPosition = 80; // Right
-            } else if (progress >= 90) {
-                heroLeftPosition = 50; // Center at end
-            }
-            hero.style.left = heroLeftPosition + '%';
+            let heroLeft = 50;
+            if (progress >= 10 && progress < 30) heroLeft = 20;
+            else if (progress >= 30 && progress < 50) heroLeft = 80;
+            else if (progress >= 50 && progress < 70) heroLeft = 20;
+            else if (progress >= 70 && progress < 90) heroLeft = 80;
+            hero.style.left = heroLeft + '%';
             hero.style.transition = 'left 1s ease-out';
 
-            // Content Reveal
             cards.forEach(card => {
                 const rect = card.getBoundingClientRect();
-                if (rect.top < window.innerHeight * 0.7) {
-                    card.classList.add('visible');
-                }
+                if (rect.top < window.innerHeight * 0.75) { card.classList.add('visible'); }
             });
 
-            // Day/Night Cycle
             if (y > window.innerHeight * 4.5) {
                 if (!isNightMode) {
                     isNightMode = true;
                     document.body.style.background = 'linear-gradient(to bottom, var(--sky-night-top), var(--sky-night-bot))';
-                    bgMount.style.opacity = '0.2';
+                    document.getElementById('bg-mountains').style.opacity = '0.2';
                 }
-                
-                // Spawn stars occasionally
-                if (Math.random() < 0.03) {
-                    createStar();
-                }
+                if (Math.random() < 0.03) createStar();
             } else {
                 if (isNightMode) {
                     isNightMode = false;
                     document.body.style.background = 'linear-gradient(to bottom, var(--sky-day-top), var(--sky-day-bot))';
-                    bgMount.style.opacity = '1';
+                    document.getElementById('bg-mountains').style.opacity = '1';
                 }
             }
 
-            // Achievement Triggers
             if (progress > 50 && !achievements.has('halfway')) {
                 showAchievement('🎯 Halbzeit!', 'Du hast die Hälfte geschafft!');
                 achievements.add('halfway');
             }
-            
-            if (progress > 95 && !achievements.has('finished')) {
-                showAchievement('🏁 Ziel erreicht!', 'Du hast die gesamte Strecke gemeistert!');
-                setTimeout(() => {
-                    showFinalInfo();
-                }, 3500);
+            if (progress > 98 && !achievements.has('finished')) {
+                showAchievement('🏁 Ziel erreicht!', 'Gute Fahrt!');
                 achievements.add('finished');
             }
-
-            // Game Button at 100%
             if (progress >= 100 && !achievements.has('game-unlocked')) {
                 const gameBtn = document.getElementById('game-btn');
                 if (gameBtn) {
                     gameBtn.style.display = 'inline-block';
-                    showAchievement('🎮 Bonus freigeschaltet!', 'Du kannst jetzt das Einrad-Spiel spielen!');
+                    showAchievement('🎮 Bonus!', 'Game freigeschaltet!');
                 }
                 achievements.add('game-unlocked');
             }
@@ -1384,9 +1051,6 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // ============================================
-        // STAR EFFECTS (Night)
-        // ============================================
         function createStar() {
             const star = document.createElement('div');
             star.className = 'star';
@@ -1395,70 +1059,24 @@
             star.style.top = (Math.random() * 50) + '%';
             star.style.fontSize = (10 + Math.random() * 20) + 'px';
             document.body.appendChild(star);
-            
-            setTimeout(() => {
-                if (star.parentNode) {
-                    star.parentNode.removeChild(star);
-                }
-            }, 2000);
+            setTimeout(() => { if (star.parentNode) star.parentNode.removeChild(star); }, 2000);
         }
 
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
-        
-        // Button Listeners
         document.getElementById('inventory-btn').addEventListener('click', toggleInventory);
         document.getElementById('close-inventory-btn').addEventListener('click', toggleInventory);
         document.getElementById('finish-inventory-btn').addEventListener('click', toggleInventory);
-        document.getElementById('restart-btn').addEventListener('click', function() {
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        });
+        document.getElementById('restart-btn').addEventListener('click', function() { window.scrollTo({top: 0, behavior: 'smooth'}); });
+        window.addEventListener('keydown', function(e) { if (e.key === 'Escape') { const inv = document.getElementById('inventory'); if (inv.style.display === 'flex') toggleInventory(); } });
 
-        // Keyboard
-        window.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const inv = document.getElementById('inventory');
-                if (inv.style.display === 'flex') {
-                    toggleInventory();
-                }
-            }
-        });
-
-        // ============================================
-        // INITIALIZATION
-        // ============================================
         function init() {
-            // Create clouds
             createClouds();
-            
-            // Initialize inventory
             initInventory();
-            
-            // Hide loading screen
-            setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-            }, 1500);
-            
-            // Start game loop
+            setTimeout(() => { loadingScreen.classList.add('hidden'); }, 1500);
             requestAnimationFrame(gameLoop);
-            
-            // Welcome achievement
-            setTimeout(() => {
-                showAchievement('🎪 Willkommen!',  '👨‍👩‍👧‍👦GERMAN MUNI AND TRAIL WEEKEND, Spaß für die ganze Familie!👨‍👩‍👧‍👦');
-            }, 2500);
+            setTimeout(() => { showAchievement('🎪 Willkommen!', '👨‍👩‍👧‍👦GERMAN MUNI AND TRAIL WEEKEND, Spaß für die ganze Familie!👨‍👩‍👧‍👦'); }, 2500);
         }
 
-        // ============================================
-        // START THE APPLICATION
-        // ============================================
-        
-        // Wait for DOM to be ready, then initialize
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); } else { init(); }
     </script>
 </body>
 </html>
