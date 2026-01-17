@@ -17,7 +17,7 @@
             --grass: #66BB6A;
             --grass-dark: #388E3C;
             --dirt: #5D4037;
-            --card-bg: rgba(255, 255, 255, 0.98);
+            --card-bg: rgba(246, 255, 242, 0.98);
             --text-main: #212121;
             --accent: #FF6F00;
             --accent-hover: #F57C00;
@@ -215,7 +215,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 850vh;
+            height: 920vh; /* Increased for better finish scrolling */
             z-index: 20;
         }
 
@@ -224,7 +224,7 @@
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
-            max-width: 700px;
+            max-width: 750px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -257,14 +257,14 @@
             box-shadow: 2px 0 4px rgba(0,0,0,0.3);
         }
 
-        /* Info Cards */
+        /* Info Cards - Desktop Optimized */
         .info-card {
             background: var(--card-bg);
             border: 5px solid #212121;
-            padding: 30px;
-            border-radius: 8px;
+            padding: 40px; 
+            border-radius: 12px;
             box-shadow: 
-                10px 10px 0 rgba(0,0,0,0.3),
+                12px 12px 0 rgba(0,0,0,0.3),
                 inset 0 2px 0 rgba(255,255,255,0.5);
             opacity: 0;
             transform: translateY(40px) scale(0.95);
@@ -272,6 +272,7 @@
             text-align: left;
             position: relative;
             overflow: hidden;
+            width: 100%;
         }
 
         .info-card::before {
@@ -280,7 +281,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 5px;
             background: linear-gradient(90deg, 
                 var(--accent) 0%, 
                 #FFB300 50%, 
@@ -295,29 +296,31 @@
         .info-card h2 {
             margin-top: 0;
             color: #1B5E20;
-            font-size: 1.4rem;
-            margin-bottom: 15px;
-            border-bottom: 3px dashed #ccc;
+            font-size: 1.6rem; 
+            margin-bottom: 20px;
+            border-bottom: 3px dashed #d4d4d4;
             padding-bottom: 12px;
             text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
         }
 
         .info-card p {
-            font-size: 1rem;
+            font-size: 1.15rem; 
             color: #333;
-            margin-bottom: 0.8em;
+            margin-bottom: 1em;
+            line-height: 1.6;
         }
 
         .info-card ul {
             padding-left: 25px;
-            margin: 15px 0;
+            margin: 20px 0;
         }
 
         .info-card li {
-            font-size: 0.95rem;
+            font-size: 1.1rem; 
             color: #444;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             position: relative;
+            line-height: 1.5;
         }
 
         .info-card li::before {
@@ -334,12 +337,12 @@
 
         .info-card em {
             display: block;
-            margin-top: 15px;
-            padding: 10px;
+            margin-top: 20px;
+            padding: 15px;
             background: #FFF3E0;
-            border-left: 4px solid var(--accent);
+            border-left: 5px solid var(--accent);
             font-style: normal;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
         /* ============================================
@@ -416,16 +419,19 @@
             cursor: pointer;
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
             color: #fff;
-            border: 4px solid #fff;
+            border: 4px solid #f0fff5;
             padding: 12px 24px;
             font-family: inherit;
             font-size: 0.7rem;
+            text-decoration: none; /* Important for links */
+            display: inline-block;
             box-shadow: 5px 5px 0 #000;
             transition: all 0.1s;
             text-transform: uppercase;
             letter-spacing: 1px;
             position: relative;
             overflow: hidden;
+            text-align: center;
         }
 
         .btn-interact::before {
@@ -470,6 +476,7 @@
             animation: fadeIn 0.3s ease;
             overflow-y: auto;
             overflow-x: hidden;
+            align-items: center; /* Center content */
         }
 
         @keyframes fadeIn {
@@ -478,53 +485,58 @@
         }
 
         #inventory h2 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 10px;
             color: #FFB300;
             text-shadow: 2px 2px 0 #000;
+            text-align: center;
         }
 
         #inventory p {
             font-family: 'Roboto', sans-serif;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
+            margin-bottom: 20px;
+            font-size: 1rem;
             text-align: center;
             max-width: 500px;
+            color: #ddd;
         }
 
         .inventory-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 15px;
             margin: 20px 0;
-            max-width: 600px;
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
         }
 
         .inventory-item {
-            width: 120px;
-            height: 120px;
-            border: 5px solid #fff;
+            aspect-ratio: 1;
+            border: 4px solid #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
             cursor: pointer;
             background: linear-gradient(135deg, #333 0%, #222 100%);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 5px 5px 0 rgba(0,0,0,0.5);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
             position: relative;
+            border-radius: 8px;
+            padding: 5px;
         }
 
         .inventory-item:hover {
             transform: translateY(-5px);
             box-shadow: 5px 10px 20px rgba(0,0,0,0.5);
+            background: #444;
         }
 
         .inventory-item.checked {
             background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
             border-color: #4CAF50;
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
 
         .inventory-item.checked::after {
@@ -534,21 +546,38 @@
             right: 5px;
             background: #4CAF50;
             color: #fff;
-            width: 25px;
-            height: 25px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.8rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        .item-icon {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .item-img-custom {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 5px;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
         }
 
         .item-name {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             font-family: 'Roboto', sans-serif;
-            margin-top: 8px;
+            margin-top: 5px;
             text-align: center;
+            line-height: 1.2;
+            font-weight: bold;
+            padding: 0 2px;
         }
 
         /* ============================================
@@ -607,7 +636,7 @@
         }
 
         /* ============================================
-           RESPONSIVE DESIGN
+           RESPONSIVE DESIGN (Smartphone Optimizations)
            ============================================ */
         @media (max-width: 768px) {
             .hud {
@@ -624,8 +653,10 @@
                 justify-content: center;
             }
 
+            /* Resetting Info Card for Mobile to be smaller */
             .info-card {
-                padding: 20px;
+                padding: 25px;
+                border-radius: 8px;
             }
 
             .checkpoint {
@@ -634,7 +665,18 @@
             }
 
             .info-card h2 {
-                font-size: 1.1rem;
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+            }
+
+            .info-card p, .info-card li {
+                font-size: 0.95rem; /* Standard readable size for mobile */
+                line-height: 1.5;
+            }
+            
+            .info-card em {
+                font-size: 0.9rem;
+                padding: 10px;
             }
 
             .btn-interact {
@@ -645,17 +687,7 @@
             #hero-stage img {
                 width: 150px;
             }
-
-            .inventory-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .inventory-item {
-                width: 100px;
-                height: 100px;
-                font-size: 2.5rem;
-            }
-
+            
             .achievement-popup {
                 right: 10px;
                 left: 10px;
@@ -673,12 +705,35 @@
                 width: 120px;
             }
 
-            .info-card h2 {
-                font-size: 1rem;
+            /* Mobile Inventory Optimizations */
+            .inventory-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3 columns on mobile */
+                gap: 10px;
+            }
+            
+            .inventory-item {
+                border-width: 2px;
+            }
+            
+            .item-icon {
+                font-size: 1.8rem;
+            }
+            
+            .item-img-custom {
+                width: 40px;
+                height: 40px;
             }
 
-            .info-card p, .info-card li {
-                font-size: 0.85rem;
+            .item-name {
+                font-size: 0.55rem;
+            }
+            
+            #inventory {
+                padding: 15px;
+            }
+            
+            #inventory h2 {
+                font-size: 1.2rem;
             }
         }
 
@@ -774,7 +829,7 @@
         </div>
 
         <div class="controls-panel">
-            <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." class="btn-interact" id="registration-btn" style="text-decoration: none; display: inline-block;">🎪 ANMELDUNG</a>
+            <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" class="btn-interact" id="registration-btn" style="text-decoration: none; display: inline-block;">🎪 ANMELDUNG</a>
             <button class="btn-interact" id="inventory-btn">🎒 PACKLISTE</button>
             <a href="https://raw.githack.com/ErSieCode/1Rad/main/Einrad_mini_game.html" target="_blank" class="btn-interact" id="game-btn" style="text-decoration: none; display: none;">🎮 PLAY THE GAME</a>
         </div>
@@ -797,170 +852,203 @@
     <!-- Content Checkpoints -->
     <div class="content-scroll-wrapper">
         
-        <!-- START -->
+        <!-- 1. START -->
         <div class="checkpoint" style="top: 15vh;">
             <div style="font-size: 3.5rem; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));">🎪</div>
             <div class="info-card readable-text visible">
-                <h2>👷‍♂️🏗️ SEITE BEFINDET SICH IM UMBAU!🏗️👷‍♀</h2>
-                <p><strong>📅 03. - 06. April 2026</strong><br>
-                📍 Campingplatz Hohensyburg am Hengsteysee</p>
-                <p>Mach dich bereit für das Einrad-Event des Jahres! Scroll nach unten und entdecke alle Highlights.</p>
-                <em>🎯 Tipp: Sammle alle Items in deiner Packliste!</em>
+                <h2>Willkommen zum GMTW 2026!</h2>
+                <p><strong>📅 03. – 06. April 2026</strong><br>
+                📍 <a href="https://camping-hohensyburg.de/" target="_blank" style="color: inherit; text-decoration: underline;">Campingplatz Hohensyburg</a> in Dortmund</p>
+                <p><strong>Voraussetzungen:</strong> Keine, es sind alle Skill-Level willkommen. Ihr braucht lediglich Spaß am Einradfahren :)</p>
+                <hr style="margin: 10px 0; border-color: rgba(0,0,0,0.2);">
+                <p style="font-size: 0.9em;"><strong>📝 Anmeldung:</strong> Per E-Mail (siehe Button oben).<br>
+                <strong>Frist:</strong> bis 20. März 2026.<br>
+                <strong>Limit:</strong> 80 Teilnehmer.<br>
+                <strong>Kosten:</strong> Nur für den Campingplatz (Zahlung vor Ort).</p>
             </div>
         </div>
 
-        <!-- ANREISE -->
+        <!-- 2. ANREISE -->
         <div class="checkpoint" style="top: 110vh;">
-            <div style="font-size: 4rem;">🚗🛣️</div>
+            <div style="font-size: 4rem;">📍🚗</div>
             <div class="sign-post">Anreise & Ankunft</div>
             <div class="sign-pole"></div>
             
             <div class="info-card readable-text reveal">
-                <h2>🗺️ So findest du uns</h2>
-                <p><strong>Adresse:</strong><br>
-                Campingplatz Hohensyburg<br>
-                Hohensyburgstraße 169<br>
+                <h2>So findest Du uns:</h2>
+                <p><strong>Campingplatz Hohensyburg</strong><br>
+                Syburger Dorfstraße 69<br>
                 44265 Dortmund</p>
-                <ul>
-                    <li><strong>Anreise:</strong> Ab Donnerstag möglich</li>
-                    <li><strong>Check-In:</strong> Direkt am Eingang</li>
-                    <li><strong>Camping:</strong> Zeltplätze & Wohnmobile</li>
+                <a href="https://www.google.com/maps/place/Campingplatz+Hohensyburg/@51.4201336,7.4925054,17z/data=!4m9!3m8!1s0x47b93d0a8f8d6eb5:0x3c0dc758bedf1d96!5m2!4m1!1i2!8m2!3d51.4201303!4d7.4950857!16s%2Fg%2F11b73qw9pg?authuser=0&entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoKLDEwMDc5MjA2N0gBUAM%3D" target="_blank" style="color: #2E7D32; font-weight: bold; text-decoration: underline;">🗺️ Karte: Hier geht ab!</a>
+                <hr style="margin: 10px 0; border-color: rgba(0,0,0,0.2);">
+                <ul style="margin-top: 10px;">
+                    <li><strong>Ankunft:</strong> Ab Donnerstag 15:00 Uhr möglich.</li>
+                    <li><strong>Check-In:</strong> Einfach nach <strong>GMTW</strong> fragen.</li>
                 </ul>
-                <em>💡 Frühe Anreise empfohlen - die besten Plätze sind schnell weg!</em>
             </div>
         </div>
 
-        <!-- MUNI -->
+        <!-- 3. CAMP LIFE -->
         <div class="checkpoint" style="top: 210vh;">
-            <div style="font-size: 4rem;">🌲🌲🌲</div>
-            <div class="sign-post">Muni Zone</div>
-            <div class="sign-pole"></div>
-            
-            <div class="info-card readable-text reveal">
-                <h2>🌲 Freitag: Der Wald ruft!</h2>
-                <p>Der Freitag steht ganz im Zeichen von Matsch, Wurzeln und Abenteuer.</p>
-                <ul>
-                    <li><strong>10:00 Uhr:</strong> Geführte Muni-Touren für alle Level - vom Anfänger bis zum Pro</li>
-                    <li><strong>14:00 Uhr:</strong> Workshops rund ums Einrad:
-                        <ul style="margin-top: 10px;">
-                            <li>Technik-Training mit den Profis</li>
-                            <li>Hopping & Drops</li>
-                            <li>Schrauber-Workshop</li>
-                        </ul>
-                    </li>
-                    <li><strong>Ab 18:00 Uhr:</strong> Gemütliches Lagerfeuer mit Grillen</li>
-                </ul>
-                <em>🌧️ Wetterunabhängig - Muni macht bei jedem Wetter Spaß!</em>
-            </div>
-        </div>
-
-        <!-- TRIAL -->
-        <div class="checkpoint" style="top: 310vh;">
-            <div style="font-size: 4rem;">🧱⚖️</div>
-            <div class="sign-post">Trial Park</div>
-            <div class="sign-pole"></div>
-
-            <div class="info-card readable-text reveal">
-                <h2>⚖️ Samstag: Balance Day</h2>
-                <p>Gemeinsam bauen wir einen epischen Trial-Park direkt am Camp!</p>
-                <ul>
-                    <li><strong>Morgens:</strong> Aufbau des Parks mit Paletten, Kabeltrommeln & Natursteinen</li>
-                    <li><strong>Challenge:</strong> "The Floor is Lava"
-                        <ul style="margin-top: 10px;">
-                            <li>Anfänger: Erste Hops & Balance üben</li>
-                            <li>Fortgeschrittene: Drops & Gaps</li>
-                            <li>Profis: Side-Hops > 1 Meter</li>
-                        </ul>
-                    </li>
-                    <li><strong>Abends:</strong> Preisverleihung & BBQ</li>
-                </ul>
-                <em>🏆 Zeig uns deine Skills und hol dir einen Platz auf dem Treppchen!</em>
-            </div>
-        </div>
-
-        <!-- CAMP LIFE -->
-        <div class="checkpoint" style="top: 410vh;">
             <div style="font-size: 4rem;">⛺🔥</div>
             <div class="sign-post">Camp Life</div>
             <div class="sign-pole"></div>
 
             <div class="info-card readable-text reveal">
-                <h2>🏕️ Leben am Camp</h2>
-                <p>Das Camp ist mehr als nur ein Übernachtungsplatz - es ist unser Zuhause für vier Tage!</p>
+                <h2>Leben am Camp</h2>
                 <ul>
-                    <li><strong>Sanitär:</strong> Moderne Duschen & WCs vorhanden</li>
-                    <li><strong>Strom:</strong> An ausgewählten Plätzen verfügbar</li>
-                    <li><strong>Verpflegung:</strong> Selbstverpflegung - Kühlmöglichkeiten vorhanden</li>
-                    <li><strong>Gemeinschaft:</strong> Lagerfeuer jeden Abend</li>
-                    <li><strong>Werkstatt:</strong> Tools & Ersatzteile vor Ort</li>
+                    <li>Gemütliche Zelt & Camper Plätze.</li>
+                    <li>WC's & Duschen vorhanden & kostenlos.</li>
+                    <li>Abends gemeinsame Lagerfeuer.</li>
+                    <li>Strom ist verfügbar!</li>
                 </ul>
-                <em>🎵 Bring deine Gitarre mit - Lagerfeuer-Sessions sind legendär!</em>
+                <p style="background: rgba(255,0,0,0.1); padding: 5px; border-radius: 5px;"><strong>🍔 Verpflegung:</strong> Wir stellen keine Verpflegung! Es gilt das Prinzip der <strong>Selbstverpflegung</strong>.</p>
+                <p style="font-size: 0.9em;">Kiosk & Restaurant vor Ort. Lidl ist 4km entfernt.</p>
             </div>
         </div>
 
-        <!-- DOWNHILL -->
+        <!-- 4. DONNERSTAG -->
+        <div class="checkpoint" style="top: 310vh;">
+            <div style="font-size: 4rem;">📅👋</div>
+            <div class="sign-post">Donnerstag</div>
+            <div class="sign-pole"></div>
+            
+            <div class="info-card readable-text reveal">
+                <h2>Der Start (Donnerstag)</h2>
+                <ul>
+                    <li><strong>15:00 – 20:00:</strong> Anreise möglich.</li>
+                    <li><strong>17:00:</strong> Begrüßung, Infos & Camp-Regeln. Im Anschluss Zelte aufbauen, Camp einrichten, freies Fahren, Trial aufbauen.</li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️, gemütliches Zusammensitzen / Spielen / Musik machen.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 5. FREITAG (Updated Icon Size) -->
+        <div class="checkpoint" style="top: 410vh;">
+            <!-- Icon Row -->
+            <div style="font-size: 4rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                ⛰️
+                <img src="https://raw.githack.com/GMTW42/GMTW42.github.io/main/Muni_logo.webp" alt="Muni Logo" style="height: 1.5em; width: auto; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));">
+            </div>
+            <div class="sign-post">Freitag</div>
+            <div class="sign-pole"></div>
+            
+            <div class="info-card readable-text reveal">
+                <h2>Muni Touren (Freitag)</h2>
+                <ul>
+                    <li><strong>09:00:</strong> Aufwärmen.</li>
+                    <li><strong>09:30:</strong> Gruppeneinteilung für Muni-Touren (Leicht, mittel, schwer). Im Anschluss geführte Muni-Touren.</li>
+                    <li><strong>13:00:</strong> Mittagspause im Camp.</li>
+                    <li><strong>14:00:</strong> Weitere Muni-Touren oder Trial im Camp je nach Belieben.</li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️, gemütliches zusammensitzen / Spielen / Musik.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 6. SAMSTAG -->
         <div class="checkpoint" style="top: 510vh;">
-            <div style="font-size: 4rem;">⛰️💨</div>
-            <div class="sign-post">Massen-Downhill</div>
+            <div style="font-size: 4rem;">🌲🏞️</div>
+            <div class="sign-post">Samstag</div>
             <div class="sign-pole"></div>
 
             <div class="info-card readable-text reveal">
-                <h2>🚀 Sonntag: Das große Finale</h2>
-                <p><strong>Der legendäre Massen-Downhill!</strong></p>
-                <p>Alle zusammen fahren wir die spektakulären Trails hinunter - ein unvergessliches Erlebnis!</p>
+                <h2>Trial Action (Samstag)</h2>
                 <ul>
-                    <li><strong>10:00 Uhr:</strong> Briefing & Sicherheitscheck</li>
-                    <li><strong>11:00 Uhr:</strong> Start des Massen-Downhills</li>
-                    <li><strong>13:00 Uhr:</strong> Gemeinsames Mittagessen</li>
-                    <li><strong>Nachmittags:</strong> Freies Fahren & Entspannen</li>
+                    <li><strong>09:00:</strong> Aufwärmen.</li>
+                    <li><strong>09:30:</strong> Muni-Touren & Trial Parcours.</li>
+                    <li><strong>13:00:</strong> Mittagspause im Camp.</li>
+                    <li><strong>14:00:</strong> Spaß Speed-Trial Wettbewerb für die die möchten, Stillstand Battles, Rail Challenges oder einfach normal Trialen & üben.</li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️ </li>
                 </ul>
-                <em>📸 Vergiss deine Kamera nicht - hier entstehen die besten Fotos!</em>
             </div>
         </div>
 
-        <!-- ABREISE -->
+        <!-- 7. SONNTAG -->
         <div class="checkpoint" style="top: 610vh;">
-            <div style="font-size: 4rem;">👋🏡</div>
-            <div class="sign-post">Auf Wiedersehen</div>
+            <div style="font-size: 4rem;">⚖️🧙</div>
+            <div class="sign-post">Sonntag</div>
             <div class="sign-pole"></div>
 
             <div class="info-card readable-text reveal">
-                <h2>👋 Montag: Abschied nehmen</h2>
-                <p><strong>Gemeinsames Frühstück & Abbau</strong></p>
+                <h2>Wettbewerbe (Sonntag)</h2>
                 <ul>
-                    <li><strong>09:00 Uhr:</strong> Gemeinsames Frühstück (jeder bringt was mit)</li>
-                    <li><strong>10:00 Uhr:</strong> Beginn Abbau & Aufräumen</li>
-                    <li><strong>12:00 Uhr:</strong> Check-Out & Abreise</li>
+                    <li><strong>09:00:</strong> Aufwärmen.</li>
+                    <li><strong>09:30:</strong> Muni & Trial, Paletten Hoch- & Weitsprung (Rasenuntergrund).</li>
+                    <li><strong>13:00:</strong> Mittagspause.</li>
+                    <li><strong>14:00:</strong> Spaß Hoch- & Weitsprung Wettbewerb, Muni & Trial.</li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️</li>
                 </ul>
-                <p>Lass uns den Platz sauberer verlassen, als wir ihn vorgefunden haben! 🌱</p>
-                <em>🤝 Wir freuen uns jetzt schon auf das nächste Event!</em>
             </div>
         </div>
 
-        <!-- MEDIA -->
+        <!-- 8. MONTAG (Abreise) -->
         <div class="checkpoint" style="top: 710vh;">
+            <div style="font-size: 4rem;">👋🏡</div>
+            <div class="sign-post">Montag</div>
+            <div class="sign-pole"></div>
+
+            <div class="info-card readable-text reveal">
+                <h2>Abreise (Montag)</h2>
+                <ul>
+                    <li>Aufräumen & Abbau des Camps.</li>
+                    <li>Abschied.</li>
+                    <li><strong>Abreise bis spätestens 14:00 Uhr.</strong></li>
+                </ul>
+                <p>Wir hoffen, ihr hattet eine tolle Zeit! 💚</p>
+                <em>🤝 Bis zum nächsten Mal!</em>
+            </div>
+        </div>
+
+        <!-- 9. MEDIA -->
+        <div class="checkpoint" style="top: 800vh;">
             <div style="font-size: 4rem; text-align: center;">📸🎥</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>📺 Media Galerie</h2>
-                <p style="font-size: 1rem;">Erlebe die Highlights vom letzten Jahr!</p>
+                <p style="font-size: 1rem;">Erlebe die Highlights!</p>
                 <a href="https://raw.githack.com/Digid0t/DigiDot_8/main/gmtw_media.html" target="_blank" class="btn-interact" style="margin-top: 20px; text-decoration: none; display: inline-block;">
                     🎬 ZUR MEDIA GALERIE
                 </a>
             </div>
         </div>
 
-        <!-- FINISH -->
-        <div class="checkpoint" style="top: 810vh;">
+        <!-- 10. FINISH (Hochgeschoben und Inhalt erweitert) -->
+        <div class="checkpoint" style="top: 860vh;">
             <div style="font-size: 6rem; text-align: center;">🏁</div>
             <div class="info-card readable-text visible" style="text-align: center;">
                 <h2>🎉 Ziel erreicht!</h2>
-                <p style="font-size: 1.1rem;">Wir sehen uns vom <strong>03. - 06. April 2026</strong><br>am Hengsteysee!</p>
-                <p style="margin-top: 20px;">
-                    <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #1B5E20; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
-                    🌐 www.gmtw2026.de
+                <p style="font-size: 1.1rem;">Wir sehen uns vom <strong>03. – 06. April 2026</strong><br>in Dortmund!</p>
+                
+                <hr style="margin: 20px 0; border-color: rgba(0,0,0,0.1);">
+
+                <!-- Buttons Container -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
+                    <!-- ANMELDEN BUTTON -->
+                    <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" class="btn-interact" style="flex: 1 1 auto; min-width: 120px;">
+                        📝 Anmelden
+                    </a>
+                    
+                    <!-- PACKLISTE BUTTON -->
+                    <button id="finish-inventory-btn" class="btn-interact" style="flex: 1 1 auto; min-width: 120px;">
+                        🎒 Packliste
+                    </button>
+                    
+                    <!-- KARTE BUTTON -->
+                    <a href="https://www.google.com/maps/place/Campingplatz+Hohensyburg/@51.4201336,7.4925054,17z/data=!4m9!3m8!1s0x47b93d0a8f8d6eb5:0x3c0dc758bedf1d96!5m2!4m1!1i2!8m2!3d51.4201303!4d7.4950857!16s%2Fg%2F11b73qw9pg?authuser=0&entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoKLDEwMDc5MjA2N0gBUAM%3D" target="_blank" class="btn-interact" style="flex: 1 1 auto; min-width: 120px;">
+                        🗺️ Karte
+                    </a>
+                </div>
+
+                <p style="margin-bottom: 20px;">
+                    <strong>Kontakt:</strong><br>
+                    <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026" style="color: #1B5E20; text-decoration: underline;">GermanMuniandTrialWeekend@proton.me</a>
                 </p>
-                <button class="btn-interact" id="restart-btn" style="margin-top: 20px;">
+
+                <p style="font-size: 0.9em;">
+                    <strong>Campingplatz & Preise:</strong><br>
+                    <a href="https://camping-hohensyburg.de/" target="_blank" style="color: #1B5E20; text-decoration: underline;">camping-hohensyburg.de</a>
+                </p>
+
+                <button class="btn-interact" id="restart-btn" style="margin-top: 20px; background: #555; border-color: #999;">
                     ↺ NOCHMAL FAHREN
                 </button>
             </div>
@@ -970,8 +1058,11 @@
     <!-- Inventory Overlay -->
     <div id="inventory">
         <h2>🎒 PACKLISTE</h2>
-        <p>Was brauchst du für das Event? Klicke die Items an, die du einpacken willst!</p>
+        <p>Klicke die Gegenstände an, um sie einzupacken!</p>
+        
+        <!-- Grid container -->
         <div class="inventory-grid" id="inventory-grid"></div>
+        
         <button class="btn-interact" id="close-inventory-btn" style="margin-top: 20px;">
             ✓ FERTIG GEPACKT
         </button>
@@ -1040,29 +1131,70 @@
         // INVENTORY SYSTEM
         // ============================================
         const items = [
-            {icon: '⭕', name: 'Einrad'},
+            // Image item
+            {image: 'https://raw.githack.com/GMTW42/GMTW42.github.io/main/Muni_logo.webp', name: 'Einrad'},
+            
+            // Standard items
             {icon: '⛑️', name: 'Helm'},
-            {icon: '🧤', name: 'Handschuhe'},
+            {icon: '🛡️', name: 'Schoner'},
             {icon: '👟', name: 'Schuhe'},
+            {icon: '👕', name: 'Sportzeug'},
             {icon: '⛺', name: 'Zelt'},
             {icon: '🛏️', name: 'Schlafsack'},
-            {icon: '🍴', name: 'Geschirr'},
-            {icon: '🥘', name: 'Verpflegung'},
+            {icon: '🧣', name: 'Isomatte'},
+            {icon: '😴', name: 'Kissen'},
+            {icon: '🍴', name: 'Geschirr/Becher'},
+            {icon: '🍜', name: 'Essen'},
+            {icon: '💳', name: 'Krankenkasse'},
+            {icon: '🆔', name: 'Ausweis'},
+            {icon: '🔦', name: 'Lampe'},
             {icon: '🚿', name: 'Waschzeug'},
-            {icon: '🔦', name: 'Taschenlampe'},
             {icon: '🔧', name: 'Werkzeug'},
-            {icon: '📱', name: 'Handy'},
+            {icon: '📱', name: 'Handy/Powerbank'},
+            {icon: '🎲', name: 'Spiele'},
+            {icon: '🧻', name: 'Handtuch'},
         ];
 
         const invGrid = document.getElementById('inventory-grid');
         const packedItems = new Set();
 
+        function createParticles(x, y) {
+            const particleCount = 8;
+            for (let i = 0; i < particleCount; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.width = (4 + Math.random() * 4) + 'px';
+                p.style.height = p.style.width;
+                p.style.background = `hsl(${Math.random() * 60 + 40}, 100%, 50%)`;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 50 + Math.random() * 50;
+                p.style.setProperty('--px', Math.cos(angle) * dist + 'px');
+                p.style.setProperty('--py', Math.sin(angle) * dist + 'px');
+                
+                document.body.appendChild(p);
+                setTimeout(() => { if(p.parentNode) p.parentNode.removeChild(p); }, 1500);
+            }
+        }
+
         function initInventory() {
+            invGrid.innerHTML = ''; // Clear existing
+            
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'inventory-item';
+                
+                let contentHtml = '';
+                if (item.image) {
+                    contentHtml = `<img src="${item.image}" class="item-img-custom" alt="${item.name}">`;
+                } else {
+                    contentHtml = `<div class="item-icon">${item.icon}</div>`;
+                }
+                
                 div.innerHTML = `
-                    <div style="font-size: 3rem;">${item.icon}</div>
+                    ${contentHtml}
                     <div class="item-name">${item.name}</div>
                 `;
                 
@@ -1098,17 +1230,13 @@
         }
 
         // ============================================
-        // PARTICLE EFFECTS
-        // ============================================
-
-        // ============================================
         // ACHIEVEMENT SYSTEM
         // ============================================
         function showAchievement(title, description) {
             const popup = document.createElement('div');
             popup.className = 'achievement-popup';
             popup.innerHTML = `
-                <h3>🏆 ${title}</h3>
+                <h3>📜 ${title}</h3>
                 <p>${description}</p>
             `;
             document.body.appendChild(popup);
@@ -1132,15 +1260,14 @@
             popup.style.maxWidth = '400px';
             popup.style.padding = '25px';
             popup.innerHTML = `
-                <h3 style="margin-bottom: 15px;">🎉 Ziel erreicht!</h3>
+                <h3 style="margin-bottom: 15px;">🎉 Ziel erreicht!🏞️</h3>
                 <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;">
                     <strong>Wir sehen uns vom 03. - 06. April 2026</strong><br>
-                    am Hengsteysee!
+                    in Dortmund!
                 </p>
                 <p style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px;">
                     <strong>Weitere Infos & Anmeldung:</strong><br>
-                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20mich%20gerne%20f%C3%BCr%20das%20GMTW%202026%20anmelden." style="color: #fff; text-decoration: underline;">kontakt@gmtw2026.de</a><br>
-                    🌐 www.gmtw2026.de
+                    📧 <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026" style="color: #fff; text-decoration: underline;">Kontakt per Mail</a>
                 </p>
             `;
             document.body.appendChild(popup);
@@ -1210,7 +1337,7 @@
             });
 
             // Day/Night Cycle
-            if (y > window.innerHeight * 3.5) {
+            if (y > window.innerHeight * 4.5) {
                 if (!isNightMode) {
                     isNightMode = true;
                     document.body.style.background = 'linear-gradient(to bottom, var(--sky-night-top), var(--sky-night-bot))';
@@ -1279,11 +1406,11 @@
         // ============================================
         // EVENT LISTENERS
         // ============================================
-
         
         // Button Listeners
         document.getElementById('inventory-btn').addEventListener('click', toggleInventory);
         document.getElementById('close-inventory-btn').addEventListener('click', toggleInventory);
+        document.getElementById('finish-inventory-btn').addEventListener('click', toggleInventory);
         document.getElementById('restart-btn').addEventListener('click', function() {
             window.scrollTo({top: 0, behavior: 'smooth'});
         });
@@ -1318,7 +1445,7 @@
             
             // Welcome achievement
             setTimeout(() => {
-                showAchievement('🎪 Willkommen!',  '🏗️SEITE BEFINDET SICH IM UMBAU!🏗️');
+                showAchievement('🎪 Willkommen!',  '👨‍👩‍👧‍👦GERMAN MUNI AND TRAIL WEEKEND, Spaß für die ganze Familie!👨‍👩‍👧‍👦');
             }, 2500);
         }
 
