@@ -623,6 +623,30 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ============================================
+           STERNEN REGEN ANIMATION (NEU)
+           ============================================ */
+        .star {
+            position: fixed;
+            top: -50px;           /* Startet oberhalb des Bildschirms */
+            z-index: 9999;        /* Über allem anderen */
+            pointer-events: none; /* Nicht klickbar */
+            animation-name: fall;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(120vh) rotate(180deg); /* Fällt bis unter den Bildschirm */
+                opacity: 0;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -652,7 +676,7 @@
         </div>
 
         <div class="controls-panel">
-            <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026" class="btn-interact">Anmeldung</a>
+            <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" class="btn-interact">Anmeldung</a>
             <button class="btn-interact" id="inventory-btn">Packliste</button>
             <a href="https://raw.githack.com/ErSieCode/1Rad/main/Einrad_mini_game.html" target="_blank" class="btn-interact" id="game-btn" style="display: none;">Game</a>
         </div>
@@ -669,27 +693,27 @@
 
     <!-- Hero Character -->
     <div id="hero-stage">
-        <img src="https://raw.githubusercontent.com/Digid0t/DigiDot_8/main/waschbaer_%20einrad.png" alt="GMTL Waschbär auf Einrad" id="hero-img">
+        <img src="https://raw.githubusercontent.com/Digid0t/DigiDot_8/main/waschbaer_%20einrad.png" alt="GMTW Waschbär auf Einrad" id="hero-img">
     </div>
 
     <!-- Content Checkpoints (Spaced out for mobile) -->
     <div class="content-scroll-wrapper">
         
-        <!-- 1. START -->
-        <div class="checkpoint" style="top: 20vh;"> 
-            <div style="font-size: 3.5rem; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));">🎪</div>
-            <div class="info-card readable-text visible">
-                <h2>Willkommen zum GMTW 2026!</h2>
-                <p><strong>📅 03. – 06. April 2026</strong><br>
-                📍 <a href="https://camping-hohensyburg.de/" target="_blank" style="color: inherit; text-decoration: underline;">Campingplatz Hohensyburg</a> in Dortmund</p>
-                <p><strong>Voraussetzungen:</strong> Keine, es sind alle Skill-Level willkommen. Ihr braucht lediglich Spaß am Einradfahren 🦄</p>
-                <hr style="margin: 10px 0; border-color: rgba(0,0,0,0.2);">
-                <p style="font-size: 0.9em;"><strong>📝 Anmeldung:</strong> Per E-Mail (siehe Button oben).<br>
-                <strong>Frist:</strong> bis 20. März 2026.<br>
-                <strong>Limit:</strong> 80 Teilnehmer.<br>
-                <strong>Kosten:</strong> Nur für den Campingplatz (Zahlung vor Ort).</p>
-            </div>
-        </div>
+    <!-- 1. START -->
+<div class="checkpoint" style="top: 20vh;"> 
+    <div style="font-size: 3.5rem; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));">🎪</div>
+    <div class="info-card readable-text visible">
+        <h2>Willkommen zum GMTW 2026!</h2>
+        <p><strong>📅 03. – 06. April 2026</strong><br>
+        📍 <a href="https://camping-hohensyburg.de/" target="_blank" style="color: #2E7D32; font-weight: bold; text-decoration: underline;">Campingplatz Hohensyburg</a> in Dortmund</p>
+        <p><strong>Voraussetzungen:</strong> Keine, es sind alle Skill-Level willkommen. Ihr braucht lediglich Spaß am Einradfahren 🦄</p>
+        <hr style="margin: 10px 0; border-color: rgba(0,0,0,0.2);">
+        <p style="font-size: 0.9em;"><strong>📝 Anmeldung:</strong> Per E-Mail (siehe Button oben).<br>
+        <strong>Frist:</strong> bis 20. März 2026.<br>
+        <strong>Limit:</strong> 80 Teilnehmer.<br>
+        <strong>Kosten:</strong> Nur für den Campingplatz! <a href="https://camping-hohensyburg.de/preise/" target="_blank" style="color: #2E7D32; font-weight: bold; text-decoration: underline;">💰 Preise hier 💰</a> <br /> Zahlung bitte bei uns im Camp an der Anmeldung! Nicht bei der Campingplatz Rezeption, <br /> dort bitte nur euren <strong>Namen</strong> sagen und das ihr zum <strong>GMTW</strong> gehört. 🌈</p>
+    </div>
+</div>
 
         <!-- 2. ANREISE (More spacing) -->
         <div class="checkpoint" style="top: 140vh;">
@@ -702,11 +726,11 @@
                 <p><strong>Campingplatz Hohensyburg</strong><br>
                 Syburger Dorfstraße 69<br>
                 44265 Dortmund</p>
-                <a href="https://www.google.com/maps/place/Campingplatz+Hohensyburg/@51.4201336,7.4925054,17z/data=!4m9!3m8!1s0x47b93d0a8f8d6eb5:0x3c0dc758bedf1d96!5m2!4m1!1i2!8m2!3d51.4201303!4d7.4950857!16s%2Fg%2F11b73qw9pg?authuser=0&entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoKLDEwMDc5MjA2N0gBUAM%3D" target="_blank" style="color: #2E7D32; font-weight: bold; text-decoration: underline;">🗺️ Karte: Hier geht ab!</a>
+                <a href="https://www.google.com/maps/place/Campingplatz+Hohensyburg/@51.4201336,7.4925054,17z/data=!4m9!3m8!1s0x47b93d0a8f8d6eb5:0x3c0dc758bedf1d96!5m2!4m1!1i2!8m2!3d51.4201303!4d7.4950857!16s%2Fg%2F11b73qw9pg?authuser=0&entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoKLDEwMDc5MjA2N0gBUAM%3D" target="_blank" style="color: #2E7D32; font-weight: bold; text-decoration: underline;">🗺️ Karte: Hier geht's ab!</a>
                 <hr style="margin: 10px 0; border-color: rgba(0,0,0,0.2);">
                 <ul style="margin-top: 10px;">
                     <li><strong>Ankunft:</strong> Ab Donnerstag 15:00 Uhr möglich.</li>
-                    <li><strong>Check-In:</strong> Einfach nach <strong>GMTW</strong> fragen.</li>
+                    <li><strong>Check-In:</strong> Einfach an der Rezeption vom Campingplatz Hohensyburg nach <strong>GMTW</strong> fragen und euren <strong>Namen</strong> sagen.  <br />Dann folgt dem <a href="https://raw.githubusercontent.com/GMTW42/GMTW42.github.io/main/Lageplan.png" target="_blank" style="color: #2E7D32; font-weight: bold; text-decoration: underline;">🧭 Lageplan 🧭</a> bis zum Camp, hier steht die Anmeldung bereit.</li>
                 </ul>
             </div>
         </div>
@@ -741,7 +765,7 @@
                 <ul>
                     <li><strong>15:00 – 20:00:</strong> Anreise möglich.</li>
                     <li><strong>17:00:</strong> Begrüßung, Infos & Camp-Regeln. Im Anschluss Zelte aufbauen, Camp einrichten, freies Fahren, Trial aufbauen.</li>
-                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️, gemütliches Zusammensitzen / Spielen / Musik machen.</li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️ gemütliches zusammensitzen / Spielen / Musik machen.</li>
                 </ul>
             </div>
         </div>
@@ -762,7 +786,7 @@
                     <li><strong>09:30:</strong> Gruppeneinteilung für Muni-Touren (Leicht, mittel, schwer). Im Anschluss geführte Muni-Touren.</li>
                     <li><strong>13:00:</strong> Mittagspause im Camp.</li>
                     <li><strong>14:00:</strong> Weitere Muni-Touren oder Trial im Camp je nach Belieben.</li>
-                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️, gemütliches zusammensitzen / Spielen / Musik.</li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️ gemütliches zusammensitzen / Spielen / Musik.</li>
                 </ul>
             </div>
         </div>
@@ -780,7 +804,7 @@
                     <li><strong>09:30:</strong> Muni-Touren & Trial Parcours.</li>
                     <li><strong>13:00:</strong> Mittagspause im Camp.</li>
                     <li><strong>14:00:</strong> Spaß Speed-Trial Wettbewerb für die die möchten, Stillstand Battles, Rail Challenges oder einfach normal Trialen & üben.</li>
-                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️</li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️ gemütliches zusammensitzen / Spielen / Musik machen.</li>
                 </ul>
             </div>
         </div>
@@ -798,7 +822,7 @@
                     <li><strong>09:30:</strong> Muni & Trial, Paletten Hoch- & Weitsprung (Rasenuntergrund).</li>
                     <li><strong>13:00:</strong> Mittagspause.</li>
                     <li><strong>14:00:</strong> Spaß Hoch- & Weitsprung Wettbewerb, Muni & Trial.</li>
-                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️</li>
+                    <li><strong>ab 20:00:</strong> Lagerfeuer🔥🏕️ gemütliches zusammensitzen / Spielen / Musik machen.</li>
                 </ul>
             </div>
         </div>
@@ -816,8 +840,10 @@
                     <li>Abschied.</li>
                     <li><strong>Abreise bis spätestens 14:00 Uhr.</strong></li>
                 </ul>
-                <p>Wir hoffen, ihr hattet eine tolle Zeit! 💚</p>
-                <em>🤝 Bis zum nächsten Mal!</em>
+                <!-- Komma entfernt -->
+                <p> Bis zum nächsten GMTW! 💚</p>
+                <!-- Tippfehler korrigiert: EinradfahRern -->
+                <em>Packt euch etwas verpflegung für die Fahrt ein. </em>
             </div>
         </div>
 
@@ -842,34 +868,54 @@
                 
                 <hr style="margin: 20px 0; border-color: rgba(0,0,0,0.1);">
 
-                <!-- Buttons Container - Wraps nicely on mobile -->
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
-                    <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" class="btn-interact" style="flex: 1 1 120px;">
-                        📝 Anmelden
-                    </a>
-                    <button id="finish-inventory-btn" class="btn-interact" style="flex: 1 1 120px;">
-                        🎒 Packliste
-                    </button>
-                    <a href="https://www.google.com/maps/place/Campingplatz+Hohensyburg/@51.4201336,7.4925054,17z/data=!4m9!3m8!1s0x47b93d0a8f8d6eb5:0x3c0dc758bedf1d96!5m2!4m1!1i2!8m2!3d51.4201303!4d7.4950857!16s%2Fg%2F11b73qw9pg?authuser=0&entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoKLDEwMDc5MjA2N0gBUAM%3D" target="_blank" class="btn-interact" style="flex: 1 1 120px;">
-                        🗺️ Karte
-                    </a>
-                </div>
+                <!-- Buttons Container -->
+<div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
+    
+    <!-- 1. Anmelden -->
+    <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" class="btn-interact" style="flex: 1 1 120px;">
+        📝 Anmelden
+    </a>
 
-                <p style="font-size: 0.85em; margin-bottom: 10px;">
-                    <strong>Campingplatz & Preise:</strong><br>
-                    <a href="https://camping-hohensyburg.de/" target="_blank" style="color: #1B5E20; text-decoration: underline;">camping-hohensyburg.de</a>
-                </p>
-                
-                <p style="font-size: 0.8em; margin-top: 10px;">
-                     <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" style="color: #1B5E20; text-decoration: underline;">Kontakt per Mail</a>
-                </p>
+    <!-- 2. Packliste -->
+    <button id="finish-inventory-btn" class="btn-interact" style="flex: 1 1 120px;">
+        🎒 Packliste
+    </button>
 
-                <button class="btn-interact" id="restart-btn" style="margin-top: 20px; background: #555; border-color: #999;">
-                    ↺ NOCHMAL FAHREN
-                </button>
-            </div>
-        </div>
+    <!-- 3. Karte -->
+    <a href="https://www.google.com/maps/place/Campingplatz+Hohensyburg/@51.4201336,7.4925054,17z/data=!4m9!3m8!1s0x47b93d0a8f8d6eb5:0x3c0dc758bedf1d96!5m2!4m1!1i2!8m2!3d51.4201303!4d7.4950857!16s%2Fg%2F11b73qw9pg?authuser=0&entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoKLDEwMDc5MjA2N0gBUAM%3D" target="_blank" class="btn-interact" style="flex: 1 1 120px;">
+        🗺️ Karte
+    </a>
+
+    <!-- 4. Preise  -->
+    <a href="https://camping-hohensyburg.de/preise/" target="_blank" class="btn-interact" style="flex: 1 1 120px;">
+    💰 Preise
+</a>
+</div>
+
+<p style="font-size: 0.85em; margin-bottom: 10px;">
+    <a href="https://camping-hohensyburg.de/preise/" target="_blank" style="color: #1B5E20; text-decoration: underline;">Preise für das Event</a>
+</p>
+
+<p style="font-size: 0.85em; margin-bottom: 10px;">
+    <a href="https://camping-hohensyburg.de/" target="_blank" style="color: #1B5E20; text-decoration: underline;">camping-hohensyburg.de</a>
+</p>
+
+<p style="font-size: 0.8em; margin-top: 10px;">
+        <a href="mailto:GermanMuniandTrialWeekend@proton.me?subject=Anmeldung%20GMTW%202026&body=Liebes%20GMTW%20Team%2C%0A%0Ahiermit%20m%C3%B6chte%20ich%20mich%20verbindlich%20anmelden.%0A%0ATEILNAHMEZEITRAUM%2003.%20bis%2006.04.%0AIch%20nehme%20vom%20___%20bis%20zum%20___%20am%20Event%20teil.%0A%0ABITTE%20ZUTREFFENDES%20MIT%20EINEM%20X%20MARKIEREN%0A%0A1.%20ALTER%20BEI%20BEGINN%0A%20o%20Ich%20bin%20unter%2016%20Jahre%20alt%0A%20o%20Ich%20bin%2016%20oder%2017%20Jahre%20alt%0A%20o%20Ich%20bin%2018%20Jahre%20alt%20oder%20aelter%0A%0A2.%20ERZIEHUNGSBERECHTIGTER%20-%20nur%20unter%2018%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20ebenfalls%20teil%0A%20o%20Ein%20Erziehungsberechtigter%20nimmt%20nicht%20teil%20-%20Erklaerung%20im%20Anhang%0A%20o%20Nicht%20zutreffend%0A%0A3.%20UEBERNACHTUNG%0A%20o%20Ich%20schlafe%20im%20eigenen%20Zelt%0A%20o%20Ich%20schlafe%20im%20eigenen%20Camper%20oder%20Wohnmobil%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Zelt%0A%20o%20Ich%20schlafe%20bei%20anderer%20Person%20im%20Camper%0A%0A4.%20ANREISE%20MIT%20AUTO%0A%20o%20Ich%20brauche%20einen%20Stellplatz%0A%20o%20Ich%20brauche%20keinen%20Stellplatz%0A%0AVielen%20Dank%0A%0ADEIN%20NAME%0A" style="color: #1B5E20; text-decoration: underline;">Kontakt per Mail</a>
+</p>
+
+<!-- Komma entfernt -->
+                <p> 📬 Meldet euch jetzt einfach per E-Mail an! 💚</p>
+                <!-- Tippfehler korrigiert: EinradfahRern -->
+                <em>💲 Bezahlt 💲 wird bei uns Einradfahrern im Camp, wir haben eine Anmeldung! 🗃️ </em>
+
+<button class="btn-interact" id="restart-btn" style="margin-top: 20px; background: #555; border-color: #999;">
+    ↺ NOCHMAL FAHREN
+</button>
+
+
     </div>
+</div>
 
     <!-- Inventory Overlay -->
     <div id="inventory">
@@ -1021,7 +1067,8 @@
                     document.body.style.background = 'linear-gradient(to bottom, var(--sky-night-top), var(--sky-night-bot))';
                     document.getElementById('bg-mountains').style.opacity = '0.2';
                 }
-                if (Math.random() < 0.03) createStar();
+                // HIER WURDE DIE ZUFÄLLIGE STERN-ERZEUGUNG DEAKTIVIERT
+                // if (Math.random() < 0.03) createStar();
             } else {
                 if (isNightMode) {
                     isNightMode = false;
@@ -1051,27 +1098,42 @@
             requestAnimationFrame(gameLoop);
         }
 
-        function createStar() {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.textContent = '✨';
-            star.style.left = (Math.random() * 100) + '%';
-            star.style.top = (Math.random() * 50) + '%';
-            star.style.fontSize = (10 + Math.random() * 20) + 'px';
-            document.body.appendChild(star);
-            setTimeout(() => { if (star.parentNode) star.parentNode.removeChild(star); }, 2000);
+        // ============================================
+        // NEUE STERNEN-REGEN LOGIK (NOCHMAL FAHREN)
+        // ============================================
+        function triggerStarRain() {
+            const starCount = 100; // Anzahl der Sterne
+            for (let i = 0; i < starCount; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.textContent = '✨'; 
+                    star.style.left = Math.random() * 100 + 'vw';
+                    star.style.fontSize = (15 + Math.random() * 30) + 'px';
+                    const duration = 1.5 + Math.random() * 1.5;
+                    star.style.animationDuration = duration + 's';
+                    document.body.appendChild(star);
+                    setTimeout(() => { if (star.parentNode) star.parentNode.removeChild(star); }, duration * 1000); 
+                }, i * 30);
+            }
         }
 
         document.getElementById('inventory-btn').addEventListener('click', toggleInventory);
         document.getElementById('close-inventory-btn').addEventListener('click', toggleInventory);
         document.getElementById('finish-inventory-btn').addEventListener('click', toggleInventory);
-        document.getElementById('restart-btn').addEventListener('click', function() { window.scrollTo({top: 0, behavior: 'smooth'}); });
+        
+        // RESTART BUTTON MIT STERNENREGEN
+        document.getElementById('restart-btn').addEventListener('click', function() { 
+            window.scrollTo({top: 0, behavior: 'smooth'}); 
+            triggerStarRain();
+        });
+        
         window.addEventListener('keydown', function(e) { if (e.key === 'Escape') { const inv = document.getElementById('inventory'); if (inv.style.display === 'flex') toggleInventory(); } });
 
         function init() {
             createClouds();
             initInventory();
-            setTimeout(() => { loadingScreen.classList.add('hidden'); }, 1500);
+            setTimeout(() => { loadingScreen.classList.add('hidden'); }, 500);
             requestAnimationFrame(gameLoop);
             setTimeout(() => { showAchievement('🎪 Willkommen!', '👨‍👩‍👧‍👦GERMAN MUNI AND TRAIL WEEKEND, Spaß für die ganze Familie!👨‍👩‍👧‍👦'); }, 2500);
         }
