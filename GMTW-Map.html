@@ -169,7 +169,7 @@
       <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M0 1H18M0 7H12M0 13H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>
     <div id="titlepill">
-      <div class="logobadge">MTB</div>
+      <div class="logobadge">MUNI</div>
       <div><div class="ttl">GMTW Trail Map</div><div class="tsub">Hohensyburg · Herdecke</div></div>
     </div>
     <button class="ibtn" id="layer-btn" onclick="toggleLayer()" aria-label="Karte wechseln">
@@ -251,14 +251,17 @@ const LOCS = [
   // BEGINNER
   { id:"muni",     name:"Muni Start Beginner/Mittel", lat:51.421812, lng:7.492612, color:"#22c55e", emoji:"🚩", cat:"beginner", desc:"Startpunkt für Muni-Fahrer aller Levels" },
   { id:"ein-beg",  name:"Einstieg Beginner",          lat:51.419668, lng:7.484089, color:"#22c55e", emoji:"🟢", cat:"beginner", desc:"Haupteinstieg für Anfänger" },
-  { id:"ein-bm",   name:"Einstieg Beginner/Mittel",   lat:51.420606, lng:7.483587, color:"#22c55e", emoji:"🟡", cat:"beginner", desc:"Gemischter Einstieg — Beginner & Mittel" },
-  { id:"end-ein",  name:"Ende einfach",               lat:51.418374, lng:7.478817, color:"#22c55e", emoji:"🏁", cat:"beginner", desc:"Ziel der einfachen Strecke" },
+  { id:"ein-bm",   name:"Einstieg Beginner/Mittel",   lat:51.420365, lng:7.483406, color:"#22c55e", emoji:"🟡", cat:"beginner", desc:"Gemischter Einstieg — Beginner & Mittel" },
+  { id:"end-ein",  name:"Ende Beginner",               lat:51.418374, lng:7.478817, color:"#22c55e", emoji:"🏁", cat:"beginner", desc:"Ziel der einfachen Strecke" },
   // MITTEL
-  { id:"ein-mit",  name:"Einstieg Mittel",            lat:51.421703, lng:7.478925, color:"#f59e0b", emoji:"🟡", cat:"mittel",   desc:"Einstieg in die mittlere Strecke" },
+  { id:"ein-mit",  name:"Einstieg Mittel",            lat:51.423421, lng:7.480829, color:"#f59e0b", emoji:"🟡", cat:"mittel",   desc:"Einstieg in die mittlere Strecke" },
   { id:"end-mit",  name:"Ende Mittel",                lat:51.418704, lng:7.477420, color:"#f59e0b", emoji:"🏁", cat:"mittel",   desc:"Ziel der mittleren Strecke" },
+  { id:"sam-mit",  name:"Sammelpunkt Mittel",          lat:51.423371, lng:7.513606, color:"#f59e0b", emoji:"👥", cat:"mittel",   desc:"Treffpunkt für die mittlere Strecken" },
+  { id:"ziel-mit", name:"Ziel Mittel",                 lat:51.419329, lng:7.511120, color:"#f59e0b", emoji:"🏆", cat:"mittel",   desc:"Ziel der mittleren Strecken (Ruhrbereich)" },
   // EXPERT
   { id:"st-exp",   name:"Start Expert",               lat:51.418657, lng:7.477602, color:"#ef4444", emoji:"💀", cat:"expert",   desc:"Nur für erfahrene Fahrer!" },
-  { id:"exp-zone", name:"Expert Zone",                lat:51.418692, lng:7.475410, color:"#ef4444", emoji:"⚠️", cat:"expert",  desc:"Hochanspruchsvolles Gelände — Helm Pflicht!" },
+  { id:"exp-zone", name:"Expert Zone",                lat:51.418692, lng:7.475410, color:"#ef4444", emoji:"⚠️", cat:"expert",  desc:"Hochanspruchsvolles Gelände" },
+  { id:"exp-kurs", name:"Zerstörer",                lat:51.416403, lng:7.453939, color:"#ef4444", emoji:"🎇️", cat:"expert",  desc:"Hochanspruchsvolles Strecken links sehr schwer, rechts schwer" },
   // LOGISTIK
   { id:"camp",      name:"GMTW Camp",             lat:51.417704, lng:7.494867, color:"#38bdf8", emoji:"⛺", cat:"logistik", desc:"Hauptcamp des Events — Basisstation", large:true },
   { id:"camp-tor",  name:"Camp Tor",              lat:51.417482, lng:7.490904, color:"#38bdf8", emoji:"🚧", cat:"logistik", desc:"Haupteingang zum GMTW Camp" },
