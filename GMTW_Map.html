@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <!-- Wichtig für iOS/Android App-Feeling: Kein Zoomen, Fullscreen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GMTW Map">
+    <title>GMTW Event Streckenplan</title>
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root {
+            --bg: #f8f9fa; --surface: #ffffff; --text: #202124; --text-light: #5f6368;
+            --primary: #1a73e8; --primary-hover: #1557b0; --border: #dadce0; --shadow: rgba(0,0,0,0.25);
+        }
+
+        /* Reset */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; background: #e0e0e0; -webkit-tap-highlight-color: transparent; }
+        #map { width: 100%; height: 100%; z-index: 1; }
+
+        /* Floating UI Buttons */
+        .top-bar { position: absolute; top: 15px; left: 15px; z-index: 1000; }
+        
+        .icon-btn { 
+            background: var(--surface); border: none; width: 50px; height: 50px; 
+            border-radius: 50%; box-shadow: 0 4px 10px var(--shadow);
+            font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.1s, background 0.2s; color: var(--text);
+        }
+        .icon-btn:active { transform: scale(0.92); background: #f1f3f4; }
+        
+        /* GPS Button Position - 90px Abstand nach unten, damit die +/- Tasten der Karte frei bleiben */
+        .locate-btn { position: absolute; bottom: 90px; right: 15px; z-index: 1000; }
+
+        /* Sidebar / Legende */
+        #sidebar {
+            position: absolute; top: 0; left: 0; width: 340px; max-width: 85%; height: 100%;
+            background: var(--surface); z-index: 2000; box-shadow: 4px 0 20px var(--shadow);
+            transform: translateX(-105%); /* Hardware-beschleunigtes Verstecken */
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex; flex-direction: column;
+        }
+        #sidebar.open { transform: translateX(0); }
+        
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); }
+        .sidebar-header h2 { margin: 0; font-size: 18px; color: var(--text); }
+        .close-btn { background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--text-light); padding: 0; }
+
+        .sidebar-content { overflow-y: auto; flex-grow: 1; padding: 10px 0; -webkit-overflow-scrolling: touch; }
+        
+        .list-item { padding: 12px 20px; border-bottom: 1px solid #f1f3f4; transition: background 0.2s; }
+        .list-item:active { background: #f1f3f4; }
+        .list-header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; cursor: pointer; }
+        .list-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .list-title { font-weight: bold; font-size: 15px; color: var(--text); }
+        
+        .list-actions { display: flex; gap: 8px; margin-left: 50px; }
+        .action-chip { 
+            background: #f1f3f4; border: none; padding: 8px 14px; border-radius: 20px; 
+            font-size: 13px; font-weight: bold; color: var(--primary); cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; gap: 6px; flex-grow: 1;
+        }
+        .action-chip:active { background: #e8eaed; }
+        .action-chip.primary { background: var(--primary); color: white; }
+        .action-chip.primary:active { background: var(--primary-hover); }
+
+        /* Hintergrund-Verdunkelung */
+        #backdrop {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1500; opacity: 0; visibility: hidden; transition: opacity 0.3s;
+        }
+        #backdrop.show { opacity: 1; visibility: visible; }
+
+        /* MARKER PINS AUF DER KARTE */
+        .custom-pin-wrap { position: relative; width: 40px; height: 50px; display: flex; justify-content: center; outline: none; }
+        .custom-pin {
+            width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+            border: 2px solid white; box-shadow: 2px 2px 8px rgba(0,0,0,0.5); 
+            display: flex; justify-content: center; align-items: center;
+        }
+        /* Perfekte Emoji-Zentrierung für iOS & Android */
+        .pin-emoji { transform: rotate(45deg); font-size: 16px; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; padding-bottom: 2px; padding-right: 2px; box-sizing: border-box; }
+        
+        /* Text-Labels unter den Markern (durchklickbar!) */
+        .map-label {
+            background: transparent !important; border: none !important; box-shadow: none !important;
+            color: white; font-weight: 800; font-size: 12px; letter-spacing: 0.5px;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0px 3px 6px rgba(0,0,0,0.9);
+            margin-top: -2px; 
+            pointer-events: none; /* WICHTIG: Erlaubt Klicks DURCH den Text direkt auf den Marker */
+        }
+
+        /* Popups auf der Karte */
+        .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); padding: 5px; }
+        .leaflet-popup-content { margin: 15px; min-width: 200px; text-align: center; }
+        .popup-emoji { font-size: 32px; margin-bottom: 5px; display: block; }
+        .popup-title { margin: 0 0 15px 0; font-size: 16px; font-weight: bold; color: var(--text); }
+
+        /* QR-Code & Teilen Modal */
+        #qrModal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            background: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            z-index: 3000; opacity: 0; visibility: hidden; transition: all 0.2s ease-out; text-align: center; width: 85%; max-width: 320px; box-sizing: border-box;
+        }
+        #qrModal.show { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+        #qrModal img { width: 180px; height: 180px; margin: 15px auto; display: block; border-radius: 8px; border: 1px solid #eee; padding: 5px; }
+        
+        /* 16px verhindert, dass iPhones beim Reinklicken automatisch reinzoomen */
+        #qrModal input { 
+            width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid var(--border); 
+            border-radius: 10px; font-size: 16px; margin-bottom: 15px; color: var(--text-light); background: #f8f9fa; outline: none;
+        }
+        .modal-buttons { display: flex; gap: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- UI Overlay Oben -->
+    <div class="top-bar">
+        <button class="icon-btn" onclick="toggleMenu()" title="Legende">☰</button>
+    </div>
+    
+    <!-- GPS Location Button -->
+    <button class="icon-btn locate-btn" onclick="locateUser()" title="Standort">🎯</button>
+
+    <!-- Dunkler Hintergrund bei offenen Menüs -->
+    <div id="backdrop" onclick="closeAllOverlays()"></div>
+
+    <!-- Sidebar Legende -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h2>GMTW Streckenplan</h2>
+            <button class="close-btn" onclick="closeAllOverlays()">×</button>
+        </div>
+        <div class="sidebar-content" id="legend-list">
+            <!-- Wird von JS gefüllt -->
+        </div>
+    </div>
+
+    <!-- QR Teilen Modal -->
+    <div id="qrModal">
+        <h3 style="margin:0 0 5px 0; color:var(--text)" id="qrTitle">Marker teilen</h3>
+        <p style="font-size:13px; color:var(--text-light); margin:0; line-height: 1.4;">Code scannen oder Link kopieren.</p>
+        
+        <img id="qrImage" src="" alt="QR Code laden...">
+        
+        <input type="text" id="shareLink" readonly onclick="this.select()">
+        
+        <div class="modal-buttons">
+            <button class="action-chip" onclick="closeAllOverlays()">Schließen</button>
+            <button class="action-chip primary" onclick="copyLink()">📋 Kopieren</button>
+        </div>
+    </div>
+
+    <!-- Die Karte -->
+    <div id="map"></div>
+
+    <script>
+        // ==========================================
+        // 1. DATEN-BASIS (Logische Emojis & Korrekturen)
+        // ==========================================
+        const locations = [
+            { id: "camp", name: "GMTW Camp", lat: 51.417704, lng: 7.494867, color: "#388e3c", emoji: "⛺" },
+            { id: "muni", name: "Muni Start Beginner / Mittel", lat: 51.421812, lng: 7.492612, color: "#d32f2f", emoji: "🚩" },
+            { id: "ein-beg", name: "Einstieg Beginner", lat: 51.419668, lng: 7.484089, color: "#4caf50", emoji: "🟢" },
+            { id: "ein-beg-mit", name: "Einstieg Beginner/Mittel", lat: 51.420702, lng: 7.483682, color: "#fbc02d", emoji: "🟡" },
+            { id: "ein-mit", name: "Einstieg Mittel", lat: 51.421702, lng: 7.478925, color: "#ff9800", emoji: "🟠" },
+            { id: "sam-camp", name: "Sammelpunkt zu Camp", lat: 51.418163, lng: 7.478551, color: "#d32f2f", emoji: "👥" },
+            { id: "sam-beg", name: "Sammelpunkt Beginner", lat: 51.419798, lng: 7.484684, color: "#1a73e8", emoji: "👥" },
+            { id: "end-mit", name: "Ende Mittel", lat: 51.418704, lng: 7.477420, color: "#ff9800", emoji: "🏁" },
+            { id: "end-ein", name: "Ende einfach", lat: 51.418374, lng: 7.478817, color: "#4caf50", emoji: "🏁" },
+            { id: "st-exp", name: "Start Expert", lat: 51.418657, lng: 7.477602, color: "#9c27b0", emoji: "🔴" },
+            { id: "exp-zone", name: "Expert zone", lat: 51.418692, lng: 7.474000, color: "#212121", emoji: "💀" }, // Extra nach links verschoben
+            { id: "camp-tor", name: "Camp Tor", lat: 51.417482, lng: 7.490904, color: "#795548", emoji: "🚪" },
+            { id: "wc", name: "Dusche / WC", lat: 51.418808, lng: 7.493754, color: "#03a9f4", emoji: "🚿" },
+            { id: "camping", name: "Campingplatz Hohensyburg", lat: 51.419200, lng: 7.495500, color: "#ff9800", emoji: "⛺" }
+        ];
+
+        // Die gelbe gestrichelte Linie
+        const wegZurueck = [
+            [51.418146, 7.478489],
+            [51.417421, 7.490685]
+        ];
+
+        let mapMarkers = {}; // Speichert die Leaflet Marker-Objekte
+
+        // ==========================================
+        // 2. KARTEN-INITIALISIERUNG
+        // ==========================================
+        // tap: false ist extrem wichtig für iOS Safari, sonst gehen Klicks teilweise verloren
+        var map = L.map('map', { zoomControl: false, tap: false }).setView([51.419, 7.485], 16);
+        
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // Map Layers
+        var topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenTopoMap' }).addTo(map);
+        var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '© Esri' });
+
+        // Layer-Wechsler oben rechts
+        L.control.layers({ "🌲 Topografie & Trails": topoLayer, "🌍 Satellit (3D)": satLayer }, null, {position: 'topright'}).addTo(map);
+
+        // Linie auf Karte zeichnen
+        L.polyline(wegZurueck, {color: '#fbc02d', weight: 4, dashArray: '10, 10'}).addTo(map)
+         .bindTooltip("Weg zurück", {permanent: true, direction: 'center', className: 'map-label'});
+
+        // ==========================================
+        // 3. MARKER & LEGENDE ERSTELLEN
+        // ==========================================
+        const legendContainer = document.getElementById('legend-list');
+
+        locations.forEach(loc => {
+            // A. SVG Design für Marker
+            let customIcon = L.divIcon({
+                className: '', 
+                html: `
+                    <div class="custom-pin-wrap">
+                        <div class="custom-pin" style="background-color: ${loc.color};">
+                            <span class="pin-emoji">${loc.emoji}</span>
+                        </div>
+                    </div>`,
+                iconSize: [40, 50], iconAnchor: [20, 50], popupAnchor: [0, -45]
+            });
+
+            // B. Marker platzieren
+            let marker = L.marker([loc.lat, loc.lng], {icon: customIcon}).addTo(map);
+            
+            // Name unter Marker anheften
+            marker.bindTooltip(loc.name, {
+                permanent: true, direction: 'bottom', offset: [0, 5], className: 'map-label'
+            });
+
+            // Popup beim Anklicken des Markers generieren
+            let popupHTML = `
+                <div class="popup-emoji">${loc.emoji}</div>
+                <h3 class="popup-title">${loc.name}</h3>
+                <button class="action-chip primary" style="width:100%; margin-bottom:8px;" onclick="navTo(${loc.lat}, ${loc.lng})">🧭 Route starten</button>
+                <button class="action-chip" style="width:100%;" onclick="shareLoc('${loc.id}', '${loc.name}')">🔗 Marker teilen</button>
+            `;
+            marker.bindPopup(popupHTML);
+
+            mapMarkers[loc.id] = marker; // Ins Verzeichnis aufnehmen
+
+            // C. Sidebar/Legende befüllen
+            let listItem = document.createElement('div');
+            listItem.className = 'list-item';
+            listItem.innerHTML = `
+                <div class="list-header" onclick="focusMarker('${loc.id}')">
+                    <div class="list-icon" style="background-color: ${loc.color};">${loc.emoji}</div>
+                    <div class="list-title">${loc.name}</div>
+                </div>
+                <div class="list-actions">
+                    <button class="action-chip primary" onclick="navTo(${loc.lat}, ${loc.lng})">🧭 Route</button>
+                    <button class="action-chip" onclick="shareLoc('${loc.id}', '${loc.name}')">🔗 Teilen</button>
+                </div>
+            `;
+            legendContainer.appendChild(listItem);
+        });
+
+        // ==========================================
+        // 4. FUNKTIONEN (Sicher & Robust)
+        // ==========================================
+
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('backdrop');
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                backdrop.classList.remove('show');
+            } else {
+                sidebar.classList.add('open');
+                backdrop.classList.add('show');
+            }
+        }
+
+        function closeAllOverlays() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('qrModal').classList.remove('show');
+            document.getElementById('backdrop').classList.remove('show');
+        }
+
+        function focusMarker(id) {
+            closeAllOverlays();
+            let loc = locations.find(l => l.id === id);
+            map.flyTo([loc.lat, loc.lng], 18, { animate: true, duration: 1.2 });
+            setTimeout(() => mapMarkers[id].openPopup(), 1200); // Öffnet Popup nach Kameraflug
+        }
+
+        function navTo(lat, lng) {
+            // Startet Navigation via Google Maps App/Web
+            let url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=bicycling`;
+            window.open(url, '_blank');
+        }
+
+        function shareLoc(id, name) {
+            closeAllOverlays(); 
+            document.getElementById('backdrop').classList.add('show');
+            
+            // Saubere URL bauen (schneidet eventuell alte ?loc Parameter ab)
+            let baseUrl = window.location.origin + window.location.pathname;
+            let shareUrl = `${baseUrl}?loc=${id}`;
+            let qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}&margin=10`;
+            
+            document.getElementById('qrTitle').innerText = name;
+            document.getElementById('qrImage').src = qrSrc;
+            document.getElementById('shareLink').value = shareUrl;
+            
+            document.getElementById('qrModal').classList.add('show');
+        }
+
+        function copyLink() {
+            let linkInput = document.getElementById('shareLink');
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999); // Für Safari auf iOS
+            
+            // Moderne Clipboard API
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(linkInput.value).then(() => {
+                    alert("✅ Link erfolgreich kopiert!");
+                }).catch(() => {
+                    document.execCommand('copy');
+                    alert("✅ Link erfolgreich kopiert!");
+                });
+            } else {
+                // Fallback für ältere Browser
+                document.execCommand('copy');
+                alert("✅ Link erfolgreich kopiert!");
+            }
+        }
+
+        // GPS Ortung
+        let userMarker = null;
+        function locateUser() {
+            if (!navigator.geolocation) {
+                alert("Dein Browser unterstützt kein GPS.");
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    let lat = pos.coords.latitude, lng = pos.coords.longitude;
+                    map.flyTo([lat, lng], 17, { animate: true, duration: 1 });
+                    
+                    if(userMarker) map.removeLayer(userMarker);
+                    
+                    userMarker = L.circleMarker([lat, lng], { 
+                        radius: 8, fillColor: "#1a73e8", color: "#fff", weight: 3, fillOpacity: 1 
+                    }).addTo(map);
+                    userMarker.bindPopup("<b>Dein aktueller Standort</b>").openPopup();
+                }, 
+                err => {
+                    alert("GPS Zugriff fehlgeschlagen. Bitte erlaube den Standort in den Browser-Einstellungen.");
+                }, 
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        }
+
+        // ==========================================
+        // 5. DEEP LINKING (Beim Laden prüfen)
+        // ==========================================
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const targetId = params.get('loc');
+            
+            if (targetId && mapMarkers[targetId]) {
+                setTimeout(() => {
+                    let loc = locations.find(l => l.id === targetId);
+                    map.flyTo([loc.lat, loc.lng], 19, { animate: true, duration: 1.5 });
+                    setTimeout(() => mapMarkers[targetId].openPopup(), 1500);
+                }, 400); // 400ms warten, damit die Kartenkacheln sauber laden können
+            }
+        };
+
+    </script>
+</body>
+</html>
