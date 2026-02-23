@@ -224,7 +224,7 @@
 <!-- QR MODAL -->
 <div id="qrm">
   <div class="qr-nm" id="qr-nm">Standort</div>
-  <div class="qr-hint">QR-Code scannen oder Link teilen</div>
+  <div class="qr-hint">QR scannen → startet Navigation in Google Maps</div>
   <div id="qr-wrap"><img id="qr-img" src="" alt="QR Code" crossorigin="anonymous"></div>
   <input id="qr-inp" type="text" readonly onclick="this.select()">
   <div class="qr-acts">
@@ -325,9 +325,9 @@ function mkPopup(loc){
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L12 6.5L6.5 12M1 6.5H11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Navigation
       </button>
-      <button class="pbtn shr" onclick="openQR('${loc.id}')">
+      <button class="pbtn shr" onclick="openQR('${loc.id}')" title="QR-Code für Navigation">
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="12" cy="3" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="3" cy="7.5" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 9L10 11M5 6L10 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        QR
+        Nav-QR
       </button>
     </div>
   </div>`;
@@ -415,31 +415,47 @@ function navTo(lat,lng,name){
   const ua=navigator.userAgent||'';
   const isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
   const isAndroid=/Android/i.test(ua);
+  const gmapsUrl=`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=bicycling`;
+
   if(isIOS){
-    // Apple Maps native
-    window.location.href=`maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d&t=m`;
+    // Apple Maps App via maps:// — blur-Event prüft ob App geöffnet hat
+    let appOpened=false;
+    const onBlur=()=>{appOpened=true};
+    window.addEventListener('blur',onBlur,{once:true});
+    window.location.href=`maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+    setTimeout(()=>{
+      window.removeEventListener('blur',onBlur);
+      if(!appOpened) window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`,'_blank');
+    },700);
+
   } else if(isAndroid){
-    // Google Maps App Intent
-    window.location.href=`google.navigation:q=${lat},${lng}&mode=b`;
-    setTimeout(()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=bicycling`,'_blank'),900);
+    // Android Intent-URL: öffnet Google Maps App, browser_fallback_url = kein double-fire
+    const fallback=encodeURIComponent(gmapsUrl);
+    const intentUrl=`intent://maps.google.com/maps?daddr=${lat},${lng}&dirflg=b#Intent;scheme=https;package=com.google.android.apps.maps;S.browser_fallback_url=${fallback};end`;
+    window.location.href=intentUrl;
+
   } else {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=bicycling`,'_blank');
+    window.open(gmapsUrl,'_blank');
   }
 }
 
 // ───────────────────────────────────────────────────────────
 // QR SHARE + DOWNLOAD
 // ───────────────────────────────────────────────────────────
+// QR immer → Google Maps Navigation URL (universal, iOS + Android + Desktop)
 let curQrUrl='';
+let curQrLocId='';
 
 function openQR(id){
   const loc=LOCS.find(l=>l.id===id); if(!loc)return;
-  const base=window.location.origin+window.location.pathname;
-  curQrUrl=`${base}?loc=${id}`;
+  // Universal Google Maps URL — öffnet auf Handy die App, auf Desktop den Browser
+  curQrUrl=`https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=bicycling`;
+  curQrLocId=id;
   const qrSrc=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(curQrUrl)}&bgcolor=ffffff&color=0b0e14&margin=12&format=png`;
   document.getElementById('qr-nm').textContent=loc.name;
   const img=document.getElementById('qr-img');
-  img.src=''; img.src=qrSrc;
+  img.src=''; // Reset zuerst, damit onload sicher feuert
+  img.src=qrSrc;
   document.getElementById('qr-inp').value=curQrUrl;
   closeAll();
   document.getElementById('qrm').classList.add('show');
@@ -449,22 +465,35 @@ function openQR(id){
 function copyQR(){
   if(!curQrUrl)return;
   if(navigator.clipboard){
-    navigator.clipboard.writeText(curQrUrl).then(()=>toast('✅ Link kopiert!')).catch(()=>{legacyCopy(curQrUrl);toast('✅ Link kopiert!')});
-  } else {legacyCopy(curQrUrl);toast('✅ Link kopiert!')}
+    navigator.clipboard.writeText(curQrUrl)
+      .then(()=>toast('✅ Navigation-Link kopiert!'))
+      .catch(()=>{legacyCopy(curQrUrl);toast('✅ Navigation-Link kopiert!')});
+  } else {legacyCopy(curQrUrl);toast('✅ Navigation-Link kopiert!')}
 }
-function legacyCopy(t){const el=document.createElement('textarea');el.value=t;el.style.cssText='position:fixed;opacity:0';document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el)}
+
+function legacyCopy(t){
+  const el=document.createElement('textarea');
+  el.value=t; el.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';
+  document.body.appendChild(el); el.focus(); el.select();
+  try{document.execCommand('copy')}catch(e){}
+  document.body.removeChild(el);
+}
 
 async function downloadQR(){
   const img=document.getElementById('qr-img');
-  if(!img.src){toast('⏳ Warte…');return}
+  if(!img.src||img.src===window.location.href){toast('⏳ QR wird geladen…');return}
   try{
-    const r=await fetch(img.src),b=await r.blob();
+    const r=await fetch(img.src);
+    if(!r.ok)throw new Error('fetch failed');
+    const b=await r.blob();
     const u=URL.createObjectURL(b),a=document.createElement('a');
-    const locId=curQrUrl.split('?loc=')[1]||'punkt';
-    a.href=u;a.download=`GMTW_${locId}_QR.png`;
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
-    URL.revokeObjectURL(u);toast('⬇ QR gespeichert!');
-  }catch(e){window.open(img.src,'_blank');toast('🔗 QR in neuem Tab')}
+    a.href=u; a.download=`GMTW_${curQrLocId||'punkt'}_Navigation_QR.png`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(u); toast('⬇ QR gespeichert!');
+  }catch(e){
+    // Fallback: direkt öffnen
+    window.open(img.src,'_blank'); toast('🔗 QR in neuem Tab geöffnet');
+  }
 }
 
 // ───────────────────────────────────────────────────────────
