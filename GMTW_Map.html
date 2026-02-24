@@ -2697,19 +2697,22 @@ if(typeof window!=='undefined'){window.qrcode=qrcode;}
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 13V4M6 8L10 4L14 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 16H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         .gpx Datei(en) auswählen oder hierher ziehen
       </label>
-      <input type="file" id="gpx-file-input" accept=".gpx" multiple onchange="handleGpxFiles(this)">
+      <input type="file" id="gpx-file-input" accept=".gpx,application/gpx+xml,application/xml,text/xml" multiple onchange="handleGpxFiles(this)">
     </div>
     <!-- URL laden -->
     <div class="gpx-section">
       <span class="gpx-label">GPX per URL laden</span>
       <div class="gpx-row" style="margin-bottom:6px">
-        <input class="gpx-input" id="gpx-url-inp" type="url" placeholder="https://…/track.gpx">
+        <input class="gpx-input" id="gpx-url-inp" type="url" placeholder="https://raw.githubusercontent.com/…/track.gpx">
         <button class="gpx-btn prim" onclick="loadGpxFromUrl()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7H12M8 3L12 7L8 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Laden
         </button>
       </div>
-      <div class="cors-hint">Bei CORS-Fehler: <a href="#" onclick="useCorsProxy();return false">CORS-Proxy aktivieren</a> (Datenschutz beachten!)</div>
+      <div class="cors-hint">
+        <b style="color:var(--ac)">GitHub:</b> <code style="font-size:10px;background:var(--s3);padding:1px 4px;border-radius:3px;font-family:monospace">/blob/</code> → <code style="font-size:10px;background:var(--s3);padding:1px 4px;border-radius:3px;font-family:monospace">raw.githubusercontent.com</code> (wird automatisch umgewandelt) &nbsp;·&nbsp;
+        CORS-Fehler: <a href="#" onclick="useCorsProxy();return false">Proxy aktivieren</a> <span style="color:var(--tm)">(Datenschutz beachten)</span>
+      </div>
     </div>
   </div>
 
@@ -3278,8 +3281,18 @@ let gpxFilter = 'all';
 // GPX-String bereinigen: BOM, Whitespace, XML-Startpunkt finden
 function sanitizeGpx(str) {
   if (!str) return '';
-  if (str.charCodeAt(0) === 0xFEFF) str = str.slice(1); // UTF-8 BOM
+  // BOM entfernen (UTF-8: 0xFEFF, manchmal als 3-Byte-Sequenz)
+  if (str.charCodeAt(0) === 0xFEFF) str = str.slice(1);
   str = str.trim();
+
+  // HTML-Dokumente sofort abweisen — z.B. GitHub /blob/ Seiten
+  const low = str.substring(0, 120).toLowerCase();
+  if (low.startsWith('<!doctype html') || low.startsWith('<html') ||
+      low.includes('<html ') || low.includes('<html>')) {
+    return '';
+  }
+
+  // XML-Startpunkt finden wenn nötig
   if (!str.startsWith('<')) {
     const xmlIdx = str.indexOf('<?xml');
     const gpxIdx = str.indexOf('<gpx');
@@ -3288,7 +3301,14 @@ function sanitizeGpx(str) {
       gpxIdx >= 0 ? gpxIdx : Infinity
     );
     if (isFinite(start)) str = str.slice(start);
+    else return ''; // kein XML-Startpunkt gefunden
   }
+
+  // Nochmal prüfen ob es GPX-Inhalte gibt
+  if (!str.includes('<trk') && !str.includes('<rte') && !str.includes('<wpt') && !str.includes('<gpx')) {
+    return '';
+  }
+
   return str;
 }
 
@@ -3356,47 +3376,93 @@ function handleGpxFiles(input) {
 // ── URL-LADEN ─────────────────────────────────────────────────
 async function loadGpxFromUrl() {
   const inp = document.getElementById('gpx-url-inp');
-  const rawUrl = inp.value.trim();
-  if (!rawUrl) { toast('⚠️ URL eingeben'); return; }
+  let url = inp.value.trim();
+  if (!url) { toast('⚠️ URL eingeben'); return; }
   if (trackStore.tracks.length >= 50) { toast('⚠️ Max. 50 Tracks'); return; }
+
+  // ── AUTO-KORREKTUREN ──────────────────────────────────────
+  // GitHub: /blob/-URL → raw.githubusercontent.com
+  if (url.includes('github.com') && url.includes('/blob/')) {
+    url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+    toast('ℹ️ GitHub-URL → Raw-URL umgewandelt');
+  }
+  // Gist direkt: gist.github.com → raw (falls versehentlich)
+  if (url.includes('gist.github.com') && !url.includes('/raw')) {
+    url = url + '/raw';
+  }
+
   const cat = document.getElementById('gpx-cat').value;
-  const name = rawUrl.split('/').pop().split('?')[0]
+  // Trackname aus dem originalen URL-Pfad (vor der Umwandlung)
+  const name = url.split('/').pop().split('?')[0]
     .replace(/\.gpx$/i,'').replace(/[_-]+/g,' ').trim() || 'Track';
   inp.value = '';
-  toast('⏳ Lade GPX…');
+  toast('⏳ Lade ' + escHtml(name) + '…');
 
-  // Versuche zuerst direkt, dann mit Proxy
-  const attempts = useProxy
-    ? [`https://corsproxy.io/?${encodeURIComponent(rawUrl)}`]
-    : [rawUrl, `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`];
+  // Fetch-Versuche: direkt → Proxy (außer Proxy ist schon aktiv)
+  const fetchUrls = useProxy
+    ? [`https://corsproxy.io/?${encodeURIComponent(url)}`]
+    : [url, `https://corsproxy.io/?${encodeURIComponent(url)}`];
 
-  for (let i = 0; i < attempts.length; i++) {
-    const url = attempts[i];
+  let lastErr = '';
+  for (let i = 0; i < fetchUrls.length; i++) {
+    const fetchUrl = fetchUrls[i];
+    const isProxy = fetchUrl.includes('corsproxy.io');
     try {
-      const resp = await fetch(url, { mode:'cors', credentials:'omit' });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const resp = await fetch(fetchUrl, { mode:'cors', credentials:'omit' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+
       const txt = await resp.text();
       const gpxStr = sanitizeGpx(txt);
-      if (!gpxStr.startsWith('<')) throw new Error('Kein XML');
-      loadGpxXml(gpxStr, name, cat, null, rawUrl);
-      return;
+
+      if (!gpxStr) {
+        // sanitizeGpx hat leeren String zurückgegeben
+        if (txt.toLowerCase().includes('<!doctype html') || txt.toLowerCase().includes('<html')) {
+          throw new Error('Antwort ist eine HTML-Seite, keine GPX-Datei. Prüfe die URL (Raw-Link nötig?)');
+        }
+        throw new Error('Antwort enthält keine GPX-Trackdaten');
+      }
+
+      if (!gpxStr.startsWith('<')) {
+        throw new Error('Kein gültiges XML: ' + gpxStr.substring(0, 40));
+      }
+
+      loadGpxXml(gpxStr, name, cat, null, url);
+      return; // Erfolg
+
     } catch(err) {
-      console.warn(`GPX fetch attempt ${i+1} failed:`, err.message);
-      if (i < attempts.length - 1) {
-        toast('⚠️ CORS-Problem, versuche Proxy…');
-      } else {
-        toast('❌ GPX laden fehlgeschlagen — URL oder Verbindung prüfen');
+      lastErr = err.message;
+      console.warn(`GPX fetch [${isProxy?'proxy':'direkt'}] fehlgeschlagen:`, err.message);
+      if (i < fetchUrls.length - 1) {
+        toast('⚠️ Direkt gescheitert, versuche CORS-Proxy…');
+        await new Promise(r => setTimeout(r, 400)); // kurze Pause
       }
     }
   }
+
+  // Alle Versuche fehlgeschlagen
+  const hint = lastErr.includes('HTML') ? ' (Raw-URL verwenden!)' :
+               lastErr.includes('HTTP 4') ? ' (Datei nicht gefunden)' :
+               lastErr.includes('HTTP 5') ? ' (Server-Fehler)' : '';
+  toast('❌ GPX konnte nicht geladen werden' + hint);
+  console.error('GPX URL load failed:', lastErr);
 }
 
 // ── KERN-FUNKTION: XML-String → Leaflet-Layer ─────────────────
 // Übergibt den XML-String direkt an L.GPX.
 // leaflet-gpx erkennt '<' als Präfix → DOMParser (kein XHR!).
 function loadGpxXml(gpxStr, name, cat, existingId=null, sourceUrl=null) {
-  if (!gpxStr || !gpxStr.startsWith('<')) {
-    toast('❌ Ungültiger GPX-Inhalt für: ' + escHtml(name));
+  if (!gpxStr) {
+    toast('❌ Kein GPX-Inhalt für: ' + escHtml(name));
+    return null;
+  }
+  if (!gpxStr.startsWith('<')) {
+    toast('❌ Kein XML für: ' + escHtml(name) + ' (beginnt mit: ' + gpxStr.substring(0,20) + ')');
+    return null;
+  }
+  // HTML-Dokument abfangen (z.B. GitHub /blob/ Seite)
+  const _gpxLow = gpxStr.substring(0, 60).toLowerCase();
+  if (_gpxLow.startsWith('<!doctype html') || _gpxLow.includes('<html')) {
+    toast('❌ ' + escHtml(name) + ': HTML-Seite statt GPX. Bitte Raw-URL verwenden.');
     return null;
   }
 
