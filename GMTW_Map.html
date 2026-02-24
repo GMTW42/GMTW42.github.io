@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GMTW Trail Map">
@@ -10,9 +10,2308 @@
     <title>GMTW · Trail Map</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H"
+      crossorigin="anonymous"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"
+      crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"
+      integrity="sha384-YPb3MnBKbJ26EHvJY5wJruyEJCMzFINFVT8MXNK4RIESGCFB/8BsGLHLfK6jVGl"
+      crossorigin="anonymous"
+      onerror="leafletGpxFallback()"></script>
+    <!-- QR-Code Generator (qrcode-generator 1.4.4) — inline, kein CDN -->
+    <script>
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+if(typeof window!=='undefined'){window.qrcode=qrcode;}
+    </script>
     <style>
         :root {
             --bg:#0b0e14; --s1:#161b26; --s2:#1e2535; --s3:#252e42;
@@ -22,6 +2321,28 @@
             --beg:#22c55e; --mit:#f59e0b; --exp:#ef4444; --log:#38bdf8; --fac:#a78bfa;
             --fh:'Barlow Condensed',sans-serif; --fb:'Barlow',sans-serif;
             --r:12px;
+            --shadow:0 8px 24px rgba(0,0,0,.55);
+            color-scheme: dark;
+        }
+        /* ═══ LIGHT MODE ═══ */
+        [data-theme=light]{
+            --bg:#f0f4f8; --s1:#ffffff; --s2:#e8ecf2; --s3:#dde2eb;
+            --bd:rgba(0,0,0,0.06); --bd2:rgba(0,0,0,0.13);
+            --tx:#1a2030; --td:#5a6478; --tm:#8a95a8;
+            --ac:#4a8500; --acd:#3a6800;
+            --shadow:0 4px 16px rgba(0,0,0,.14);
+            color-scheme: light;
+        }
+        [data-theme=light] .leaflet-popup-content-wrapper,
+        [data-theme=light] .leaflet-popup-content-wrapper *{
+            background:var(--s1)!important;
+        }
+        [data-theme=light] .leaflet-control-zoom a{background:var(--s1)!important;color:var(--tx)!important;}
+        [data-theme=light] .leaflet-control-attribution{background:rgba(240,244,248,.85)!important;color:var(--td)!important;}
+        [data-theme=light] .path-lbl{background:rgba(240,244,248,.92)!important;border-color:rgba(245,158,11,.5)!important;}
+        [data-theme=light] #legend{background:rgba(255,255,255,.92)!important;}
+        [data-theme=light] .ibtn,[data-theme=light] #titlepill,[data-theme=light] .fab{
+            box-shadow:0 2px 8px rgba(0,0,0,.15)!important;
         }
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         body,html{width:100%;height:100%;overflow:hidden;font-family:var(--fb);background:var(--bg);color:var(--tx);-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
@@ -131,8 +2452,8 @@
         #qrm.show{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
         .qr-nm{font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--tx);margin-bottom:4px}
         .qr-hint{font-size:11px;color:var(--td);margin-bottom:14px}
-        #qr-wrap{width:160px;height:160px;margin:0 auto 14px;background:#fff;border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:center}
-        #qr-img{width:144px;height:144px;display:block;border-radius:4px}
+        #qr-wrap{width:176px;height:176px;margin:0 auto 14px;background:#fff;border-radius:14px;padding:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+        #qr-canvas{width:160px;height:160px;display:block;border-radius:6px;image-rendering:pixelated;image-rendering:-moz-crisp-edges;image-rendering:crisp-edges}
         #qr-inp{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--bd2);border-radius:9px;color:var(--td);font-size:12px;font-family:monospace;margin-bottom:12px;outline:none}
         .qr-acts{display:flex;gap:8px}
         .qbtn{flex:1;padding:10px 8px;border-radius:10px;border:none;font-family:var(--fh);font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
@@ -159,6 +2480,19 @@
         .pm.lg .pm-h{width:36px;height:36px}
         .pm.lg .pm-i{font-size:16px}
 
+
+        /* ═══ ELEVATION PROFILE ═══ */
+        #elev-panel{margin:0 16px 14px;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:10px 12px;display:none}
+        #elev-title{font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:6px}
+        #elev-canvas{width:100%;height:80px;border-radius:6px;display:block;image-rendering:auto}
+        #elev-stats{display:flex;gap:8px;margin-top:6px}
+        .elev-stat{flex:1;text-align:center;background:var(--s1);border-radius:7px;padding:5px 3px}
+        .elev-stat-v{font-family:var(--fh);font-size:16px;font-weight:800;color:var(--tx);line-height:1.1}
+        .elev-stat-l{font-family:var(--fh);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tm)}
+        /* ═══ THEME FAB ═══ */
+        #theme-fab svg{transition:opacity .2s}
+        /* ═══ PERSIST BADGE ═══ */
+        .persist-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--ac);font-family:var(--fh);font-weight:700;letter-spacing:.5px;margin-left:6px;opacity:.7}
         /* ═══════════════════════════════════════════════════
            GPX PANEL
         ═══════════════════════════════════════════════════ */
@@ -251,10 +2585,10 @@
 <!-- FILTER -->
 <div id="fbar">
   <button class="chip on" data-f="all"      onclick="setFilter('all',this)">Alle</button>
-  <button class="chip"    data-f="beginner" onclick="setFilter('beginner',this)">🟢 Beginner</button>
+  <button class="chip"    data-f="beginner" aria-label="Beginner Filter" onclick="setFilter('beginner',this)">🟢 Beginner</button>
   <button class="chip"    data-f="mittel"   onclick="setFilter('mittel',this)">🟡 Mittel</button>
   <button class="chip"    data-f="expert"   onclick="setFilter('expert',this)">🔴 Expert</button>
-  <button class="chip"    data-f="logistik" onclick="setFilter('logistik',this)">🔵 Logistik</button>
+  <button class="chip"    data-f="logistik" aria-label="Logistik Filter" onclick="setFilter('logistik',this)">🔵 Logistik</button>
 </div>
 
 <!-- FABS -->
@@ -268,6 +2602,10 @@
   </button>
   <button class="fab" id="rec-fab" onclick="openGpxPanel('rec')" aria-label="Aufnahme starten">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="3" fill="currentColor"/></svg>
+  </button>
+  <button class="fab" id="theme-fab" onclick="toggleTheme()" aria-label="Hell/Dunkel Modus" title="Hell/Dunkel wechseln">
+    <svg id="ti-moon" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M15.5 11A6.5 6.5 0 017 3.5a.5.5 0 00-.6-.57A7 7 0 1015.07 12a.5.5 0 00-.57-.6 6.5 6.5 0 01-.98.07L15.5 11z" fill="currentColor" opacity=".9"/></svg>
+    <svg id="ti-sun" width="18" height="18" viewBox="0 0 18 18" fill="none" style="display:none"><circle cx="9" cy="9" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.6 3.6l1.4 1.4M13 13l1.4 1.4M3.6 14.4l1.4-1.4M13 5l1.4-1.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
   </button>
   <button class="fab" onclick="fitAll()" aria-label="Übersicht">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="12" y="1" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="1" y="12" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="12" y="12" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -286,11 +2624,11 @@
 <div id="backdrop" onclick="closeAll()"></div>
 
 <!-- SHEET -->
-<div id="sheet">
+<div id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
   <div class="s-handle"></div>
   <div class="s-head">
     <div style="display:flex;align-items:center;gap:10px">
-      <span class="s-title">Trail Punkte</span>
+      <span class="s-title" id="sheet-title">Trail Punkte</span>
       <span class="s-cnt" id="s-cnt">0</span>
     </div>
     <button class="s-close" onclick="closeAll()">×</button>
@@ -299,10 +2637,10 @@
 </div>
 
 <!-- QR MODAL -->
-<div id="qrm">
+<div id="qrm" role="dialog" aria-modal="true" aria-labelledby="qr-nm">
   <div class="qr-nm" id="qr-nm">Standort</div>
-  <div class="qr-hint">QR scannen → startet Navigation in Google Maps</div>
-  <div id="qr-wrap"><img id="qr-img" src="" alt="QR Code" crossorigin="anonymous"></div>
+  <div class="qr-hint" id="qr-hint">QR scannen → startet Navigation in Google Maps</div>
+  <div id="qr-wrap"><canvas id="qr-canvas" width="160" height="160" aria-label="QR Code"></canvas></div>
   <input id="qr-inp" type="text" readonly onclick="this.select()">
   <div class="qr-acts">
     <button class="qbtn cl" onclick="closeAll()">← Zurück</button>
@@ -325,11 +2663,11 @@
 </div>
 
 <!-- GPX PANEL -->
-<div id="gpx-panel">
+<div id="gpx-panel" role="dialog" aria-modal="true" aria-labelledby="gpx-panel-title">
   <div class="s-handle"></div>
   <div class="s-head">
     <div style="display:flex;align-items:center;gap:10px">
-      <span class="s-title">GPX & Tracks</span>
+      <span class="s-title" id="gpx-panel-title">GPX & Tracks</span>
       <span class="s-cnt" id="gpx-track-cnt">0 Tracks</span>
     </div>
     <button class="s-close" onclick="closeGpxPanel()">×</button>
@@ -385,6 +2723,17 @@
       <button class="cat-fbtn" data-c="expert" onclick="filterTracks('expert',this)">🔴 Expert</button>
     </div>
     <div id="trk-list"><div style="padding:20px 16px;text-align:center;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Noch keine Tracks geladen</div></div>
+    <!-- Elevation Profile -->
+    <div id="elev-panel" aria-label="Höhenprofil">
+      <div id="elev-title">Höhenprofil</div>
+      <canvas id="elev-canvas"></canvas>
+      <div id="elev-stats">
+        <div class="elev-stat"><div class="elev-stat-v" id="elev-min">–</div><div class="elev-stat-l">Min m</div></div>
+        <div class="elev-stat"><div class="elev-stat-v" id="elev-max">–</div><div class="elev-stat-l">Max m</div></div>
+        <div class="elev-stat"><div class="elev-stat-v" id="elev-gain">–</div><div class="elev-stat-l">↑ Aufst.</div></div>
+        <div class="elev-stat"><div class="elev-stat-v" id="elev-dist">–</div><div class="elev-stat-l">km</div></div>
+      </div>
+    </div>
   </div>
 
   <!-- TAB: AUFNAHME -->
@@ -440,7 +2789,7 @@
   <div style="font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--tx);margin-bottom:2px" id="trk-qr-nm">Track</div>
   <div style="font-size:11px;color:var(--td);margin-bottom:12px" id="trk-qr-hint">GPX laden oder QR scannen</div>
   <div style="width:180px;height:180px;margin:0 auto 12px;background:#fff;border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:center">
-    <img id="trk-qr-img" src="" alt="QR" style="width:164px;height:164px;display:block;border-radius:4px" crossorigin="anonymous">
+    <canvas id="trk-qr-canvas" width="164" height="164" style="display:block;border-radius:6px;image-rendering:pixelated;image-rendering:crisp-edges" aria-label="Track QR Code"></canvas>
   </div>
   <div style="font-size:10px;color:var(--td);margin-bottom:12px;padding:8px;background:var(--s2);border-radius:8px;text-align:left;line-height:1.5" id="trk-qr-info"></div>
   <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -455,31 +2804,51 @@
 <div id="toast"></div>
 
 <script>
-// ───────────────────────────────────────────────────────────
-// DATA — aus KML extrahiert + Zeltplatz Eingang ergänzt
-// ───────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// GMTW TRAIL MAP — vollständiges JS
+// Fixes: XSS, QR lokal, localStorage, Theme, Elevation, Deep Link
+// ═══════════════════════════════════════════════════════════════
+
+// ── SICHERHEIT: Universelle HTML-Escape-Funktion ──────────────
+function escHtml(s){
+  if(s==null)return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// Alias für Legacy-Code & onclick-Strings
+function esc(s){ return String(s||'').replace(/'/g,"\\'"); }
+function escXml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── LOKALSTORAGE: sicheres Lesen/Schreiben ─────────────────────
+const LS = {
+  K: { TRACKS:'gmtw_tracks_v2', REC:'gmtw_rec_v2', VIEW:'gmtw_view_v1', THEME:'gmtw_theme' },
+  set(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); return true; }catch(e){ if(e.name==='QuotaExceededError') toast('⚠️ Speicher voll!'); return false; } },
+  get(key,fb=null){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):fb; }catch(e){ return fb; } },
+  del(key){ try{ localStorage.removeItem(key); }catch(e){} }
+};
+
+// ── DATEN ──────────────────────────────────────────────────────
 const LOCS = [
   // BEGINNER
   { id:"muni",     name:"Muni Start Beginner/Mittel", lat:51.421812, lng:7.492612, color:"#22c55e", emoji:"🚩", cat:"beginner", desc:"Startpunkt für Muni-Fahrer aller Levels" },
   { id:"ein-beg",  name:"Einstieg Beginner",          lat:51.419668, lng:7.484089, color:"#22c55e", emoji:"🟢", cat:"beginner", desc:"Haupteinstieg für Anfänger" },
   { id:"ein-bm",   name:"Einstieg Beginner/Mittel",   lat:51.420365, lng:7.483406, color:"#22c55e", emoji:"🟡", cat:"beginner", desc:"Gemischter Einstieg — Beginner & Mittel" },
   { id:"end-ein",  name:"Ende Beginner",               lat:51.418374, lng:7.478817, color:"#22c55e", emoji:"🏁", cat:"beginner", desc:"Ziel der einfachen Strecke" },
-  // MITTEL
+  // MITTEL — Koordinaten korrekt: sam-mit=Sammelpunkt(51.423371), ziel-mit=Ziel(51.419329)
   { id:"ein-mit",  name:"Einstieg Mittel",            lat:51.423421, lng:7.480829, color:"#f59e0b", emoji:"🟡", cat:"mittel",   desc:"Einstieg in die mittlere Strecke" },
   { id:"end-mit",  name:"Ende Mittel",                lat:51.418704, lng:7.477420, color:"#f59e0b", emoji:"🏁", cat:"mittel",   desc:"Ziel der mittleren Strecke" },
-  { id:"sam-mit",  name:"Sammelpunkt Mittel",          lat:51.423371, lng:7.513606, color:"#f59e0b", emoji:"👥", cat:"mittel",   desc:"Sammelpunkt für die mittlere Strecke — Ruhrbereich" },
-  { id:"ziel-mit", name:"Ziel Mittel",                 lat:51.419329, lng:7.511120, color:"#f59e0b", emoji:"🏆", cat:"mittel",   desc:"Ziel der mittleren Strecke — an der Ruhr" },
+  { id:"sam-mit",  name:"Sammelpunkt Mittel",         lat:51.423371, lng:7.513606, color:"#f59e0b", emoji:"👥", cat:"mittel",   desc:"Sammelpunkt — Ruhrbereich" },
+  { id:"ziel-mit", name:"Ziel Mittel",                lat:51.419329, lng:7.511120, color:"#f59e0b", emoji:"🏆", cat:"mittel",   desc:"Ziel der mittleren Strecke — an der Ruhr" },
   // EXPERT
   { id:"st-exp",   name:"Start Expert",               lat:51.418657, lng:7.477602, color:"#ef4444", emoji:"💀", cat:"expert",   desc:"Nur für erfahrene Fahrer!" },
-  { id:"exp-zone", name:"Expert Zone",                lat:51.418692, lng:7.475410, color:"#ef4444", emoji:"⚠️", cat:"expert",  desc:"Hochanspruchsvolles Gelände" },
-  { id:"exp-kurs", name:"Zerstörer",                lat:51.416403, lng:7.453939, color:"#ef4444", emoji:"🎇️", cat:"expert",  desc:"Hochanspruchsvolles Strecken links sehr schwer, rechts schwer" },
+  { id:"exp-zone", name:"Expert Zone",                lat:51.418692, lng:7.475410, color:"#ef4444", emoji:"⚠️", cat:"expert",   desc:"Hochanspruchsvolles Gelände" },
+  { id:"exp-kurs", name:"Zerstörer",                  lat:51.416403, lng:7.453939, color:"#ef4444", emoji:"🎇", cat:"expert",   desc:"Links sehr schwer, rechts schwer" },
   // LOGISTIK
-  { id:"camp",      name:"GMTW Camp",             lat:51.417704, lng:7.494867, color:"#38bdf8", emoji:"⛺", cat:"logistik", desc:"Hauptcamp des Events — Basisstation", large:true },
-  { id:"camp-tor",  name:"Camp Tor",              lat:51.417482, lng:7.490904, color:"#38bdf8", emoji:"🚧", cat:"logistik", desc:"Haupteingang zum GMTW Camp" },
-  { id:"zeltplatz", name:"Zeltplatz Eingang",     lat:51.420130, lng:7.495086, color:"#38bdf8", emoji:"🏕️",cat:"logistik", desc:"Eingang Campingplatz Hohensyburg · Syburger Dorfstr. 69" },
-  { id:"sam-beg",   name:"Sammelpunkt Beginner",  lat:51.419799, lng:7.484685, color:"#38bdf8", emoji:"👥", cat:"logistik", desc:"Treffpunkt nach dem Aufstieg vom Camp" },
-  { id:"sam-camp",  name:"Sammelpunkt → Camp",    lat:51.418164, lng:7.478552, color:"#38bdf8", emoji:"🔁", cat:"logistik", desc:"Treffpunkt für den Rückweg ins Camp" },
-  { id:"wc",        name:"Dusche / WC",           lat:51.418808, lng:7.493754, color:"#a78bfa", emoji:"🚿", cat:"logistik", desc:"Sanitäreinrichtungen am Camp" },
+  { id:"camp",      name:"GMTW Camp",            lat:51.417704, lng:7.494867, color:"#38bdf8", emoji:"⛺", cat:"logistik", desc:"Hauptcamp des Events — Basisstation", large:true },
+  { id:"camp-tor",  name:"Camp Tor",             lat:51.417482, lng:7.490904, color:"#38bdf8", emoji:"🚧", cat:"logistik", desc:"Haupteingang zum GMTW Camp" },
+  { id:"zeltplatz", name:"Zeltplatz Eingang",    lat:51.420130, lng:7.495086, color:"#38bdf8", emoji:"🏕️",cat:"logistik", desc:"Eingang Campingplatz Hohensyburg · Syburger Dorfstr. 69" },
+  { id:"sam-beg",   name:"Sammelpunkt Beginner", lat:51.419799, lng:7.484685, color:"#38bdf8", emoji:"👥", cat:"logistik", desc:"Treffpunkt nach dem Aufstieg vom Camp" },
+  { id:"sam-camp",  name:"Sammelpunkt → Camp",   lat:51.418164, lng:7.478552, color:"#38bdf8", emoji:"🔁", cat:"logistik", desc:"Treffpunkt für den Rückweg ins Camp" },
+  { id:"wc",        name:"Dusche / WC",          lat:51.418808, lng:7.493754, color:"#a78bfa", emoji:"🚿", cat:"logistik", desc:"Sanitäreinrichtungen am Camp" },
 ];
 
 const CATS = {
@@ -488,31 +2857,45 @@ const CATS = {
   expert:   { label:"Expert",                  color:"var(--exp)" },
   logistik: { label:"Logistik & Einrichtungen",color:"var(--log)" },
 };
-
-// KML Linie
 const WEG = [[51.418146,7.478490],[51.417422,7.490686]];
 
-// ───────────────────────────────────────────────────────────
-// MAP
-// ───────────────────────────────────────────────────────────
+// GPX Farben (spec-konform)
+const GPX_COLORS = { beginner:'#27AE60', mittel:'#D4A017', expert:'#8E44AD' };
+
+// ── KARTE ──────────────────────────────────────────────────────
 const map = L.map('map',{zoomControl:false,tap:false}).setView([51.4192,7.4855],16);
 L.control.zoom({position:'bottomright'}).addTo(map);
 
-const TOPO = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenTopoMap'}).addTo(map);
-const SAT  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri'});
-let isSat = false;
+// Gespeicherte Kartenposition laden
+(function(){
+  const v=LS.get(LS.K.VIEW);
+  if(v&&v.lat&&v.lng&&v.zoom) map.setView([v.lat,v.lng],v.zoom);
+})();
+
+const TOPO = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{
+  maxZoom:17,
+  attribution:'<a href="https://opentopomap.org">© OpenTopoMap</a> (CC-BY-SA) · <a href="https://www.openstreetmap.org/copyright">© OSM</a>'
+}).addTo(map);
+const SAT = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+  maxZoom:19,attribution:'© Esri'
+});
+let isSat=false;
 function toggleLayer(){
   if(isSat){map.removeLayer(SAT);map.addLayer(TOPO);isSat=false;toast('🌲 Topo Ansicht')}
   else{map.removeLayer(TOPO);map.addLayer(SAT);isSat=true;toast('🛰 Satellit Ansicht')}
 }
 
+// Kartenposition speichern bei Bewegung
+map.on('moveend zoomend',()=>{
+  const c=map.getCenter();
+  LS.set(LS.K.VIEW,{lat:c.lat,lng:c.lng,zoom:map.getZoom()});
+});
+
 // Weg zurück
 L.polyline(WEG,{color:'#f59e0b',weight:3.5,dashArray:'8 10',lineCap:'round',opacity:.85})
   .addTo(map).bindTooltip('Weg zurück ins Camp',{permanent:true,direction:'center',className:'path-lbl'});
 
-// ───────────────────────────────────────────────────────────
-// MARKERS
-// ───────────────────────────────────────────────────────────
+// ── MARKER ─────────────────────────────────────────────────────
 const MKR={};
 let curFilter='all';
 
@@ -527,27 +2910,27 @@ function mkIcon(loc){
 
 function mkPopup(loc){
   const c=CATS[loc.cat];
+  // escHtml für alle user-sichtbaren Strings
+  const nm=escHtml(loc.name), ds=escHtml(loc.desc||''), badge=escHtml(c.label);
   return `<div style="background:var(--s1)">
     <div class="p-top">
-      <div class="p-badge" style="background:${loc.color}">${c.label}</div>
-      <div class="p-name">${loc.name}</div>
+      <div class="p-badge" style="background:${loc.color}">${badge}</div>
+      <div class="p-name">${nm}</div>
       <div class="p-crds">${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}</div>
-      ${loc.desc?`<div class="p-desc">${loc.desc}</div>`:''}
+      ${ds?`<div class="p-desc">${ds}`:''}
     </div>
     <div class="p-acts">
-      <button class="pbtn nav" onclick="navTo(${loc.lat},${loc.lng},'${esc(loc.name)}')">
+      <button class="pbtn nav" onclick="navTo(${loc.lat},${loc.lng},'${esc(loc.name)}')" aria-label="Navigation starten">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L12 6.5L6.5 12M1 6.5H11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Navigation
       </button>
-      <button class="pbtn shr" onclick="openQR('${loc.id}')" title="QR-Code für Navigation">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="12" cy="3" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="3" cy="7.5" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 9L10 11M5 6L10 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <button class="pbtn shr" onclick="openQR('${esc(loc.id)}')" aria-label="QR-Code anzeigen">
+        <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><path d="M9 9h1v1M11 9h1M9 11v1M11 12h1M12 11v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
         Nav-QR
       </button>
     </div>
   </div>`;
 }
-
-function esc(s){return s.replace(/'/g,"\\'")}
 
 LOCS.forEach(loc=>{
   const m=L.marker([loc.lat,loc.lng],{icon:mkIcon(loc)}).addTo(map);
@@ -556,24 +2939,23 @@ LOCS.forEach(loc=>{
   MKR[loc.id]={m,loc};
 });
 
-// ───────────────────────────────────────────────────────────
-// SHEET
-// ───────────────────────────────────────────────────────────
+// ── SHEET / POI-LISTE ──────────────────────────────────────────
 function buildList(){
   const c=document.getElementById('s-list'); c.innerHTML='';
   let n=0;
   ['beginner','mittel','expert','logistik'].forEach(cat=>{
     const items=LOCS.filter(l=>l.cat===cat&&(curFilter==='all'||curFilter===cat));
     if(!items.length)return;
-    const h=document.createElement('div'); h.className='cat-head'; h.textContent=CATS[cat].label; c.appendChild(h);
+    const hd=document.createElement('div'); hd.className='cat-head'; hd.textContent=CATS[cat].label; c.appendChild(hd);
     items.forEach(loc=>{
       n++;
       const r=document.createElement('div'); r.className='lrow';
-      r.innerHTML=`<div class="l-ico" style="background:${loc.color}22"><span>${loc.emoji}</span></div>
-        <div class="l-inf"><div class="l-nm">${loc.name}</div><div class="l-co">${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}</div></div>
+      r.setAttribute('role','listitem');
+      r.innerHTML=`<div class="l-ico" style="background:${loc.color}22"><span role="img" aria-label="${escHtml(CATS[loc.cat].label)}">${loc.emoji}</span></div>
+        <div class="l-inf"><div class="l-nm">${escHtml(loc.name)}</div><div class="l-co">${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}</div></div>
         <div class="l-btns">
-          <button class="lbtn nav" title="Navigation" onclick="event.stopPropagation();navTo(${loc.lat},${loc.lng},'${esc(loc.name)}')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L12 6.5L6.5 12M1 6.5H11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <button class="lbtn" title="QR Teilen" onclick="event.stopPropagation();openQR('${loc.id}')"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="11" cy="3" r="1.8" stroke="currentColor" stroke-width="1.4"/><circle cx="3" cy="7" r="1.8" stroke="currentColor" stroke-width="1.4"/><circle cx="11" cy="11" r="1.8" stroke="currentColor" stroke-width="1.4"/><path d="M4.8 8L9 10.5M4.8 6L9 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+          <button class="lbtn nav" aria-label="Navigation zu ${escHtml(loc.name)}" onclick="event.stopPropagation();navTo(${loc.lat},${loc.lng},'${esc(loc.name)}')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L12 6.5L6.5 12M1 6.5H11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="lbtn" aria-label="QR-Code für ${escHtml(loc.name)}" onclick="event.stopPropagation();openQR('${esc(loc.id)}')"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><path d="M9 9h1v1M11 9h1M9 11v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
         </div>`;
       r.addEventListener('click',()=>focusMarker(loc.id));
       c.appendChild(r);
@@ -585,20 +2967,19 @@ function buildList(){
 function toggleSheet(){
   const s=document.getElementById('sheet'),b=document.getElementById('backdrop');
   if(s.classList.contains('open')){s.classList.remove('open');b.classList.remove('show')}
-  else{buildList();s.classList.add('open');b.classList.add('show')}
+  else{buildList();s.classList.add('open');b.classList.add('show');s.focus();}
 }
+
 function closeAll(){
   document.getElementById('sheet').classList.remove('open');
   document.getElementById('qrm').classList.remove('show');
-  const _tqm=document.getElementById('trk-qrm');if(_tqm){_tqm.style.opacity='0';_tqm.style.visibility='hidden';_tqm.style.transform='translate(-50%,-50%) scale(.88)';};
   document.getElementById('backdrop').classList.remove('show');
-  const gp=document.getElementById('gpx-panel');
-  if(gp) gp.classList.remove('open');
+  const gp=document.getElementById('gpx-panel'); if(gp) gp.classList.remove('open');
+  const tq=document.getElementById('trk-qrm');
+  if(tq){ tq.style.opacity='0'; tq.style.visibility='hidden'; tq.style.transform='translate(-50%,-50%) scale(.88)'; }
 }
 
-// ───────────────────────────────────────────────────────────
-// FILTER
-// ───────────────────────────────────────────────────────────
+// ── FILTER ─────────────────────────────────────────────────────
 function setFilter(f,el){
   curFilter=f;
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
@@ -610,9 +2991,6 @@ function setFilter(f,el){
   buildList();
 }
 
-// ───────────────────────────────────────────────────────────
-// MARKER ACTIONS
-// ───────────────────────────────────────────────────────────
 function focusMarker(id){
   closeAll();
   const{m,loc}=MKR[id];
@@ -625,60 +3003,91 @@ function fitAll(){
   map.flyToBounds(L.latLngBounds(vis.map(l=>[l.lat,l.lng])),{padding:[55,55],maxZoom:17,animate:true,duration:1.3});
 }
 
-// ───────────────────────────────────────────────────────────
-// NAVIGATION — plattformspezifisch
-// ───────────────────────────────────────────────────────────
+// ── NAVIGATION ─────────────────────────────────────────────────
 function navTo(lat,lng,name){
   const ua=navigator.userAgent||'';
   const isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
   const isAndroid=/Android/i.test(ua);
   const gmapsUrl=`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=bicycling`;
-
   if(isIOS){
-    // Apple Maps App via maps:// — blur-Event prüft ob App geöffnet hat
-    let appOpened=false;
-    const onBlur=()=>{appOpened=true};
-    window.addEventListener('blur',onBlur,{once:true});
+    let opened=false;
+    window.addEventListener('blur',()=>{opened=true},{once:true});
     window.location.href=`maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
-    setTimeout(()=>{
-      window.removeEventListener('blur',onBlur);
-      if(!appOpened) window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`,'_blank');
-    },700);
-
+    setTimeout(()=>{ if(!opened) window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`,'_blank'); },700);
   } else if(isAndroid){
-    // Strategie: geo: URI → öffnet System-Maps-App-Chooser (kein double-fire)
-    // Fallback: Google Maps Web
-    const geoUri = `geo:${lat},${lng}?q=${lat},${lng}`;
-    const appOpened = {v:false};
-    window.addEventListener('blur',()=>{appOpened.v=true},{once:true});
-    window.location.href = geoUri;
-    setTimeout(()=>{
-      if(!appOpened.v) window.open(gmapsUrl,'_blank');
-    }, 1000);
-
+    let opened=false;
+    window.addEventListener('blur',()=>{opened=true},{once:true});
+    window.location.href=`geo:${lat},${lng}?q=${lat},${lng}`;
+    setTimeout(()=>{ if(!opened) window.open(gmapsUrl,'_blank'); },1000);
   } else {
     window.open(gmapsUrl,'_blank');
   }
 }
 
-// ───────────────────────────────────────────────────────────
-// QR SHARE + DOWNLOAD
-// ───────────────────────────────────────────────────────────
-// QR immer → Google Maps Navigation URL (universal, iOS + Android + Desktop)
-let curQrUrl='';
-let curQrLocId='';
+// ── LOKALE QR-CODE GENERIERUNG ──────────────────────────────────
+/**
+ * Zeichnet QR-Code lokal auf Canvas (qrcode-generator, kein CDN nötig)
+ * @param {HTMLCanvasElement} canvas
+ * @param {string} data - zu kodierender Inhalt
+ * @param {number} size - Canvas-Größe px
+ * @param {string} fgColor - Vordergrundfarbe
+ * @param {string} bgColor - Hintergrundfarbe
+ */
+function drawQR(canvas, data, size=160, fgColor='#0b0e14', bgColor='#ffffff'){
+  if(!window.qrcode){ toast('❌ QR-Lib nicht geladen'); return false; }
+  try{
+    const qr=window.qrcode(0,'M');
+    qr.addData(data);
+    qr.make();
+    const n=qr.getModuleCount();
+    const cell=size/n;
+    canvas.width=size; canvas.height=size;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle=bgColor; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle=fgColor;
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++){
+      if(qr.isDark(r,c)){
+        const x=Math.floor(c*cell), y=Math.floor(r*cell);
+        ctx.fillRect(x,y,Math.ceil((c+1)*cell)-x,Math.ceil((r+1)*cell)-y);
+      }
+    }
+    return true;
+  }catch(e){
+    console.warn('QR error:',e);
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#ef4444'; ctx.font=`bold 11px sans-serif`;
+    ctx.textAlign='center'; ctx.fillText('QR Fehler',size/2,size/2);
+    return false;
+  }
+}
+
+function downloadCanvas(canvas, filename){
+  try{
+    canvas.toBlob(blob=>{
+      const u=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=u; a.download=filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(u); toast('⬇ QR-Bild gespeichert!');
+    },'image/png');
+  }catch(e){
+    const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download=filename; a.click();
+    toast('⬇ QR-Bild gespeichert!');
+  }
+}
+
+// ── QR FÜR MARKER/POIs ─────────────────────────────────────────
+let curQrUrl='', curQrLocId='';
 
 function openQR(id){
   const loc=LOCS.find(l=>l.id===id); if(!loc)return;
-  // Universal Google Maps URL — öffnet auf Handy die App, auf Desktop den Browser
   curQrUrl=`https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=bicycling`;
   curQrLocId=id;
-  const qrSrc=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(curQrUrl)}&bgcolor=ffffff&color=0b0e14&margin=12&format=png`;
   document.getElementById('qr-nm').textContent=loc.name;
-  const img=document.getElementById('qr-img');
-  img.src=''; // Reset zuerst, damit onload sicher feuert
-  img.src=qrSrc;
+  document.getElementById('qr-hint').textContent='QR scannen → startet Navigation in Google Maps';
   document.getElementById('qr-inp').value=curQrUrl;
+  const canvas=document.getElementById('qr-canvas');
+  drawQR(canvas, curQrUrl, 160, '#0b0e14', '#ffffff');
   closeAll();
   document.getElementById('qrm').classList.add('show');
   document.getElementById('backdrop').classList.add('show');
@@ -687,10 +3096,14 @@ function openQR(id){
 function copyQR(){
   if(!curQrUrl)return;
   if(navigator.clipboard){
-    navigator.clipboard.writeText(curQrUrl)
-      .then(()=>toast('✅ Navigation-Link kopiert!'))
-      .catch(()=>{legacyCopy(curQrUrl);toast('✅ Navigation-Link kopiert!')});
-  } else {legacyCopy(curQrUrl);toast('✅ Navigation-Link kopiert!')}
+    navigator.clipboard.writeText(curQrUrl).then(()=>toast('✅ Link kopiert!')).catch(()=>{legacyCopy(curQrUrl);toast('✅ Link kopiert!');});
+  } else { legacyCopy(curQrUrl); toast('✅ Link kopiert!'); }
+}
+
+function downloadQR(){
+  const canvas=document.getElementById('qr-canvas');
+  if(!canvas)return;
+  downloadCanvas(canvas, `GMTW_${curQrLocId||'punkt'}_Navigation_QR.png`);
 }
 
 function legacyCopy(t){
@@ -701,128 +3114,99 @@ function legacyCopy(t){
   document.body.removeChild(el);
 }
 
-async function downloadQR(){
-  const img=document.getElementById('qr-img');
-  if(!img.src||img.src===window.location.href){toast('⏳ QR wird geladen…');return}
-  try{
-    const r=await fetch(img.src);
-    if(!r.ok)throw new Error('fetch failed');
-    const b=await r.blob();
-    const u=URL.createObjectURL(b),a=document.createElement('a');
-    a.href=u; a.download=`GMTW_${curQrLocId||'punkt'}_Navigation_QR.png`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(u); toast('⬇ QR gespeichert!');
-  }catch(e){
-    // Fallback: direkt öffnen
-    window.open(img.src,'_blank'); toast('🔗 QR in neuem Tab geöffnet');
+// ── LIGHT/DARK MODE ────────────────────────────────────────────
+let isDark=true;
+function toggleTheme(){
+  isDark=!isDark;
+  document.documentElement.setAttribute('data-theme', isDark?'dark':'light');
+  document.getElementById('ti-moon').style.display=isDark?'':'none';
+  document.getElementById('ti-sun').style.display=isDark?'none':'';
+  document.querySelector('meta[name=theme-color]').content=isDark?'#0b0e14':'#f0f4f8';
+  LS.set(LS.K.THEME, isDark?'dark':'light');
+  toast(isDark?'🌙 Dunkel Modus':'☀️ Hell Modus');
+}
+function initTheme(){
+  const saved=LS.get(LS.K.THEME,'dark');
+  if(saved==='light'){
+    isDark=false;
+    document.documentElement.setAttribute('data-theme','light');
+    document.querySelector('meta[name=theme-color]').content='#f0f4f8';
+    document.getElementById('ti-moon').style.display='none';
+    document.getElementById('ti-sun').style.display='';
+  } else {
+    document.documentElement.setAttribute('data-theme','dark');
   }
 }
 
-// ───────────────────────────────────────────────────────────
-// GPS — robust, multi-platform
-// ───────────────────────────────────────────────────────────
+// ── GPS ────────────────────────────────────────────────────────
 let userMkr=null, gpsWatcher=null, gpsOn=false;
 
 async function locateUser(){
   const fab=document.getElementById('gps-fab');
   if(!('geolocation'in navigator)){showGpsHint('GPS nicht verfügbar','Dein Browser unterstützt keine Geolocation-API.');return}
-
-  // Check permission
   if(navigator.permissions){
-    try{
-      const p=await navigator.permissions.query({name:'geolocation'});
-      if(p.state==='denied'){showGpsHint('Zugriff verweigert','Erlaube den Standort in den Browser-/App-Einstellungen und lade die Seite neu.');return}
-    }catch(e){}
+    try{const p=await navigator.permissions.query({name:'geolocation'});if(p.state==='denied'){showGpsHint('Zugriff verweigert','Erlaube den Standort in den Browser-/App-Einstellungen.');return}}catch(e){}
   }
-
-  // Toggle off
   if(gpsOn){
     if(gpsWatcher!==null){navigator.geolocation.clearWatch(gpsWatcher);gpsWatcher=null}
     if(userMkr){map.removeLayer(userMkr);userMkr=null}
     gpsOn=false; fab.classList.remove('spin'); fab.style.borderColor='';
     toast('📍 GPS deaktiviert'); return;
   }
-
   fab.classList.add('spin'); toast('📡 GPS wird aktiviert…');
-
   gpsWatcher=navigator.geolocation.watchPosition(
     pos=>{
       const{latitude:lat,longitude:lng,accuracy:acc}=pos.coords;
-      if(!gpsOn){
-        gpsOn=true; fab.classList.remove('spin');
-        fab.style.borderColor='var(--log)'; fab.style.borderWidth='2px';
-        map.flyTo([lat,lng],17,{animate:true,duration:1});
-        toast(`✅ Standort (±${Math.round(acc)}m)`);
-      }
-      const dotIcon=L.divIcon({
-        className:'',
-        html:`<div style="position:relative;width:22px;height:22px;display:flex;align-items:center;justify-content:center"><div style="position:absolute;width:38px;height:38px;border-radius:50%;background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.35);top:50%;left:50%;transform:translate(-50%,-50%)"></div><div style="width:16px;height:16px;border-radius:50%;background:#38bdf8;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div></div>`,
-        iconSize:[22,22],iconAnchor:[11,11]
-      });
+      if(!gpsOn){gpsOn=true;fab.classList.remove('spin');fab.style.borderColor='var(--log)';fab.style.borderWidth='2px';map.flyTo([lat,lng],17,{animate:true,duration:1});toast(`✅ Standort (±${Math.round(acc)}m)`);}
+      const dotIcon=L.divIcon({className:'',html:`<div style="position:relative;width:22px;height:22px;display:flex;align-items:center;justify-content:center"><div style="position:absolute;width:38px;height:38px;border-radius:50%;background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.35);top:50%;left:50%;transform:translate(-50%,-50%)"></div><div style="width:16px;height:16px;border-radius:50%;background:#38bdf8;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div></div>`,iconSize:[22,22],iconAnchor:[11,11]});
       if(userMkr)map.removeLayer(userMkr);
-      userMkr=L.marker([lat,lng],{icon:dotIcon,zIndexOffset:1000}).addTo(map)
-        .bindPopup(`<div class="p-top"><div class="p-name">Dein Standort</div><div class="p-crds">${lat.toFixed(5)}, ${lng.toFixed(5)}</div><div class="p-desc">Genauigkeit: ±${Math.round(acc)} m</div></div>`);
+      userMkr=L.marker([lat,lng],{icon:dotIcon,zIndexOffset:1000}).addTo(map).bindPopup(`<div class="p-top"><div class="p-name">Dein Standort</div><div class="p-crds">${lat.toFixed(5)}, ${lng.toFixed(5)}</div><div class="p-desc">Genauigkeit: ±${Math.round(acc)} m</div></div>`);
     },
     err=>{
-      fab.classList.remove('spin'); fab.style.borderColor=''; gpsOn=false;
+      fab.classList.remove('spin');fab.style.borderColor='';gpsOn=false;
       const msgs={1:['Zugriff verweigert','Standortzugriff in Einstellungen erlauben.'],2:['Kein Signal','Ins Freie gehen oder WLAN aktivieren.'],3:['Zeitüberschreitung','GPS-Signal nicht gefunden. Erneut versuchen.']};
-      const[t,m]=msgs[err.code]||['GPS Fehler',err.message];
-      showGpsHint(t,m);
+      const[t,m]=msgs[err.code]||['GPS Fehler',err.message]; showGpsHint(t,m);
     },
     {enableHighAccuracy:true,timeout:20000,maximumAge:5000}
   );
 }
-
-function showGpsHint(t,m){
-  document.getElementById('gpshint-t').textContent=t;
-  document.getElementById('gpshint-m').textContent=m;
-  document.getElementById('gpshint').classList.add('show');
-  setTimeout(hideGpsHint,8000);
-}
+function showGpsHint(t,m){document.getElementById('gpshint-t').textContent=t;document.getElementById('gpshint-m').textContent=m;document.getElementById('gpshint').classList.add('show');setTimeout(hideGpsHint,8000);}
 function hideGpsHint(){document.getElementById('gpshint').classList.remove('show')}
 
-// ───────────────────────────────────────────────────────────
-// TOAST
-// ───────────────────────────────────────────────────────────
+// ── TOAST ──────────────────────────────────────────────────────
 let toastT;
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2700);
-}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2700);}
 
-// ───────────────────────────────────────────────────────────
-// DEEP LINK
-// ───────────────────────────────────────────────────────────
+// ── DEEP LINK ──────────────────────────────────────────────────
 window.addEventListener('load',()=>{
-  const id=new URLSearchParams(window.location.search).get('loc');
-  if(id&&MKR[id])setTimeout(()=>focusMarker(id),700);
+  initTheme();
+  const params=new URLSearchParams(window.location.search);
+  const locId=params.get('loc');
+  if(locId&&MKR[locId]) setTimeout(()=>focusMarker(locId),700);
+  // ?gpx=URL Parameter: Track direkt laden
+  const gpxUrl=params.get('gpx');
+  if(gpxUrl){
+    const cat=params.get('cat')||'mittel';
+    const name=decodeURIComponent(params.get('name')||gpxUrl.split('/').pop().replace('.gpx','')||'Track');
+    toast('⏳ Lade GPX aus URL…');
+    setTimeout(()=>createGpxLayer(useProxy?`https://corsproxy.io/?${encodeURIComponent(gpxUrl)}`:gpxUrl, cat, name),900);
+  }
+  // Gespeicherte Daten wiederherstellen
+  restoreRecorder();
+  restoreTracks();
 });
 
+// ── GPX SYSTEM ─────────────────────────────────────────────────
+let useProxy=false;
+function useCorsProxy(){useProxy=!useProxy;toast(useProxy?'🔀 CORS-Proxy aktiv':'🔀 Direktverbindung');}
+const trackStore={tracks:[],_id:1};
+let gpxFilter='all';
 
-// ═══════════════════════════════════════════════════════════════
-// GPX SYSTEM
-// ═══════════════════════════════════════════════════════════════
-
-// Konstante GPX-Farben pro Schwierigkeit
-const GPX_COLORS = { beginner:'#27AE60', mittel:'#D4A017', expert:'#8E44AD' };
-
-// Proxy für CORS-Probleme
-let useProxy = false;
-function useCorsProxy(){ useProxy=!useProxy; toast(useProxy?'🔀 CORS-Proxy aktiv':'🔀 Direktverbindung'); }
-
-// Track-Datenspeicher
-const trackStore = { tracks:[], _id:1 };
-
-let gpxFilter = 'all'; // aktueller Kategorie-Filter in Track-Liste
-
-// GPX Panel öffnen/schließen
 function openGpxPanel(tab='load'){
-  closeAll(); // Sheet etc. schließen
-  const p=document.getElementById('gpx-panel');
-  const b=document.getElementById('backdrop');
-  p.classList.add('open'); b.classList.add('show');
-  switchGpxTab(tab, document.querySelector(`.gpx-tab[data-tab="${tab}"]`));
+  closeAll();
+  document.getElementById('gpx-panel').classList.add('open');
+  document.getElementById('backdrop').classList.add('show');
+  switchGpxTab(tab,document.querySelector(`.gpx-tab[data-tab="${tab}"]`));
   map.invalidateSize();
 }
 function closeGpxPanel(){
@@ -830,157 +3214,146 @@ function closeGpxPanel(){
   document.getElementById('backdrop').classList.remove('show');
   map.invalidateSize();
 }
-function switchGpxTab(tab, btn){
+function switchGpxTab(tab,btn){
   document.querySelectorAll('.gpx-tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.gpx-content').forEach(c=>c.classList.remove('on'));
   if(btn) btn.classList.add('on');
-  else document.querySelector(`.gpx-tab[data-tab="${tab}"]`).classList.add('on');
+  else{const b=document.querySelector(`.gpx-tab[data-tab="${tab}"]`);if(b)b.classList.add('on');}
   const el=document.getElementById(`gpx-tab-${tab}`);
-  if(el){ el.classList.add('on'); if(tab==='tracks') renderTrackList(); }
+  if(el){el.classList.add('on');if(tab==='tracks')renderTrackList();}
 }
 
-// ── GPX Datei-Upload ────────────────────────────────────────
 function handleGpxFiles(input){
   const cat=document.getElementById('gpx-cat').value;
   Array.from(input.files).forEach(file=>{
+    if(trackStore.tracks.length>=50){toast('⚠️ Max. 50 Tracks');return;}
     const reader=new FileReader();
     reader.onload=e=>{
       const gpxStr=e.target.result;
-      // Validierung: muss <gpx enthalten
-      if(!gpxStr.includes('<gpx')){
-        toast('❌ Keine gültige GPX-Datei: '+file.name); return;
-      }
-      if(trackStore.tracks.length>=50){ toast('⚠️ Max. 50 Tracks'); return; }
-      loadGpxFromString(gpxStr, file.name.replace('.gpx',''), cat);
+      if(!gpxStr.includes('<gpx')){toast('❌ Keine gültige GPX-Datei: '+escHtml(file.name));return;}
+      loadGpxFromString(gpxStr,file.name.replace(/\.gpx$/i,''),cat);
     };
-    reader.onerror=()=>toast('❌ Fehler beim Lesen: '+file.name);
+    reader.onerror=()=>toast('❌ Fehler beim Lesen: '+escHtml(file.name));
     reader.readAsText(file);
   });
-  input.value=''; // Reset damit gleiche Datei wieder wählbar
+  input.value='';
 }
 
-// ── GPX URL laden ───────────────────────────────────────────
 function loadGpxFromUrl(){
   let url=document.getElementById('gpx-url-inp').value.trim();
-  if(!url){ toast('⚠️ Bitte URL eingeben'); return; }
-  if(trackStore.tracks.length>=50){ toast('⚠️ Max. 50 Tracks'); return; }
+  if(!url){toast('⚠️ Bitte URL eingeben');return;}
+  if(trackStore.tracks.length>=50){toast('⚠️ Max. 50 Tracks');return;}
   if(useProxy) url=`https://corsproxy.io/?${encodeURIComponent(url)}`;
   const cat=document.getElementById('gpx-cat').value;
-  const name=url.split('/').pop().replace('.gpx','').replace(/_/g,' ')||'Track';
+  const name=url.split('/').pop().replace(/\.gpx$/i,'').replace(/_/g,' ')||'Track';
   toast('⏳ Lade GPX…');
-  createGpxLayer(url, false, cat, name);
+  createGpxLayer(url,cat,name);
   document.getElementById('gpx-url-inp').value='';
 }
 
-// ── GPX String → Blob URL → Layer ────────────────────────────
-function loadGpxFromString(gpxStr, name, cat){
+function loadGpxFromString(gpxStr,name,cat){
   const blob=new Blob([gpxStr],{type:'application/gpx+xml'});
   const blobUrl=URL.createObjectURL(blob);
-  createGpxLayer(blobUrl, false, cat, name, ()=>URL.revokeObjectURL(blobUrl));
+  createGpxLayer(blobUrl,cat,name,null,gpxStr);
+  setTimeout(()=>URL.revokeObjectURL(blobUrl),4000);
 }
 
-// ── Gemeinsamer Layer-Ersteller ───────────────────────────────
-function createGpxLayer(source, isString, cat, name, onDone){
+function createGpxLayer(source,cat,name,existingId=null,gpxString=null){
   const color=GPX_COLORS[cat]||'#27AE60';
-  const id='trk-'+trackStore._id++;
-
+  const id=existingId||('trk-'+trackStore._id++);
   const layer=new L.GPX(source,{
     async:true,
-    marker_options:{ startIconUrl:null, endIconUrl:null, shadowUrl:null, wptIconUrls:{'':null} },
-    polyline_options:{ color, weight:4, opacity:.85, lineCap:'round', lineJoin:'round' }
+    marker_options:{startIconUrl:null,endIconUrl:null,shadowUrl:null,wptIconUrls:{'':null}},
+    polyline_options:{color,weight:4,opacity:.85,lineCap:'round',lineJoin:'round'}
   });
-
-  layer.on('loaded', function(e){
+  layer.on('loaded',function(e){
     const gl=e.target;
-    let dist='?', dur='?';
-    try{ dist=(gl.get_distance()/1000).toFixed(2); }catch(ex){}
-    try{
-      const d=gl.get_total_time();
-      if(d){ const m=Math.round(d/60000); dur=`${Math.floor(m/60)}h ${m%60}m`; }
-    }catch(ex){}
-
-    const track={ id, name, cat, color, gpxLayer:gl, visible:true, sourceUrl:source&&source.startsWith('http')?source:null,
-      bounds: (()=>{ try{ const b=gl.getBounds(); return b&&b.isValid&&b.isValid()?b:null; }catch(e){ return null; }})(),
-      stats:{ dist, dur }
+    let dist='?',dur='?';
+    try{dist=(gl.get_distance()/1000).toFixed(2);}catch(ex){}
+    try{const d=gl.get_total_time();if(d){const m=Math.round(d/60000);dur=`${Math.floor(m/60)}h ${m%60}m`;}}catch(ex){}
+    const bounds=(()=>{try{const b=gl.getBounds();return b&&b.isValid&&b.isValid()?b:null;}catch(e){return null;}})();
+    const track={
+      id,name,cat,color,gpxLayer:gl,visible:true,
+      sourceUrl:(source&&source.startsWith('http')&&!source.startsWith('blob:'))?source:null,
+      gpxString:gpxString||null,
+      bounds,
+      stats:{dist,dur},
+      elevData:extractElevData(gl)
     };
     trackStore.tracks.push(track);
     updateGpxBadge();
     renderTrackList();
-    toast(`✅ "${name}" geladen (${dist} km)`);
-    setTimeout(()=>{ if(onDone) onDone(); }, 2000); // Blob URL erst nach Rendering freigeben
-    // Auf Track zoomen
-    if(track.bounds) map.flyToBounds(track.bounds,{padding:[40,40],maxZoom:16,animate:true,duration:1.2});
-    switchGpxTab('tracks', null);
+    persistTracks();
+    toast(`✅ "${escHtml(name)}" geladen (${dist} km)`);
+    if(bounds) map.flyToBounds(bounds,{padding:[40,40],maxZoom:16,animate:true,duration:1.2});
+    switchGpxTab('tracks',null);
   });
-
-  layer.on('error', function(e){
-    toast('❌ GPX Fehler – prüfe URL oder aktiviere CORS-Proxy');
-    console.warn('GPX error',e);
+  layer.on('error',function(e){
+    toast('❌ GPX Fehler – URL prüfen oder CORS-Proxy aktivieren');
+    console.warn('GPX error:',e);
   });
-
   layer.addTo(map);
+  return layer;
 }
 
-// ── Track Sichtbarkeit ──────────────────────────────────────
 function toggleTrack(id){
-  const t=trackStore.tracks.find(t=>t.id===id); if(!t) return;
-  if(t.visible){ map.removeLayer(t.gpxLayer); t.visible=false; }
-  else{ t.gpxLayer.addTo(map); t.visible=true; }
+  const t=trackStore.tracks.find(t=>t.id===id);if(!t)return;
+  if(t.visible){map.removeLayer(t.gpxLayer);t.visible=false;}
+  else{t.gpxLayer.addTo(map);t.visible=true;}
   renderTrackList();
 }
 
-// ── Track löschen ───────────────────────────────────────────
 function removeTrack(id){
-  const idx=trackStore.tracks.findIndex(t=>t.id===id); if(idx<0) return;
-  const t=trackStore.tracks[idx];
-  map.removeLayer(t.gpxLayer);
+  const idx=trackStore.tracks.findIndex(t=>t.id===id);if(idx<0)return;
+  map.removeLayer(trackStore.tracks[idx].gpxLayer);
   trackStore.tracks.splice(idx,1);
   updateGpxBadge();
   renderTrackList();
+  persistTracks();
+  document.getElementById('elev-panel').style.display='none';
   toast('🗑 Track entfernt');
 }
 
-// ── Auf Track zoomen ────────────────────────────────────────
 function zoomTrack(id){
-  const t=trackStore.tracks.find(t=>t.id===id); if(!t) return;
+  const t=trackStore.tracks.find(t=>t.id===id);if(!t)return;
   try{
-    if(t.bounds&&t.bounds.isValid()) map.flyToBounds(t.bounds,{padding:[40,40],maxZoom:16,animate:true,duration:1});
-    else if(t.gpxLayer){ const b=t.gpxLayer.getBounds(); if(b.isValid()) map.flyToBounds(b,{padding:[40,40],maxZoom:16}); }
-  }catch(e){ console.warn("zoomTrack error",e); }
+    const b=t.bounds||t.gpxLayer.getBounds();
+    if(b&&b.isValid&&b.isValid()) map.flyToBounds(b,{padding:[40,40],maxZoom:16,animate:true,duration:1});
+  }catch(e){console.warn('zoomTrack:',e);}
 }
 
-// ── Kategorie-Filter ────────────────────────────────────────
-function filterTracks(cat, btn){
+function filterTracks(cat,btn){
   gpxFilter=cat;
   document.querySelectorAll('.cat-fbtn').forEach(b=>b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
+  if(btn)btn.classList.add('on');
+  document.getElementById('elev-panel').style.display='none';
   renderTrackList();
 }
 
-// ── Track-Liste rendern ─────────────────────────────────────
 function renderTrackList(){
-  const cont=document.getElementById('trk-list'); if(!cont) return;
+  const cont=document.getElementById('trk-list');if(!cont)return;
   const filtered=gpxFilter==='all'?trackStore.tracks:trackStore.tracks.filter(t=>t.cat===gpxFilter);
   if(!filtered.length){
-    cont.innerHTML='<div style="padding:20px 16px;text-align:center;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px">'+(trackStore.tracks.length?'Keine Tracks in dieser Kategorie':'Noch keine Tracks geladen')+'</div>';
+    cont.innerHTML=`<div style="padding:20px 16px;text-align:center;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px">${trackStore.tracks.length?'Keine Tracks in dieser Kategorie':'Noch keine Tracks geladen'}</div>`;
     return;
   }
   cont.innerHTML='';
   filtered.forEach(t=>{
-    const row=document.createElement('div'); row.className='trk-row';
+    const row=document.createElement('div');row.className='trk-row';row.setAttribute('role','listitem');
+    const hasElev=!!(t.elevData&&t.elevData.length>1);
     row.innerHTML=`<div class="trk-dot" style="background:${t.color}"></div>
-      <div class="trk-inf">
-        <div class="trk-nm">${t.name}</div>
-        <div class="trk-meta">${t.cat.charAt(0).toUpperCase()+t.cat.slice(1)} · ${t.stats.dist} km · ${t.stats.dur}</div>
+      <div class="trk-inf" style="cursor:pointer" onclick="zoomTrack('${t.id}');showElevProfile('${t.id}')">
+        <div class="trk-nm">${escHtml(t.name)}</div>
+        <div class="trk-meta">${escHtml(t.cat.charAt(0).toUpperCase()+t.cat.slice(1))} · ${t.stats.dist} km · ${t.stats.dur}${hasElev?' · 📈':''}</div>
       </div>
       <div class="trk-btns">
-        <button class="trk-btn${t.visible?' on':''}" title="${t.visible?'Ausblenden':'Einblenden'}" onclick="toggleTrack('${t.id}')">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">${t.visible?'<path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="1.8" fill="currentColor"/>':'<path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4" opacity=".3"/><path d="M2 2L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'}</svg>
+        <button class="trk-btn${t.visible?' on':''}" aria-label="${t.visible?'Track ausblenden':'Track einblenden'}" onclick="toggleTrack('${t.id}')">
+          ${t.visible?'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="1.8" fill="currentColor"/></svg>':'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4" opacity=".3"/><path d="M2 2L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'}
         </button>
-        <button class="trk-btn" title="Zoomen" onclick="zoomTrack('${t.id}')">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M9 9L13 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <button class="trk-btn" aria-label="QR-Code und GPX für ${escHtml(t.name)}" onclick="openTrackQR('${t.id}')" style="color:var(--ac)">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><path d="M9 9h1v1M11 9h1M9 11v1M11 12h1M12 11v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
         </button>
-        <button class="trk-btn" title="Löschen" onclick="removeTrack('${t.id}')" style="color:#ef4444">
+        <button class="trk-btn" aria-label="Track löschen" onclick="removeTrack('${t.id}')" style="color:#ef4444">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4H12M5 4V2H9V4M11 4L10 12H4L3 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>`;
@@ -989,158 +3362,303 @@ function renderTrackList(){
   document.getElementById('gpx-track-cnt').textContent=trackStore.tracks.length+' Track'+(trackStore.tracks.length!==1?'s':'');
 }
 
-// Badge an GPX-FAB
-function updateGpxBadge(){
-  const b=document.getElementById('gpx-cnt');
-  const n=trackStore.tracks.length;
-  b.textContent=n; b.style.display=n?'':'none';
-}
+function updateGpxBadge(){const b=document.getElementById('gpx-cnt');const n=trackStore.tracks.length;b.textContent=n;b.style.display=n?'':'none';}
 
-// ── Drag & Drop GPX auf Karte ──────────────────────────────
+// ── DRAG & DROP ────────────────────────────────────────────────
 const dropOverlay=document.getElementById('gpx-drop-overlay');
-document.addEventListener('dragover',e=>{
-  if([...e.dataTransfer.items].some(i=>i.kind==='file')){
-    e.preventDefault(); dropOverlay.style.display='flex';
-  }
-});
-document.addEventListener('dragleave',e=>{
-  if(!e.relatedTarget||!document.contains(e.relatedTarget)) dropOverlay.style.display='none';
-});
+document.addEventListener('dragover',e=>{if([...e.dataTransfer.items].some(i=>i.kind==='file')){e.preventDefault();dropOverlay.style.display='flex';}});
+document.addEventListener('dragleave',e=>{if(!e.relatedTarget||!document.contains(e.relatedTarget))dropOverlay.style.display='none';});
 document.addEventListener('drop',e=>{
-  e.preventDefault(); dropOverlay.style.display='none';
+  e.preventDefault();dropOverlay.style.display='none';
   const cat=document.getElementById('gpx-cat').value;
-  [...e.dataTransfer.files].filter(f=>f.name.endsWith('.gpx')).forEach(file=>{
+  [...e.dataTransfer.files].filter(f=>f.name.toLowerCase().endsWith('.gpx')).forEach(file=>{
     const reader=new FileReader();
-    reader.onload=ev=>loadGpxFromString(ev.target.result, file.name.replace('.gpx',''), cat);
+    reader.onload=ev=>loadGpxFromString(ev.target.result,file.name.replace(/\.gpx$/i,''),cat);
     reader.readAsText(file);
   });
 });
 
-// closeAll überschrieben durch erweiterte Version weiter unten
+// ── LOKALSTORAGE: TRACKS PERSISTENZ ───────────────────────────
+function persistTracks(){
+  const data=trackStore.tracks.map(t=>({
+    id:t.id,name:t.name,cat:t.cat,color:t.color,visible:t.visible,
+    stats:t.stats,gpxString:t.gpxString||null,sourceUrl:t.sourceUrl||null
+  })).filter(t=>t.gpxString||t.sourceUrl);
+  LS.set(LS.K.TRACKS,data);
+}
 
-// ═══════════════════════════════════════════════════════════════
-// STRECKEN-AUFNAHME
-// ═══════════════════════════════════════════════════════════════
+async function restoreTracks(){
+  const saved=LS.get(LS.K.TRACKS,[]);
+  if(!saved.length)return;
+  let count=0;
+  for(const t of saved){
+    if(trackStore.tracks.length>=50)break;
+    if(!t.gpxString)continue;
+    await new Promise(resolve=>{
+      const blob=new Blob([t.gpxString],{type:'application/gpx+xml'});
+      const blobUrl=URL.createObjectURL(blob);
+      createGpxLayer(blobUrl,t.cat,t.name,t.id,t.gpxString);
+      setTimeout(()=>{URL.revokeObjectURL(blobUrl);resolve();},1000);
+    });
+    count++;
+  }
+  if(count>0) toast(`💾 ${count} Track${count!==1?'s':''} wiederhergestellt`);
+}
 
-const recorder = {
-  isRecording: false,
-  isPaused:    false,
-  points:      [],      // [{lat, lng, ele, time, speed}]
-  watchId:     null,
-  startTime:   null,
-  elapsed:     0,       // ms Gesamtzeit (nur Bewegung)
-  _timerInt:   null,
-  _lastPos:    null,
-  _lastTime:   null,
-  totalDist:   0,       // Meter
-  previewLine: null,
-  MIN_SPEED:   0.5,     // m/s
-  _segStart:   null     // Zeitstempel Segment-Start für Display
+// ── ELEVATION PROFIL ───────────────────────────────────────────
+function extractElevData(gpxLayer){
+  try{
+    const elevs=[];
+    gpxLayer.eachLayer(layer=>{
+      if(layer.getLatLngs){
+        const lls=layer.getLatLngs();
+        const flat=Array.isArray(lls[0])?lls.flat():lls;
+        flat.forEach(ll=>{if(ll.alt!=null&&!isNaN(ll.alt))elevs.push(ll.alt);});
+      }
+    });
+    return elevs.length>=2?elevs:null;
+  }catch(e){return null;}
+}
+
+function showElevProfile(id){
+  const t=trackStore.tracks.find(t=>t.id===id);
+  const panel=document.getElementById('elev-panel');
+  if(!t||!t.elevData||t.elevData.length<2){panel.style.display='none';return;}
+  panel.style.display='block';
+  const canvas=document.getElementById('elev-canvas');
+  const W=Math.max(200,panel.clientWidth-24),H=80;
+  canvas.width=W;canvas.height=H;
+  const data=t.elevData;
+  const minE=Math.min(...data),maxE=Math.max(...data);
+  const range=maxE-minE||1;
+  let gain=0;
+  for(let i=1;i<data.length;i++){const d=data[i]-data[i-1];if(d>0)gain+=d;}
+  const ctx=canvas.getContext('2d');
+  // Hintergrund
+  ctx.fillStyle=isDark?'rgba(37,46,66,.8)':'rgba(220,226,236,.8)';
+  ctx.fillRect(0,0,W,H);
+  // Füll-Gradient
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,t.color+'cc');
+  grad.addColorStop(1,t.color+'22');
+  ctx.beginPath();
+  data.forEach((e,i)=>{
+    const x=(i/(data.length-1))*W;
+    const y=H-((e-minE)/range)*(H-10)-5;
+    i===0?ctx.moveTo(x,H):void 0;
+    ctx.lineTo(x,y);
+  });
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+  // Linie
+  ctx.beginPath();ctx.strokeStyle=t.color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+  data.forEach((e,i)=>{
+    const x=(i/(data.length-1))*W;
+    const y=H-((e-minE)/range)*(H-10)-5;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  document.getElementById('elev-min').textContent=Math.round(minE);
+  document.getElementById('elev-max').textContent=Math.round(maxE);
+  document.getElementById('elev-gain').textContent=Math.round(gain);
+  document.getElementById('elev-dist').textContent=t.stats.dist;
+}
+
+// ── TRACK QR-CODE ──────────────────────────────────────────────
+let curTrkQrId=null;
+
+function openTrackQR(trackId){
+  const t=trackStore.tracks.find(t=>t.id===trackId);if(!t){toast('❌ Track nicht gefunden');return;}
+  curTrkQrId=trackId;
+  document.getElementById('trk-qr-nm').textContent=t.name;
+
+  // GPX-Inhalt gewinnen
+  extractGpxFromLayer(t).then(gpxStr=>{
+    const gpxBytes=new Blob([gpxStr]).size;
+    const catLabel=t.cat.charAt(0).toUpperCase()+t.cat.slice(1);
+    document.getElementById('trk-qr-info').innerHTML=`<strong>${escHtml(t.name)}</strong><br>${escHtml(catLabel)} · ${t.stats.dist} km · ${Math.round(gpxBytes/1024)} KB`;
+    
+    // QR-Strategie: URL > Data-URI (klein) > Google Maps Start/Ziel
+    let qrData,hintText;
+    if(t.sourceUrl&&!t.sourceUrl.startsWith('blob:')){
+      qrData=t.sourceUrl;
+      hintText='QR scannen → GPX-URL öffnen';
+    } else if(gpxBytes<=2800){
+      const b64=btoa(unescape(encodeURIComponent(gpxStr)));
+      qrData=`data:application/gpx+xml;base64,${b64}`;
+      hintText='QR scannen → GPX direkt laden';
+    } else {
+      const pts=extractWaypoints(t);
+      qrData=`https://www.google.com/maps/dir/?api=1&origin=${pts.start}&destination=${pts.end}&travelmode=bicycling`;
+      hintText='QR = Start/Ziel in Google Maps (GPX zu groß)';
+      document.getElementById('trk-qr-info').innerHTML+=`<br><span style="color:var(--mit);font-size:10px">⚠ GPX ${Math.round(gpxBytes/1024)} KB – zeigt Start/Ziel</span>`;
+    }
+
+    document.getElementById('trk-qr-hint').textContent=hintText;
+    // QR lokal zeichnen
+    const canvas=document.getElementById('trk-qr-canvas');
+    drawQR(canvas,qrData,164,'#0b0e14','#ffffff');
+    // GPX für Download speichern
+    document.getElementById('trk-qr-dl-btn').dataset.gpx=gpxStr;
+    document.getElementById('trk-qr-dl-btn').dataset.name=t.name;
+
+    closeAll();
+    const m=document.getElementById('trk-qrm');
+    m.style.opacity='0';m.style.visibility='visible';m.style.transform='translate(-50%,-50%) scale(.88)';
+    requestAnimationFrame(()=>{
+      m.style.transition='all .25s cubic-bezier(.32,.72,0,1)';
+      m.style.opacity='1';m.style.transform='translate(-50%,-50%) scale(1)';
+    });
+    document.getElementById('backdrop').classList.add('show');
+  });
+}
+
+async function extractGpxFromLayer(track){
+  // Wenn Original-GPX-String gespeichert: direkt verwenden
+  if(track.gpxString) return track.gpxString;
+  // Sonst aus Layer-Geometrie rekonstruieren
+  const lines=[];
+  track.gpxLayer.eachLayer(layer=>{
+    if(layer.getLatLngs){try{const c=layer.getLatLngs();if(c&&c.length)lines.push(Array.isArray(c[0])?c.flat():c);}catch(e){}}
+  });
+  const allPts=lines.flat();
+  if(!allPts.length) return buildSimpleGpx(track.name,[]);
+  const pts=allPts.map(ll=>`    <trkpt lat="${ll.lat.toFixed(7)}" lon="${ll.lng.toFixed(7)}">${ll.alt!=null?`\n      <ele>${ll.alt.toFixed(1)}</ele>`:''}\n    </trkpt>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GMTW Trail Map" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><n>${escXml(track.name)}</n></metadata>
+  <trk><n>${escXml(track.name)}</n><desc>Kategorie: ${escXml(track.cat)} · ${track.stats.dist} km</desc>
+    <trkseg>\n${pts}\n    </trkseg></trk>
+</gpx>`;
+}
+
+function buildSimpleGpx(name){return `<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1" creator="GMTW Trail Map"><trk><n>${escXml(name)}</n></trk></gpx>`;}
+function extractWaypoints(track){
+  try{const b=track.gpxLayer.getBounds();return{start:`${b.getSouthWest().lat.toFixed(5)},${b.getSouthWest().lng.toFixed(5)}`,end:`${b.getNorthEast().lat.toFixed(5)},${b.getNorthEast().lng.toFixed(5)}`};}
+  catch(e){return{start:'0,0',end:'0,0'};}
+}
+
+function trkQrDownloadGpx(){
+  const btn=document.getElementById('trk-qr-dl-btn');
+  const gpxStr=btn.dataset.gpx,name=btn.dataset.name||'GMTW_Track';
+  if(!gpxStr){toast('❌ Kein GPX verfügbar');return;}
+  dlFile(name+'.gpx',gpxStr,'application/gpx+xml');
+  toast('⬇ GPX gespeichert!');
+}
+function trkQrDownloadImg(){
+  const canvas=document.getElementById('trk-qr-canvas');
+  const t=trackStore.tracks.find(t=>t.id===curTrkQrId);
+  const name=(t?t.name:'GMTW_Track').replace(/[^a-zA-Z0-9_-]/g,'_');
+  downloadCanvas(canvas,name+'_QR.png');
+}
+function trkQrCopyUrl(){
+  const t=trackStore.tracks.find(t=>t.id===curTrkQrId);
+  const url=(t&&t.sourceUrl)?t.sourceUrl:window.location.href;
+  if(navigator.clipboard) navigator.clipboard.writeText(url).then(()=>toast('📋 Link kopiert!'));
+  else{legacyCopy(url);toast('📋 Link kopiert!');}
+}
+
+// ── STRECKEN-AUFNAHME ──────────────────────────────────────────
+const recorder={
+  isRecording:false,isPaused:false,
+  points:[],watchId:null,
+  elapsed:0,_segStart:null,
+  _timerInt:null,_lastPos:null,_lastTime:null,
+  totalDist:0,previewLine:null,MIN_SPEED:0.5
 };
 
-// Haversine-Formel
 function haversine(lat1,lng1,lat2,lng2){
   const R=6371000,r=Math.PI/180;
-  const dLat=(lat2-lat1)*r, dLng=(lng2-lng1)*r;
+  const dLat=(lat2-lat1)*r,dLng=(lng2-lng1)*r;
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLng/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 
 function recStart(){
-  if(!('geolocation'in navigator)){showGpsHint('GPS nicht verfügbar','Geolocation wird benötigt.');return}
-  recorder.isRecording=true; recorder.isPaused=false;
-  recorder.points=[]; recorder.elapsed=0; recorder.totalDist=0;
-  recorder._lastPos=null; recorder._lastTime=null;
-  recorder.startTime=Date.now();
-  recorder._segStart=Date.now();
+  if(!('geolocation'in navigator)){showGpsHint('GPS nicht verfügbar','Geolocation wird für die Aufnahme benötigt.');return;}
+  recorder.isRecording=true;recorder.isPaused=false;
+  recorder.points=[];recorder.elapsed=0;recorder.totalDist=0;
+  recorder._lastPos=null;recorder._lastTime=null;recorder._segStart=Date.now();
   recUpdateUI();
   toast('🔴 Aufnahme läuft…');
   document.getElementById('rec-bar').classList.add('show');
-  // Vorschau-Linie
-  if(recorder.previewLine){ map.removeLayer(recorder.previewLine); recorder.previewLine=null; }
-  recorder.previewLine=L.polyline([],{color:'#ef4444',weight:3,opacity:.8,dashArray:'6 4'}).addTo(map);
-  // GPS Watch
+  if(recorder.previewLine){map.removeLayer(recorder.previewLine);recorder.previewLine=null;}
+  recorder.previewLine=L.polyline([],{color:'#ef4444',weight:3,opacity:.85,dashArray:'6 4'}).addTo(map);
   recorder.watchId=navigator.geolocation.watchPosition(
     pos=>recOnPosition(pos),
-    err=>{ toast('❌ GPS-Fehler bei Aufnahme'); recStop(); },
+    err=>{toast('❌ GPS-Fehler bei Aufnahme');recStop();},
     {enableHighAccuracy:true,timeout:15000,maximumAge:1000}
   );
-  // Anzeigeupdate-Timer (jede Sekunde)
   recorder._timerInt=setInterval(recTickDisplay,1000);
 }
 
 function recOnPosition(pos){
-  if(!recorder.isRecording||recorder.isPaused) return;
-  const {latitude:lat,longitude:lng,altitude:ele,speed,accuracy}=pos.coords;
-  const time=new Date(pos.timestamp).toISOString();
-  const pt={lat,lng,ele:ele||0,time,speed:speed||0};
-
-  // Nur aufnehmen wenn Genauigkeit halbwegs gut
-  if(accuracy>50) return;
-
+  if(!recorder.isRecording||recorder.isPaused)return;
+  const{latitude:lat,longitude:lng,altitude:ele,speed,accuracy}=pos.coords;
+  if(accuracy>50)return; // Schlechte Genauigkeit ignorieren
+  const pt={lat,lng,ele:ele||0,time:new Date(pos.timestamp).toISOString(),speed:speed||0};
   if(recorder._lastPos){
     const dist=haversine(recorder._lastPos.lat,recorder._lastPos.lng,lat,lng);
     const dt=(pos.timestamp-recorder._lastTime)/1000;
     const spd=dt>0?dist/dt:0;
-    const isMoving=(speed!==null&&speed>recorder.MIN_SPEED)||(spd>recorder.MIN_SPEED);
-    if(isMoving){ recorder.elapsed+=pos.timestamp-recorder._lastTime; recorder.totalDist+=dist; }
+    const moving=(speed!==null&&speed>recorder.MIN_SPEED)||(spd>recorder.MIN_SPEED);
+    if(moving)recorder.totalDist+=dist;
   }
-  recorder._lastPos={lat,lng};
-  recorder._lastTime=pos.timestamp;
+  recorder._lastPos={lat,lng};recorder._lastTime=pos.timestamp;
   recorder.points.push(pt);
-  // Vorschau-Linie aktualisieren
   recorder.previewLine.addLatLng([lat,lng]);
-  // Stats
   document.getElementById('rec-pts').textContent=recorder.points.length;
   document.getElementById('rec-dist').textContent=(recorder.totalDist/1000).toFixed(2);
 }
 
 function recPause(){
-  if(!recorder.isRecording) return;
-  recorder.isPaused = !recorder.isPaused;
+  if(!recorder.isRecording)return;
+  recorder.isPaused=!recorder.isPaused;
   if(recorder.isPaused){
-    // Segment beenden: verstrichene Zeit einfrieren
-    if(recorder._segStart !== null){
-      recorder.elapsed += (Date.now() - recorder._segStart);
-      recorder._segStart = null;
-    }
+    if(recorder._segStart!==null){recorder.elapsed+=(Date.now()-recorder._segStart);recorder._segStart=null;}
   } else {
-    // Neues Segment starten
-    recorder._segStart = Date.now();
+    recorder._segStart=Date.now();
   }
-  document.getElementById('rec-pause-btn').textContent = recorder.isPaused ? 'Weiter' : 'Pause';
-  document.getElementById('rec-status-txt').textContent = recorder.isPaused ? 'Pausiert' : 'Aufnahme läuft';
-  document.getElementById('rec-status-txt').style.color = recorder.isPaused ? 'var(--mit)' : '#ef4444';
-  toast(recorder.isPaused ? '⏸ Pause' : '▶ Aufnahme weiter');
+  document.getElementById('rec-pause-btn').textContent=recorder.isPaused?'Weiter':'Pause';
+  document.getElementById('rec-status-txt').textContent=recorder.isPaused?'Pausiert':'Aufnahme läuft';
+  document.getElementById('rec-status-txt').style.color=recorder.isPaused?'var(--mit)':'#ef4444';
+  toast(recorder.isPaused?'⏸ Pause':'▶ Aufnahme weiter');
 }
 
 function recStop(){
-  // Letztes Segment einfrieren
-  if(recorder._segStart !== null){ recorder.elapsed += (Date.now() - recorder._segStart); recorder._segStart = null; }
-  recorder.isRecording=false; recorder.isPaused=false;
-  if(recorder.watchId!==null){ navigator.geolocation.clearWatch(recorder.watchId); recorder.watchId=null; }
-  clearInterval(recorder._timerInt); recorder._timerInt=null;
+  if(recorder._segStart!==null){recorder.elapsed+=(Date.now()-recorder._segStart);recorder._segStart=null;}
+  recorder.isRecording=false;recorder.isPaused=false;
+  if(recorder.watchId!==null){navigator.geolocation.clearWatch(recorder.watchId);recorder.watchId=null;}
+  clearInterval(recorder._timerInt);recorder._timerInt=null;
   document.getElementById('rec-bar').classList.remove('show');
   document.getElementById('rec-status-txt').textContent=`Beendet · ${recorder.points.length} Punkte`;
   document.getElementById('rec-status-txt').style.color='var(--ac)';
   document.getElementById('rec-start-btn').style.display='';
   document.getElementById('rec-pause-btn').style.display='none';
   document.getElementById('rec-stop-btn').style.display='none';
+  if(!recorder.points.length){toast('⚠️ Keine GPS-Punkte aufgezeichnet');recReset();return;}
   document.getElementById('rec-save-section').style.display='';
-  if(!recorder.points.length){ toast('⚠️ Keine GPS-Punkte aufgezeichnet'); recReset(); return; }
+  LS.del(LS.K.REC); // Autosave löschen
   toast(`✅ Aufnahme beendet · ${recorder.points.length} Punkte`);
 }
 
 function recReset(){
-  if(recorder.watchId!==null){ navigator.geolocation.clearWatch(recorder.watchId); recorder.watchId=null; }
-  clearInterval(recorder._timerInt); recorder._timerInt=null;
-  if(recorder.previewLine){ map.removeLayer(recorder.previewLine); recorder.previewLine=null; }
-  recorder.isRecording=false; recorder.isPaused=false;
-  recorder.points=[]; recorder.elapsed=0; recorder.totalDist=0;
-  recorder._lastPos=null; recorder._segStart=null; document.getElementById('rec-bar').classList.remove('show');
-  recUpdateUI(); recTickDisplay();
+  if(recorder.watchId!==null){navigator.geolocation.clearWatch(recorder.watchId);recorder.watchId=null;}
+  clearInterval(recorder._timerInt);recorder._timerInt=null;
+  if(recorder.previewLine){map.removeLayer(recorder.previewLine);recorder.previewLine=null;}
+  recorder.isRecording=false;recorder.isPaused=false;
+  recorder.points=[];recorder.elapsed=0;recorder.totalDist=0;recorder._segStart=null;recorder._lastPos=null;
+  document.getElementById('rec-bar').classList.remove('show');
   document.getElementById('rec-save-section').style.display='none';
   document.getElementById('rec-name-inp').value='';
+  document.getElementById('rec-timer').textContent='00:00:00';
+  document.getElementById('rec-dist').textContent='0.0';
+  document.getElementById('rec-pts').textContent='0';
+  document.getElementById('rec-speed').textContent='0.0';
+  recUpdateUI();
+  document.getElementById('rec-status-txt').textContent='Bereit';
+  document.getElementById('rec-status-txt').style.color='var(--tm)';
+  LS.del(LS.K.REC);
   toast('🗑 Aufnahme verworfen');
 }
 
@@ -1154,370 +3672,131 @@ function recUpdateUI(){
 }
 
 function recTickDisplay(){
-  // displayElapsed = gespeicherte Bewegungszeit + aktuelle laufende Zeit (wenn aktiv und nicht pausiert)
-  let display = recorder.elapsed;
-  if(recorder.isRecording && !recorder.isPaused && recorder._segStart !== null){
-    display += (Date.now() - recorder._segStart);
-  }
-  const totalSec = Math.floor(display / 1000);
-  const hh = Math.floor(totalSec / 3600);
-  const mm = Math.floor((totalSec % 3600) / 60);
-  const ss = totalSec % 60;
-  const str = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-  document.getElementById('rec-timer').textContent = str;
-  document.getElementById('rec-bar-txt').textContent = str;
-  // Aktuelle Geschwindigkeit vom letzten GPS-Punkt
-  if(recorder.points.length > 0){
-    const last = recorder.points[recorder.points.length - 1];
-    document.getElementById('rec-speed').textContent = ((last.speed||0) * 3.6).toFixed(1);
+  let display=recorder.elapsed;
+  if(recorder.isRecording&&!recorder.isPaused&&recorder._segStart!==null)
+    display+=(Date.now()-recorder._segStart);
+  const totalSec=Math.floor(display/1000);
+  const hh=Math.floor(totalSec/3600),mm=Math.floor((totalSec%3600)/60),ss=totalSec%60;
+  const str=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  document.getElementById('rec-timer').textContent=str;
+  document.getElementById('rec-bar-txt').textContent=str;
+  if(recorder.points.length>0){
+    const last=recorder.points[recorder.points.length-1];
+    document.getElementById('rec-speed').textContent=((last.speed||0)*3.6).toFixed(1);
   }
 }
 
-// ── GPX Export ─────────────────────────────────────────────
-function recExportGpx(){
-  if(!recorder.points.length){ toast('⚠️ Keine Punkte zum Speichern'); return; }
-  const name=document.getElementById('rec-name-inp').value.trim()||'GMTW_Track';
-  const pts=recorder.points.map(p=>
-    `    <trkpt lat="${p.lat.toFixed(7)}" lon="${p.lng.toFixed(7)}">
-      <ele>${(p.ele||0).toFixed(1)}</ele>
-      <time>${p.time}</time>
-    </trkpt>`
-  ).join('\n');
-  const gpx=`<?xml version="1.0" encoding="UTF-8"?>
+// ── AUFNAHME SPEICHERN ─────────────────────────────────────────
+function recBuildGpxString(name){
+  const pts=recorder.points.map(p=>`    <trkpt lat="${p.lat.toFixed(7)}" lon="${p.lng.toFixed(7)}">\n      <ele>${(p.ele||0).toFixed(1)}</ele>\n      <time>${p.time}</time>\n    </trkpt>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="GMTW Trail Map" xmlns="http://www.topografix.com/GPX/1/1">
-  <metadata><name>${name}</name><time>${new Date().toISOString()}</time></metadata>
-  <trk>
-    <name>${name}</name>
+  <metadata><n>${escXml(name)}</n><time>${new Date().toISOString()}</time></metadata>
+  <trk><n>${escXml(name)}</n>
     <desc>Aufgezeichnet mit GMTW Trail Map · ${(recorder.totalDist/1000).toFixed(2)} km</desc>
-    <trkseg>
-${pts}
-    </trkseg>
+    <trkseg>\n${pts}\n    </trkseg>
   </trk>
 </gpx>`;
-  dlFile(name+'.gpx', gpx, 'application/gpx+xml');
+}
+
+function recAddToMap(){
+  if(!recorder.points.length){toast('⚠️ Keine Punkte aufgezeichnet');return;}
+  const name=document.getElementById('rec-name-inp').value.trim()||'GMTW Aufnahme';
+  const cat=document.getElementById('rec-save-cat').value;
+  const gpxStr=recBuildGpxString(name);
+  loadGpxFromString(gpxStr,name,cat);
+  // Preview-Linie entfernen (wird durch GPX-Layer ersetzt)
+  if(recorder.previewLine){map.removeLayer(recorder.previewLine);recorder.previewLine=null;}
+  // Recorder zurücksetzen
+  recorder.points=[];recorder.elapsed=0;recorder.totalDist=0;recorder._segStart=null;
+  document.getElementById('rec-save-section').style.display='none';
+  document.getElementById('rec-name-inp').value='';
+  document.getElementById('rec-timer').textContent='00:00:00';
+  document.getElementById('rec-dist').textContent='0.0';
+  document.getElementById('rec-pts').textContent='0';
+  recUpdateUI();
+  document.getElementById('rec-status-txt').textContent='Bereit';
+  document.getElementById('rec-status-txt').style.color='var(--tm)';
+  LS.del(LS.K.REC);
+  toast(`✅ "${escHtml(name)}" zur Karte hinzugefügt!`);
+  setTimeout(()=>switchGpxTab('tracks',document.querySelector('.gpx-tab[data-tab="tracks"]')),400);
+}
+
+function recExportGpx(){
+  if(!recorder.points.length){toast('⚠️ Keine Punkte zum Speichern');return;}
+  const name=document.getElementById('rec-name-inp').value.trim()||'GMTW_Track';
+  dlFile(name+'.gpx',recBuildGpxString(name),'application/gpx+xml');
   toast('⬇ GPX gespeichert!');
 }
 
-// ── JSON Export ────────────────────────────────────────────
 function recExportJson(){
-  if(!recorder.points.length){ toast('⚠️ Keine Punkte zum Speichern'); return; }
+  if(!recorder.points.length){toast('⚠️ Keine Punkte zum Speichern');return;}
   const name=document.getElementById('rec-name-inp').value.trim()||'GMTW_Track';
-  const data={ name, creator:'GMTW Trail Map', created:new Date().toISOString(),
-    stats:{ points:recorder.points.length, distanceKm:(recorder.totalDist/1000).toFixed(3),
-            elapsedMs:recorder.elapsed },
-    points:recorder.points
-  };
-  dlFile(name+'.json', JSON.stringify(data,null,2), 'application/json');
+  dlFile(name+'.json',JSON.stringify({name,creator:'GMTW Trail Map',created:new Date().toISOString(),stats:{points:recorder.points.length,distanceKm:(recorder.totalDist/1000).toFixed(3),elapsedMs:recorder.elapsed},points:recorder.points},null,2),'application/json');
   toast('⬇ JSON gespeichert!');
 }
 
-function dlFile(filename, content, mime){
+function dlFile(filename,content,mime){
   const blob=new Blob([content],{type:mime});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download=filename;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// AUFNAHME → IN KARTE LADEN
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * Konvertiert die aufgezeichneten Punkte in einen GPX-String
- */
-function recBuildGpxString(name){
-  const pts = recorder.points.map(p =>
-    `    <trkpt lat="${p.lat.toFixed(7)}" lon="${p.lng.toFixed(7)}">\n      <ele>${(p.ele||0).toFixed(1)}</ele>\n      <time>${p.time}</time>\n    </trkpt>`
-  ).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="GMTW Trail Map" xmlns="http://www.topografix.com/GPX/1/1">
-  <metadata>
-    <name>${escXml(name)}</name>
-    <time>${new Date().toISOString()}</time>
-  </metadata>
-  <trk>
-    <name>${escXml(name)}</name>
-    <desc>Aufgezeichnet mit GMTW Trail Map · ${(recorder.totalDist/1000).toFixed(2)} km</desc>
-    <trkseg>
-${pts}
-    </trkseg>
-  </trk>
-</gpx>`;
-}
-
-function escXml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-/**
- * Aufnahme direkt als Track in die Karte laden (ohne Export/Import)
- */
-function recAddToMap(){
-  if(!recorder.points.length){ toast('⚠️ Keine Punkte aufgezeichnet'); return; }
-  const name = document.getElementById('rec-name-inp').value.trim() || 'GMTW Aufnahme';
-  const cat  = document.getElementById('rec-save-cat').value;
-
-  // GPX-String bauen → Blob → Layer
-  const gpxStr = recBuildGpxString(name);
-  loadGpxFromString(gpxStr, name, cat);
-
-  // Aufnahme-UI zurücksetzen (Linie bleibt als Layer erhalten)
-  if(recorder.previewLine){ map.removeLayer(recorder.previewLine); recorder.previewLine = null; }
-  recorder.points = []; recorder.elapsed = 0; recorder.totalDist = 0; recorder._segStart = null;
-  document.getElementById('rec-save-section').style.display = 'none';
-  document.getElementById('rec-name-inp').value = '';
-  recUpdateUI();
-  document.getElementById('rec-status-txt').textContent = 'Bereit';
-  document.getElementById('rec-status-txt').style.color = 'var(--tm)';
-  document.getElementById('rec-timer').textContent = '00:00:00';
-  document.getElementById('rec-dist').textContent = '0.0';
-  document.getElementById('rec-pts').textContent = '0';
-  document.getElementById('rec-speed').textContent = '0.0';
-
-  toast(`✅ "${name}" zur Karte hinzugefügt!`);
-  // Zu Tracks-Tab wechseln
-  setTimeout(()=> switchGpxTab('tracks', document.querySelector('.gpx-tab[data-tab="tracks"]')), 500);
-}
-
-// ═══════════════════════════════════════════════════════════════
-// TRACK QR-CODE SYSTEM
-// ═══════════════════════════════════════════════════════════════
-
-let curTrkQrId = null; // ID des aktuell im QR-Modal angezeigten Tracks
-
-/**
- * QR-Code für einen geladenen Track öffnen
- * Strategy:
- * - Der QR-Code encodiert eine data:text/plain URI mit dem GPX-Inhalt
- *   → beim Scannen lädt der Browser das GPX direkt herunter
- * - Wenn GPX-Inhalt > 2.5KB (QR limit): QR-Code zeigt Anleitung
- */
-function openTrackQR(trackId){
-  const t = trackStore.tracks.find(t=>t.id===trackId);
-  if(!t){ toast('❌ Track nicht gefunden'); return; }
-  curTrkQrId = trackId;
-
-  document.getElementById('trk-qr-nm').textContent = t.name;
-
-  // GPX-Inhalt aus dem Layer extrahieren
-  extractGpxFromLayer(t).then(gpxStr => {
-    const gpxBytes = new Blob([gpxStr]).size;
-    const catLabel = t.cat.charAt(0).toUpperCase() + t.cat.slice(1);
-    const hint = `${catLabel} · ${t.stats.dist} km · ${gpxBytes > 1024 ? (gpxBytes/1024).toFixed(1)+' KB' : gpxBytes+' B'}`;
-
-    document.getElementById('trk-qr-info').innerHTML =
-      `<strong>${t.name}</strong><br>Kategorie: ${catLabel} · Distanz: ${t.stats.dist} km`;
-
-    // QR-Code Entscheidung
-    let qrData;
-    let hintText;
-
-    if(t.sourceUrl){
-      // URL-geladen: QR der Original-URL → in GMTW-App öffnbar
-      qrData = t.sourceUrl;
-      hintText = 'QR scannen → Track-URL öffnen';
-    } else if(gpxBytes <= 2500){
-      // Klein genug: Data-URI (Base64 GPX) → Browser lädt GPX herunter beim Scan
-      const b64 = btoa(unescape(encodeURIComponent(gpxStr)));
-      qrData = `data:application/gpx+xml;base64,${b64}`;
-      hintText = 'QR scannen → GPX direkt auf Gerät laden';
-    } else {
-      // Zu groß: Google Maps Waypoints der Start/End-Punkte
-      const coords = extractWaypoints(t);
-      qrData = `https://www.google.com/maps/dir/?api=1&origin=${coords.start}&destination=${coords.end}&travelmode=bicycling`;
-      hintText = 'QR scannen → Start/Ziel in Google Maps';
-      document.getElementById('trk-qr-info').innerHTML +=
-        '<br><span style="color:var(--mit)">⚠️ GPX zu groß für QR — zeigt Start/Ziel</span>';
-    }
-
-    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=0b0e14&margin=10&format=png`;
-    document.getElementById('trk-qr-hint').textContent = hintText;
-    const img = document.getElementById('trk-qr-img');
-    img.src = ''; img.src = qrSrc;
-
-    // Store GPX für Download
-    document.getElementById('trk-qr-dl-btn').dataset.gpx = gpxStr;
-    document.getElementById('trk-qr-dl-btn').dataset.name = t.name;
-
-    closeAll();
-    const modal = document.getElementById('trk-qrm');
-    modal.style.opacity = '0'; modal.style.visibility = 'visible';
-    modal.style.transform = 'translate(-50%,-50%) scale(.88)';
-    requestAnimationFrame(()=>{
-      modal.style.transition = 'all .25s cubic-bezier(.32,.72,0,1)';
-      modal.style.opacity = '1';
-      modal.style.transform = 'translate(-50%,-50%) scale(1)';
-    });
-    document.getElementById('backdrop').classList.add('show');
-  });
-}
-
-/** GPX-Inhalt aus einem leaflet-gpx Layer re-extrahieren */
-async function extractGpxFromLayer(track){
-  // Koordinaten aus den Polylines des GPX-Layers extrahieren
-  const lines = [];
-  track.gpxLayer.eachLayer(layer => {
-    if(layer.getLatLngs){
-      try {
-        const coords = layer.getLatLngs();
-        if(coords && coords.length > 0) lines.push(coords);
-      } catch(e){}
-    }
-  });
-
-  let allPts = [];
-  lines.forEach(segment => {
-    if(Array.isArray(segment[0])){
-      segment.forEach(sub => allPts = allPts.concat(sub));
-    } else {
-      allPts = allPts.concat(segment);
-    }
-  });
-
-  if(!allPts.length) return buildSimpleGpx(track.name, []);
-
-  const pts = allPts.map(ll =>
-    `    <trkpt lat="${ll.lat.toFixed(7)}" lon="${ll.lng.toFixed(7)}"></trkpt>`
-  ).join('\n');
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="GMTW Trail Map" xmlns="http://www.topografix.com/GPX/1/1">
-  <metadata><name>${escXml(track.name)}</name></metadata>
-  <trk>
-    <name>${escXml(track.name)}</name>
-    <desc>Kategorie: ${track.cat} · ${track.stats.dist} km</desc>
-    <trkseg>
-${pts}
-    </trkseg>
-  </trk>
-</gpx>`;
-}
-
-function buildSimpleGpx(name, pts){ return `<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1"><trk><name>${escXml(name)}</name></trk></gpx>`; }
-
-function extractWaypoints(track){
-  try{
-    const b = track.gpxLayer.getBounds();
-    return { start:`${b.getSouthWest().lat.toFixed(5)},${b.getSouthWest().lng.toFixed(5)}`,
-             end:`${b.getNorthEast().lat.toFixed(5)},${b.getNorthEast().lng.toFixed(5)}` };
-  }catch(e){ return {start:'0,0',end:'0,0'}; }
-}
-
-/** GPX-Datei direkt herunterladen (aus QR-Modal) */
-function trkQrDownloadGpx(){
-  const btn = document.getElementById('trk-qr-dl-btn');
-  const gpxStr = btn.dataset.gpx;
-  const name = btn.dataset.name || 'GMTW_Track';
-  if(!gpxStr){ toast('❌ Kein GPX verfügbar'); return; }
-  dlFile(name + '.gpx', gpxStr, 'application/gpx+xml');
-  toast('⬇ GPX gespeichert!');
-}
-
-/** QR-Bild herunterladen */
-async function trkQrDownloadImg(){
-  const img = document.getElementById('trk-qr-img');
-  if(!img.src){ toast('⏳ QR wird geladen…'); return; }
-  try{
-    const r = await fetch(img.src);
-    const b = await r.blob();
-    const t = trackStore.tracks.find(t=>t.id===curTrkQrId);
-    const name = (t ? t.name : 'GMTW_Track').replace(/[^a-zA-Z0-9_-]/g,'_');
-    const u = URL.createObjectURL(b);
-    const a = document.createElement('a'); a.href=u; a.download=name+'_QR.png';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(u); toast('⬇ QR-Bild gespeichert!');
-  }catch(e){ window.open(img.src,'_blank'); }
-}
-
-/** Link des QR-Inhalts kopieren */
-function trkQrCopyUrl(){
-  const t = trackStore.tracks.find(t=>t.id===curTrkQrId);
-  const url = (t && t.sourceUrl) ? t.sourceUrl : window.location.href;
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(url).then(()=>toast('📋 Link kopiert!'));
-  } else { legacyCopy(url); toast('📋 Link kopiert!'); }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// TRACK QR-Button in renderTrackList ergänzen
-// (ersetze renderTrackList komplett mit verbesserter Version)
-// ═══════════════════════════════════════════════════════════════
-
-function renderTrackList(){
-  const cont = document.getElementById('trk-list'); if(!cont) return;
-  const filtered = gpxFilter==='all' ? trackStore.tracks : trackStore.tracks.filter(t=>t.cat===gpxFilter);
-  if(!filtered.length){
-    cont.innerHTML = '<div style="padding:20px 16px;text-align:center;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px">'
-      + (trackStore.tracks.length ? 'Keine Tracks in dieser Kategorie' : 'Noch keine Tracks geladen') + '</div>';
-    return;
+// ── LOKALSTORAGE: RECORDER PERSISTENZ ─────────────────────────
+function persistRecorder(){
+  if(recorder.points.length>0){
+    LS.set(LS.K.REC,{points:recorder.points,totalDist:recorder.totalDist,elapsed:recorder.elapsed,savedAt:Date.now()});
   }
-  cont.innerHTML = '';
-  filtered.forEach(t => {
-    const row = document.createElement('div'); row.className = 'trk-row';
-    row.innerHTML =
-      `<div class="trk-dot" style="background:${t.color}"></div>
-      <div class="trk-inf" style="cursor:pointer" onclick="zoomTrack('${t.id}')">
-        <div class="trk-nm">${t.name}</div>
-        <div class="trk-meta">${t.cat.charAt(0).toUpperCase()+t.cat.slice(1)} · ${t.stats.dist} km · ${t.stats.dur}</div>
-      </div>
-      <div class="trk-btns">
-        <button class="trk-btn${t.visible?' on':''}" title="${t.visible?'Ausblenden':'Einblenden'}" onclick="toggleTrack('${t.id}')">
-          ${t.visible
-            ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="1.8" fill="currentColor"/></svg>'
-            : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4" opacity=".3"/><path d="M2 2L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'}
-        </button>
-        <button class="trk-btn" title="QR / GPX Download" onclick="openTrackQR('${t.id}')" style="color:var(--ac)">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><path d="M8 8h1v1M10 8h1M8 10v1M10 11h1M11 10v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        </button>
-        <button class="trk-btn" title="Löschen" onclick="removeTrack('${t.id}')" style="color:#ef4444">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4H12M5 4V2H9V4M11 4L10 12H4L3 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>`;
-    cont.appendChild(row);
-  });
-  document.getElementById('gpx-track-cnt').textContent =
-    trackStore.tracks.length + ' Track' + (trackStore.tracks.length !== 1 ? 's' : '');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// TRACK QR MODAL close-Unterstützung
-// ═══════════════════════════════════════════════════════════════
-document.getElementById('trk-qrm').addEventListener('click', e => {
-  if(e.target === e.currentTarget) closeAll();
+function restoreRecorder(){
+  const saved=LS.get(LS.K.REC);
+  if(!saved||!saved.points||!saved.points.length)return;
+  const ageMins=Math.round((Date.now()-saved.savedAt)/60000);
+  const ageTxt=ageMins<60?`${ageMins} Min`:`${Math.round(ageMins/60)} Std`;
+  setTimeout(()=>{
+    if(confirm(`📍 Unterbrochene Aufnahme gefunden!\n${saved.points.length} Punkte · ${(saved.totalDist/1000).toFixed(2)} km · vor ${ageTxt}\n\nWiederherstellen?`)){
+      recorder.points=saved.points;
+      recorder.totalDist=saved.totalDist;
+      recorder.elapsed=saved.elapsed;
+      recorder._lastPos=saved.points.length>0?{lat:saved.points[saved.points.length-1].lat,lng:saved.points[saved.points.length-1].lng}:null;
+      if(recorder.previewLine)map.removeLayer(recorder.previewLine);
+      recorder.previewLine=L.polyline(saved.points.map(p=>[p.lat,p.lng]),{color:'#ef4444',weight:3,opacity:.85,dashArray:'6 4'}).addTo(map);
+      document.getElementById('rec-pts').textContent=saved.points.length;
+      document.getElementById('rec-dist').textContent=(saved.totalDist/1000).toFixed(2);
+      document.getElementById('rec-save-section').style.display='';
+      document.getElementById('rec-status-txt').textContent=`Wiederhergestellt · ${saved.points.length} Punkte`;
+      document.getElementById('rec-status-txt').style.color='var(--ac)';
+      toast(`✅ ${saved.points.length} Punkte wiederhergestellt`);
+      openGpxPanel('rec');
+    } else {
+      LS.del(LS.K.REC);
+    }
+  },1800);
+}
+
+// ── BEFOREUNLOAD SAFETY NET ────────────────────────────────────
+window.addEventListener('beforeunload',e=>{
+  if(recorder.isRecording&&recorder.points.length>0){
+    persistRecorder();
+    e.preventDefault();
+    e.returnValue=`Aufnahme läuft! ${recorder.points.length} GPS-Punkte werden gespeichert.`;
+    return e.returnValue;
+  }
+  if(!recorder.isRecording&&recorder.points.length>0) persistRecorder();
 });
+// Autosave alle 15 Sekunden
+setInterval(()=>{if(recorder.isRecording&&recorder.points.length>0)persistRecorder();},15000);
 
-// trk-qrm bei closeAll mit ausblenden (schon in closeAll integriert via show-class fix)
-// Stelle sicher dass das Modal auch via backdrop geschlossen wird
-(function(){
-  const orig = document.getElementById('backdrop').onclick;
-  document.getElementById('backdrop').onclick = function(){
-    closeAll();
-    document.getElementById('trk-qrm').style.opacity = '0';
-    document.getElementById('trk-qrm').style.visibility = 'hidden';
-    document.getElementById('trk-qrm').style.transform = 'translate(-50%,-50%) scale(.88)';
-  };
-})();
-
-// ═══════════════════════════════════════════════════════════════
-// TRACK SOURCE URL SPEICHERN (für QR)
-// ═══════════════════════════════════════════════════════════════
-// createGpxLayer erweitern: sourceUrl im Track-Objekt speichern
-// → wird benötigt für Track-QR bei URL-geladenen Tracks
-// Diese Funktion patcht den createGpxLayer-Handler nachträglich
-const _origCreateGpxLayer = createGpxLayer;
-// (sourceUrl wird direkt im loaded-Event gesetzt - siehe createGpxLayer Patch unten)
-
-// ═══════════════════════════════════════════════════════════════
-// TRK-QRM CSS Fix (Show-State via style, nicht class)
-// ═══════════════════════════════════════════════════════════════
-// closeAll patcht trk-qrm über style attributes (kein .show needed)
-const _closeAllRef = closeAll;
-closeAll = function(){
-  _closeAllRef();
-  const m = document.getElementById('trk-qrm');
-  if(m){ m.style.opacity='0'; m.style.visibility='hidden'; m.style.transform='translate(-50%,-50%) scale(.88)'; }
-};
-
+// ── LEAFLET-GPX FALLBACK ────────────────────────────────────────
+function leafletGpxFallback(){
+  // Wenn CDN gpx.min.js scheitert: alternatives CDN versuchen
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/leaflet-gpx@1.7.0/gpx.min.js';
+  document.head.appendChild(s);
+  console.warn('leaflet-gpx CDN fallback triggered');
+}
 </script>
 </body>
 </html>
