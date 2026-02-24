@@ -2821,9 +2821,72 @@ function escXml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 // ── LOKALSTORAGE: sicheres Lesen/Schreiben ─────────────────────
 const LS = {
   K: { TRACKS:'gmtw_tracks_v2', REC:'gmtw_rec_v2', VIEW:'gmtw_view_v1', THEME:'gmtw_theme' },
-  set(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); return true; }catch(e){ if(e.name==='QuotaExceededError') toast('⚠️ Speicher voll!'); return false; } },
-  get(key,fb=null){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):fb; }catch(e){ return fb; } },
-  del(key){ try{ localStorage.removeItem(key); }catch(e){} }
+  _ok: null,
+
+  // Prüft ob localStorage verfügbar ist (Private Mode, iOS-Restrictions etc.)
+  ok() {
+    if (this._ok !== null) return this._ok;
+    try {
+      localStorage.setItem('__gmtw_probe__','1');
+      localStorage.removeItem('__gmtw_probe__');
+      this._ok = true;
+    } catch(e) { this._ok = false; }
+    return this._ok;
+  },
+
+  set(key, val) {
+    if (!this.ok()) return false;
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+      return true;
+    } catch(e) {
+      const isQuota = e.name==='QuotaExceededError'
+        || e.name==='NS_ERROR_DOM_QUOTA_REACHED'
+        || e.code===22;
+      if (isQuota) {
+        // Key löschen, nochmal versuchen
+        try {
+          localStorage.removeItem(key);
+          localStorage.setItem(key, JSON.stringify(val));
+          return true;
+        } catch(e2) {
+          console.warn('localStorage quota exceeded:', key);
+          return false;
+        }
+      }
+      console.warn('localStorage.set error:', key, e);
+      return false;
+    }
+  },
+
+  get(key, fb=null) {
+    if (!this.ok()) return fb;
+    try {
+      const raw = localStorage.getItem(key);
+      return raw !== null ? JSON.parse(raw) : fb;
+    } catch(e) { return fb; }
+  },
+
+  del(key) {
+    if (!this.ok()) return;
+    try { localStorage.removeItem(key); } catch(e) {}
+  },
+
+  // Belegten Speicher (nur gmtw_* Keys) in Bytes schätzen
+  usedBytes() {
+    if (!this.ok()) return 0;
+    try {
+      let n = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('gmtw_')) {
+          const v = localStorage.getItem(k) || '';
+          n += (k.length + v.length) * 2;
+        }
+      }
+      return n;
+    } catch(e) { return 0; }
+  }
 };
 
 // ── DATEN ──────────────────────────────────────────────────────
@@ -3197,212 +3260,429 @@ window.addEventListener('load',()=>{
 });
 
 // ── GPX SYSTEM ─────────────────────────────────────────────────
-let useProxy=false;
-function useCorsProxy(){useProxy=!useProxy;toast(useProxy?'🔀 CORS-Proxy aktiv':'🔀 Direktverbindung');}
-const trackStore={tracks:[],_id:1};
-let gpxFilter='all';
+// ═══════════════════════════════════════════════════════════════
+// ROOT CAUSE: leaflet-gpx nutzt XHR für URLs → auf iOS/Android
+// liefern blob: URLs status=0 → 'loaded' Event feuert NIE.
+//
+// FIX: GPX-XML-String direkt an new L.GPX(string) übergeben.
+// leaflet-gpx prüft: if(input.substr(0,1)==='<') → DOMParser.
+// DOMParser hat KEINEN status-Check → 100% zuverlässig.
+// ═══════════════════════════════════════════════════════════════
 
-function openGpxPanel(tab='load'){
+let useProxy = false;
+function useCorsProxy() { useProxy=!useProxy; toast(useProxy?'🔀 CORS-Proxy aktiv':'🔀 Direktverbindung'); }
+
+const trackStore = { tracks:[], _id:1 };
+let gpxFilter = 'all';
+
+// GPX-String bereinigen: BOM, Whitespace, XML-Startpunkt finden
+function sanitizeGpx(str) {
+  if (!str) return '';
+  if (str.charCodeAt(0) === 0xFEFF) str = str.slice(1); // UTF-8 BOM
+  str = str.trim();
+  if (!str.startsWith('<')) {
+    const xmlIdx = str.indexOf('<?xml');
+    const gpxIdx = str.indexOf('<gpx');
+    const start = Math.min(
+      xmlIdx >= 0 ? xmlIdx : Infinity,
+      gpxIdx >= 0 ? gpxIdx : Infinity
+    );
+    if (isFinite(start)) str = str.slice(start);
+  }
+  return str;
+}
+
+function openGpxPanel(tab='load') {
   closeAll();
   document.getElementById('gpx-panel').classList.add('open');
   document.getElementById('backdrop').classList.add('show');
-  switchGpxTab(tab,document.querySelector(`.gpx-tab[data-tab="${tab}"]`));
+  switchGpxTab(tab, document.querySelector(`.gpx-tab[data-tab="${tab}"]`));
   map.invalidateSize();
 }
-function closeGpxPanel(){
+function closeGpxPanel() {
   document.getElementById('gpx-panel').classList.remove('open');
   document.getElementById('backdrop').classList.remove('show');
   map.invalidateSize();
 }
-function switchGpxTab(tab,btn){
-  document.querySelectorAll('.gpx-tab').forEach(t=>t.classList.remove('on'));
-  document.querySelectorAll('.gpx-content').forEach(c=>c.classList.remove('on'));
-  if(btn) btn.classList.add('on');
-  else{const b=document.querySelector(`.gpx-tab[data-tab="${tab}"]`);if(b)b.classList.add('on');}
-  const el=document.getElementById(`gpx-tab-${tab}`);
-  if(el){el.classList.add('on');if(tab==='tracks')renderTrackList();}
+function switchGpxTab(tab, btn) {
+  document.querySelectorAll('.gpx-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.gpx-content').forEach(c => c.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  else { const b = document.querySelector(`.gpx-tab[data-tab="${tab}"]`); if(b) b.classList.add('on'); }
+  const el = document.getElementById(`gpx-tab-${tab}`);
+  if (el) { el.classList.add('on'); if(tab==='tracks') renderTrackList(); }
 }
 
-function handleGpxFiles(input){
-  const cat=document.getElementById('gpx-cat').value;
-  Array.from(input.files).forEach(file=>{
-    if(trackStore.tracks.length>=50){toast('⚠️ Max. 50 Tracks');return;}
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const gpxStr=e.target.result;
-      if(!gpxStr.includes('<gpx')){toast('❌ Keine gültige GPX-Datei: '+escHtml(file.name));return;}
-      loadGpxFromString(gpxStr,file.name.replace(/\.gpx$/i,''),cat);
+// ── DATEI-UPLOAD ───────────────────────────────────────────────
+function handleGpxFiles(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  const cat = document.getElementById('gpx-cat').value;
+  let pending = files.length;
+  // input.value erst nach ALLEN Lesevorgängen zurücksetzen
+  const done = () => { if (--pending <= 0) input.value = ''; };
+
+  files.forEach(file => {
+    if (trackStore.tracks.length >= 50) { toast('⚠️ Max. 50 Tracks'); done(); return; }
+
+    const reader = new FileReader();
+
+    reader.onload = function(ev) {
+      try {
+        const gpxStr = sanitizeGpx(ev.target.result);
+
+        if (!gpxStr.startsWith('<')) {
+          toast('❌ ' + escHtml(file.name) + ': Kein XML-Inhalt'); done(); return;
+        }
+        if (!gpxStr.includes('trk') && !gpxStr.includes('rte') && !gpxStr.includes('wpt')) {
+          toast('❌ ' + escHtml(file.name) + ': Keine Track-Daten'); done(); return;
+        }
+
+        const name = file.name.replace(/\.gpx$/i, '').replace(/[_-]+/g, ' ').trim() || 'Track';
+        // DIREKT als XML-String laden — kein Blob, kein XHR!
+        loadGpxXml(gpxStr, name, cat);
+      } catch(err) {
+        toast('❌ Fehler beim Lesen: ' + escHtml(file.name));
+        console.error('GPX file read error:', err);
+      }
+      done();
     };
-    reader.onerror=()=>toast('❌ Fehler beim Lesen: '+escHtml(file.name));
-    reader.readAsText(file);
+
+    reader.onerror = () => { toast('❌ Datei nicht lesbar: ' + escHtml(file.name)); done(); };
+    reader.readAsText(file, 'UTF-8');
   });
-  input.value='';
 }
 
-function loadGpxFromUrl(){
-  let url=document.getElementById('gpx-url-inp').value.trim();
-  if(!url){toast('⚠️ Bitte URL eingeben');return;}
-  if(trackStore.tracks.length>=50){toast('⚠️ Max. 50 Tracks');return;}
-  if(useProxy) url=`https://corsproxy.io/?${encodeURIComponent(url)}`;
-  const cat=document.getElementById('gpx-cat').value;
-  const name=url.split('/').pop().replace(/\.gpx$/i,'').replace(/_/g,' ')||'Track';
+// ── URL-LADEN ─────────────────────────────────────────────────
+async function loadGpxFromUrl() {
+  const inp = document.getElementById('gpx-url-inp');
+  const rawUrl = inp.value.trim();
+  if (!rawUrl) { toast('⚠️ URL eingeben'); return; }
+  if (trackStore.tracks.length >= 50) { toast('⚠️ Max. 50 Tracks'); return; }
+  const cat = document.getElementById('gpx-cat').value;
+  const name = rawUrl.split('/').pop().split('?')[0]
+    .replace(/\.gpx$/i,'').replace(/[_-]+/g,' ').trim() || 'Track';
+  inp.value = '';
   toast('⏳ Lade GPX…');
-  createGpxLayer(url,cat,name);
-  document.getElementById('gpx-url-inp').value='';
+
+  // Versuche zuerst direkt, dann mit Proxy
+  const attempts = useProxy
+    ? [`https://corsproxy.io/?${encodeURIComponent(rawUrl)}`]
+    : [rawUrl, `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`];
+
+  for (let i = 0; i < attempts.length; i++) {
+    const url = attempts[i];
+    try {
+      const resp = await fetch(url, { mode:'cors', credentials:'omit' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const txt = await resp.text();
+      const gpxStr = sanitizeGpx(txt);
+      if (!gpxStr.startsWith('<')) throw new Error('Kein XML');
+      loadGpxXml(gpxStr, name, cat, null, rawUrl);
+      return;
+    } catch(err) {
+      console.warn(`GPX fetch attempt ${i+1} failed:`, err.message);
+      if (i < attempts.length - 1) {
+        toast('⚠️ CORS-Problem, versuche Proxy…');
+      } else {
+        toast('❌ GPX laden fehlgeschlagen — URL oder Verbindung prüfen');
+      }
+    }
+  }
 }
 
-function loadGpxFromString(gpxStr,name,cat){
-  const blob=new Blob([gpxStr],{type:'application/gpx+xml'});
-  const blobUrl=URL.createObjectURL(blob);
-  createGpxLayer(blobUrl,cat,name,null,gpxStr);
-  setTimeout(()=>URL.revokeObjectURL(blobUrl),4000);
-}
+// ── KERN-FUNKTION: XML-String → Leaflet-Layer ─────────────────
+// Übergibt den XML-String direkt an L.GPX.
+// leaflet-gpx erkennt '<' als Präfix → DOMParser (kein XHR!).
+function loadGpxXml(gpxStr, name, cat, existingId=null, sourceUrl=null) {
+  if (!gpxStr || !gpxStr.startsWith('<')) {
+    toast('❌ Ungültiger GPX-Inhalt für: ' + escHtml(name));
+    return null;
+  }
 
-function createGpxLayer(source,cat,name,existingId=null,gpxString=null){
-  const color=GPX_COLORS[cat]||'#27AE60';
-  const id=existingId||('trk-'+trackStore._id++);
-  const layer=new L.GPX(source,{
-    async:true,
-    marker_options:{startIconUrl:null,endIconUrl:null,shadowUrl:null,wptIconUrls:{'':null}},
-    polyline_options:{color,weight:4,opacity:.85,lineCap:'round',lineJoin:'round'}
+  const color = GPX_COLORS[cat] || '#27AE60';
+  const id = existingId || ('trk-' + trackStore._id++);
+
+  const layer = new L.GPX(gpxStr, {
+    async: true,
+    marker_options: {
+      startIconUrl: null, endIconUrl: null, shadowUrl: null,
+      wptIconUrls: { '': null }
+    },
+    polyline_options: {
+      color, weight: 4.5, opacity: 0.9, lineCap: 'round', lineJoin: 'round'
+    }
   });
-  layer.on('loaded',function(e){
-    const gl=e.target;
-    let dist='?',dur='?';
-    try{dist=(gl.get_distance()/1000).toFixed(2);}catch(ex){}
-    try{const d=gl.get_total_time();if(d){const m=Math.round(d/60000);dur=`${Math.floor(m/60)}h ${m%60}m`;}}catch(ex){}
-    const bounds=(()=>{try{const b=gl.getBounds();return b&&b.isValid&&b.isValid()?b:null;}catch(e){return null;}})();
-    const track={
-      id,name,cat,color,gpxLayer:gl,visible:true,
-      sourceUrl:(source&&source.startsWith('http')&&!source.startsWith('blob:'))?source:null,
-      gpxString:gpxString||null,
+
+  layer.on('loaded', function(e) {
+    const gl = e.target;
+
+    let dist = '?', dur = '—';
+    try { dist = (gl.get_distance() / 1000).toFixed(2); } catch(ex) {}
+    try {
+      const ms = gl.get_total_time();
+      if (ms) {
+        const m = Math.round(ms / 60000);
+        dur = m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
+      }
+    } catch(ex) {}
+
+    const bounds = (() => {
+      try { const b = gl.getBounds(); return (b && b.isValid && b.isValid()) ? b : null; }
+      catch(ex) { return null; }
+    })();
+
+    const track = {
+      id, name, cat, color,
+      gpxLayer: gl, visible: true,
+      sourceUrl: sourceUrl || null,
+      gpxString: gpxStr,       // für localStorage & QR immer speichern
       bounds,
-      stats:{dist,dur},
-      elevData:extractElevData(gl)
+      stats: { dist, dur },
+      elevData: extractElevData(gl)
     };
+
     trackStore.tracks.push(track);
     updateGpxBadge();
     renderTrackList();
     persistTracks();
-    toast(`✅ "${escHtml(name)}" geladen (${dist} km)`);
-    if(bounds) map.flyToBounds(bounds,{padding:[40,40],maxZoom:16,animate:true,duration:1.2});
-    switchGpxTab('tracks',null);
+
+    toast(`✅ "${escHtml(name)}" · ${dist} km`);
+    if (bounds) map.flyToBounds(bounds, { padding:[44,44], maxZoom:16, animate:true, duration:1.2 });
+    switchGpxTab('tracks', null);
   });
-  layer.on('error',function(e){
-    toast('❌ GPX Fehler – URL prüfen oder CORS-Proxy aktivieren');
-    console.warn('GPX error:',e);
+
+  layer.on('error', function(e) {
+    const msg = (e && e.err) ? String(e.err).substring(0, 80) : 'Parse-Fehler';
+    toast('❌ GPX: ' + msg);
+    console.error('L.GPX error:', e, '\nGPX start:', gpxStr.substring(0, 300));
   });
+
   layer.addTo(map);
   return layer;
 }
 
-function toggleTrack(id){
-  const t=trackStore.tracks.find(t=>t.id===id);if(!t)return;
-  if(t.visible){map.removeLayer(t.gpxLayer);t.visible=false;}
-  else{t.gpxLayer.addTo(map);t.visible=true;}
+// Alias-Funktion für Abwärtskompatibilität
+function loadGpxFromString(gpxStr, name, cat) {
+  loadGpxXml(sanitizeGpx(gpxStr), name, cat);
+}
+
+// ── TRACK-VERWALTUNG ──────────────────────────────────────────
+function toggleTrack(id) {
+  const t = trackStore.tracks.find(t => t.id===id); if(!t) return;
+  if (t.visible) { map.removeLayer(t.gpxLayer); t.visible=false; }
+  else           { t.gpxLayer.addTo(map);        t.visible=true;  }
   renderTrackList();
 }
 
-function removeTrack(id){
-  const idx=trackStore.tracks.findIndex(t=>t.id===id);if(idx<0)return;
+function removeTrack(id) {
+  const idx = trackStore.tracks.findIndex(t => t.id===id); if(idx<0) return;
   map.removeLayer(trackStore.tracks[idx].gpxLayer);
-  trackStore.tracks.splice(idx,1);
+  trackStore.tracks.splice(idx, 1);
   updateGpxBadge();
   renderTrackList();
   persistTracks();
-  document.getElementById('elev-panel').style.display='none';
+  document.getElementById('elev-panel').style.display = 'none';
   toast('🗑 Track entfernt');
 }
 
-function zoomTrack(id){
-  const t=trackStore.tracks.find(t=>t.id===id);if(!t)return;
-  try{
-    const b=t.bounds||t.gpxLayer.getBounds();
-    if(b&&b.isValid&&b.isValid()) map.flyToBounds(b,{padding:[40,40],maxZoom:16,animate:true,duration:1});
-  }catch(e){console.warn('zoomTrack:',e);}
+function zoomTrack(id) {
+  const t = trackStore.tracks.find(t => t.id===id); if(!t) return;
+  try {
+    const b = t.bounds || t.gpxLayer.getBounds();
+    if (b && b.isValid && b.isValid())
+      map.flyToBounds(b, { padding:[44,44], maxZoom:16, animate:true, duration:1 });
+  } catch(e) { console.warn('zoomTrack error:', e); }
 }
 
-function filterTracks(cat,btn){
-  gpxFilter=cat;
-  document.querySelectorAll('.cat-fbtn').forEach(b=>b.classList.remove('on'));
-  if(btn)btn.classList.add('on');
-  document.getElementById('elev-panel').style.display='none';
+function filterTracks(cat, btn) {
+  gpxFilter = cat;
+  document.querySelectorAll('.cat-fbtn').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  document.getElementById('elev-panel').style.display = 'none';
   renderTrackList();
 }
 
-function renderTrackList(){
-  const cont=document.getElementById('trk-list');if(!cont)return;
-  const filtered=gpxFilter==='all'?trackStore.tracks:trackStore.tracks.filter(t=>t.cat===gpxFilter);
-  if(!filtered.length){
-    cont.innerHTML=`<div style="padding:20px 16px;text-align:center;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px">${trackStore.tracks.length?'Keine Tracks in dieser Kategorie':'Noch keine Tracks geladen'}</div>`;
+function renderTrackList() {
+  const cont = document.getElementById('trk-list'); if(!cont) return;
+  const list = gpxFilter==='all'
+    ? trackStore.tracks
+    : trackStore.tracks.filter(t => t.cat===gpxFilter);
+
+  if (!list.length) {
+    cont.innerHTML = `<div style="padding:20px 16px;text-align:center;color:var(--td);`
+      + `font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;`
+      + `letter-spacing:1px">${trackStore.tracks.length
+        ? 'Keine Tracks in dieser Kategorie' : 'Noch keine Tracks geladen'}</div>`;
     return;
   }
-  cont.innerHTML='';
-  filtered.forEach(t=>{
-    const row=document.createElement('div');row.className='trk-row';row.setAttribute('role','listitem');
-    const hasElev=!!(t.elevData&&t.elevData.length>1);
-    row.innerHTML=`<div class="trk-dot" style="background:${t.color}"></div>
-      <div class="trk-inf" style="cursor:pointer" onclick="zoomTrack('${t.id}');showElevProfile('${t.id}')">
-        <div class="trk-nm">${escHtml(t.name)}</div>
-        <div class="trk-meta">${escHtml(t.cat.charAt(0).toUpperCase()+t.cat.slice(1))} · ${t.stats.dist} km · ${t.stats.dur}${hasElev?' · 📈':''}</div>
-      </div>
-      <div class="trk-btns">
-        <button class="trk-btn${t.visible?' on':''}" aria-label="${t.visible?'Track ausblenden':'Track einblenden'}" onclick="toggleTrack('${t.id}')">
-          ${t.visible?'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="1.8" fill="currentColor"/></svg>':'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4" opacity=".3"/><path d="M2 2L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'}
-        </button>
-        <button class="trk-btn" aria-label="QR-Code und GPX für ${escHtml(t.name)}" onclick="openTrackQR('${t.id}')" style="color:var(--ac)">
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><path d="M9 9h1v1M11 9h1M9 11v1M11 12h1M12 11v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        </button>
-        <button class="trk-btn" aria-label="Track löschen" onclick="removeTrack('${t.id}')" style="color:#ef4444">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4H12M5 4V2H9V4M11 4L10 12H4L3 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>`;
+
+  cont.innerHTML = '';
+  list.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'trk-row'; row.setAttribute('role','listitem');
+    const hasElev = !!(t.elevData && t.elevData.length > 1);
+    row.innerHTML =
+      `<div class="trk-dot" style="background:${t.color}"></div>`
+      + `<div class="trk-inf" style="cursor:pointer" onclick="zoomTrack('${t.id}');showElevProfile('${t.id}')">`
+      +   `<div class="trk-nm">${escHtml(t.name)}</div>`
+      +   `<div class="trk-meta">${escHtml(t.cat.charAt(0).toUpperCase()+t.cat.slice(1))}`
+      +     ` · ${t.stats.dist} km · ${t.stats.dur}${hasElev?' · 📈':''}</div>`
+      + `</div>`
+      + `<div class="trk-btns">`
+      +   `<button class="trk-btn${t.visible?' on':''}" aria-label="${t.visible?'Ausblenden':'Einblenden'}" onclick="toggleTrack('${t.id}')">`
+      +   (t.visible
+          ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="1.8" fill="currentColor"/></svg>'
+          : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4" opacity=".3"/><path d="M2 2L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>')
+      +   `</button>`
+      +   `<button class="trk-btn" style="color:var(--ac)" aria-label="QR/GPX" onclick="openTrackQR('${t.id}')">`
+      +     `<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><path d="M9 9h1v1M11 9h1M9 11v1M11 12h1M12 11v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`
+      +   `</button>`
+      +   `<button class="trk-btn" style="color:#ef4444" aria-label="Löschen" onclick="removeTrack('${t.id}')">`
+      +     `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4H12M5 4V2H9V4M11 4L10 12H4L3 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+      +   `</button>`
+      + `</div>`;
     cont.appendChild(row);
   });
-  document.getElementById('gpx-track-cnt').textContent=trackStore.tracks.length+' Track'+(trackStore.tracks.length!==1?'s':'');
+
+  document.getElementById('gpx-track-cnt').textContent =
+    trackStore.tracks.length + ' Track' + (trackStore.tracks.length!==1?'s':'');
 }
 
-function updateGpxBadge(){const b=document.getElementById('gpx-cnt');const n=trackStore.tracks.length;b.textContent=n;b.style.display=n?'':'none';}
+function updateGpxBadge() {
+  const b = document.getElementById('gpx-cnt');
+  const n = trackStore.tracks.length;
+  b.textContent = n; b.style.display = n ? '' : 'none';
+}
 
-// ── DRAG & DROP ────────────────────────────────────────────────
-const dropOverlay=document.getElementById('gpx-drop-overlay');
-document.addEventListener('dragover',e=>{if([...e.dataTransfer.items].some(i=>i.kind==='file')){e.preventDefault();dropOverlay.style.display='flex';}});
-document.addEventListener('dragleave',e=>{if(!e.relatedTarget||!document.contains(e.relatedTarget))dropOverlay.style.display='none';});
-document.addEventListener('drop',e=>{
-  e.preventDefault();dropOverlay.style.display='none';
-  const cat=document.getElementById('gpx-cat').value;
-  [...e.dataTransfer.files].filter(f=>f.name.toLowerCase().endsWith('.gpx')).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=ev=>loadGpxFromString(ev.target.result,file.name.replace(/\.gpx$/i,''),cat);
-    reader.readAsText(file);
-  });
+// ── DRAG & DROP ───────────────────────────────────────────────
+const dropOverlay = document.getElementById('gpx-drop-overlay');
+document.addEventListener('dragover', e => {
+  if ([...e.dataTransfer.items].some(i => i.kind==='file')) {
+    e.preventDefault(); dropOverlay.style.display = 'flex';
+  }
+});
+document.addEventListener('dragleave', e => {
+  if (!e.relatedTarget || !document.contains(e.relatedTarget))
+    dropOverlay.style.display = 'none';
+});
+document.addEventListener('drop', e => {
+  e.preventDefault(); dropOverlay.style.display = 'none';
+  const cat = document.getElementById('gpx-cat').value;
+  [...e.dataTransfer.files]
+    .filter(f => f.name.toLowerCase().endsWith('.gpx') || f.type.includes('gpx'))
+    .forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const gpxStr = sanitizeGpx(ev.target.result);
+        if (gpxStr.startsWith('<'))
+          loadGpxXml(gpxStr, file.name.replace(/\.gpx$/i,''), cat);
+        else
+          toast('❌ ' + escHtml(file.name) + ': Kein XML');
+      };
+      reader.readAsText(file, 'UTF-8');
+    });
 });
 
-// ── LOKALSTORAGE: TRACKS PERSISTENZ ───────────────────────────
-function persistTracks(){
-  const data=trackStore.tracks.map(t=>({
-    id:t.id,name:t.name,cat:t.cat,color:t.color,visible:t.visible,
-    stats:t.stats,gpxString:t.gpxString||null,sourceUrl:t.sourceUrl||null
-  })).filter(t=>t.gpxString||t.sourceUrl);
-  LS.set(LS.K.TRACKS,data);
+// ── LOKALSTORAGE: TRACKS ──────────────────────────────────────
+const MAX_TRACK_BYTES = 180 * 1024;   // 180 KB pro Track
+const MAX_TOTAL_BYTES = 1.5 * 1024 * 1024; // 1.5 MB gesamt
+
+function persistTracks() {
+  if (!LS.ok()) return;
+  const rows = [];
+  let totalBytes = 0;
+
+  for (const t of trackStore.tracks) {
+    const gpxStr = t.gpxString || null;
+    const bytes = gpxStr ? (gpxStr.length * 2) : 0; // UTF-16 approximation
+
+    if (bytes > MAX_TRACK_BYTES) {
+      // Zu groß: Metadaten ohne GPX-String (kann nicht wiederhergestellt werden)
+      rows.push({ id:t.id, name:t.name, cat:t.cat, color:t.color,
+        visible:t.visible, stats:t.stats, gpxString:null,
+        sourceUrl:t.sourceUrl||null, _oversized:true });
+      continue;
+    }
+    if (totalBytes + bytes > MAX_TOTAL_BYTES) {
+      // Gesamtlimit: restliche Tracks ohne GPX
+      rows.push({ id:t.id, name:t.name, cat:t.cat, color:t.color,
+        visible:t.visible, stats:t.stats, gpxString:null,
+        sourceUrl:t.sourceUrl||null, _truncated:true });
+      continue;
+    }
+    totalBytes += bytes;
+    rows.push({ id:t.id, name:t.name, cat:t.cat, color:t.color,
+      visible:t.visible, stats:t.stats,
+      gpxString: gpxStr, sourceUrl:t.sourceUrl||null });
+  }
+
+  const ok = LS.set(LS.K.TRACKS, rows);
+  if (!ok) {
+    // Quota exceeded: nochmal ohne GPX-Strings
+    const meta = rows.map(r => ({ ...r, gpxString:null }));
+    LS.set(LS.K.TRACKS, meta);
+    console.warn('Track-GPX zu groß für localStorage — nur Metadaten gespeichert');
+  }
 }
 
-async function restoreTracks(){
-  const saved=LS.get(LS.K.TRACKS,[]);
-  if(!saved.length)return;
-  let count=0;
-  for(const t of saved){
-    if(trackStore.tracks.length>=50)break;
-    if(!t.gpxString)continue;
-    await new Promise(resolve=>{
-      const blob=new Blob([t.gpxString],{type:'application/gpx+xml'});
-      const blobUrl=URL.createObjectURL(blob);
-      createGpxLayer(blobUrl,t.cat,t.name,t.id,t.gpxString);
-      setTimeout(()=>{URL.revokeObjectURL(blobUrl);resolve();},1000);
+async function restoreTracks() {
+  const saved = LS.get(LS.K.TRACKS, []);
+  if (!saved.length) return;
+
+  let restored = 0, skipped = 0;
+  for (const t of saved) {
+    if (trackStore.tracks.length >= 50) break;
+    if (!t.gpxString) { skipped++; continue; }
+
+    const gpxStr = sanitizeGpx(t.gpxString);
+    if (!gpxStr.startsWith('<')) { skipped++; continue; }
+
+    // Warten auf loaded/error Event mit Timeout-Sicherheitsnetz
+    const ok = await new Promise(resolve => {
+      const timeout = setTimeout(() => { console.warn('GPX restore timeout:', t.name); resolve(false); }, 10000);
+
+      const layer = new L.GPX(gpxStr, {
+        async: true,
+        marker_options: { startIconUrl:null, endIconUrl:null, shadowUrl:null, wptIconUrls:{'':null} },
+        polyline_options: { color:t.color||'#27AE60', weight:4.5, opacity:0.9, lineCap:'round', lineJoin:'round' }
+      });
+
+      layer.on('loaded', function(e) {
+        clearTimeout(timeout);
+        const gl = e.target;
+        let dist=t.stats?.dist||'?', dur=t.stats?.dur||'—';
+        try { dist=(gl.get_distance()/1000).toFixed(2); } catch(ex) {}
+        const bounds = (() => {
+          try { const b=gl.getBounds(); return (b&&b.isValid&&b.isValid())?b:null; } catch(ex){ return null; }
+        })();
+        trackStore.tracks.push({
+          id:t.id, name:t.name, cat:t.cat, color:t.color,
+          gpxLayer:gl, visible:t.visible!==false,
+          sourceUrl:t.sourceUrl||null, gpxString:gpxStr,
+          bounds, stats:{ dist, dur }, elevData:extractElevData(gl)
+        });
+        gl.addTo(map);
+        resolve(true);
+      });
+
+      layer.on('error', function(e) {
+        clearTimeout(timeout);
+        console.warn('GPX restore error for', t.name, e);
+        resolve(false);
+      });
+
+      // WICHTIG: Layer wird zur Karte hinzugefügt, damit 'loaded' feuert
+      layer.addTo(map);
     });
-    count++;
+
+    if (ok) restored++; else skipped++;
   }
-  if(count>0) toast(`💾 ${count} Track${count!==1?'s':''} wiederhergestellt`);
+
+  updateGpxBadge();
+  renderTrackList();
+  if (restored > 0) toast(`💾 ${restored} Track${restored!==1?'s':''} wiederhergestellt`);
+  if (skipped > 0)  console.info(`${skipped} Tracks übersprungen (kein GPX gespeichert)`);
 }
 
 // ── ELEVATION PROFIL ───────────────────────────────────────────
