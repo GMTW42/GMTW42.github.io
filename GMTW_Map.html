@@ -2,378 +2,1522 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <!-- Wichtig für iOS/Android App-Feeling: Kein Zoomen, Fullscreen -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GMTW Map">
-    <title>GMTW Event Streckenplan</title>
-
-    <!-- Leaflet CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="apple-mobile-web-app-title" content="GMTW Trail Map">
+    <meta name="theme-color" content="#0b0e14">
+    <title>GMTW · Trail Map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
     <style>
         :root {
-            --bg: #f8f9fa; --surface: #ffffff; --text: #202124; --text-light: #5f6368;
-            --primary: #1a73e8; --primary-hover: #1557b0; --border: #dadce0; --shadow: rgba(0,0,0,0.25);
+            --bg:#0b0e14; --s1:#161b26; --s2:#1e2535; --s3:#252e42;
+            --bd:rgba(255,255,255,0.07); --bd2:rgba(255,255,255,0.12);
+            --tx:#e4e9f0; --td:#7a8499; --tm:#3a4358;
+            --ac:#c8ff00; --acd:#8fb800;
+            --beg:#22c55e; --mit:#f59e0b; --exp:#ef4444; --log:#38bdf8; --fac:#a78bfa;
+            --fh:'Barlow Condensed',sans-serif; --fb:'Barlow',sans-serif;
+            --r:12px;
         }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body,html{width:100%;height:100%;overflow:hidden;font-family:var(--fb);background:var(--bg);color:var(--tx);-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+        button{font-family:inherit}
+        #map{position:fixed;inset:0;z-index:1}
 
-        /* Reset */
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; background: #e0e0e0; -webkit-tap-highlight-color: transparent; }
-        #map { width: 100%; height: 100%; z-index: 1; }
+        /* LEAFLET */
+        .leaflet-control-zoom{border:none!important;box-shadow:0 8px 24px rgba(0,0,0,.6)!important}
+        .leaflet-control-zoom a{background:var(--s1)!important;color:var(--tx)!important;border:1px solid var(--bd2)!important;font-size:16px!important;width:34px!important;height:34px!important;line-height:34px!important}
+        .leaflet-control-zoom a:hover{background:var(--s2)!important}
+        .leaflet-control-zoom-in{border-radius:var(--r) var(--r) 0 0!important}
+        .leaflet-control-zoom-out{border-radius:0 0 var(--r) var(--r)!important}
+        .leaflet-popup-content-wrapper{background:var(--s1)!important;border:1px solid var(--bd2)!important;border-radius:16px!important;box-shadow:0 20px 60px rgba(0,0,0,.8)!important;padding:0!important;overflow:hidden}
+        .leaflet-popup-content{margin:0!important;min-width:250px;max-width:290px}
+        .leaflet-popup-tip-container{display:none}
+        .leaflet-popup-close-button{color:var(--td)!important;font-size:20px!important;top:10px!important;right:10px!important;z-index:10;width:28px!important;height:28px!important;display:flex!important;align-items:center!important;justify-content:center!important;background:var(--s2)!important;border-radius:50%!important;line-height:1!important}
+        .map-label{background:transparent!important;border:none!important;box-shadow:none!important;font-family:var(--fh)!important;font-size:11px!important;font-weight:700!important;letter-spacing:.6px!important;color:#fff!important;text-shadow:0 0 4px #000,0 0 10px rgba(0,0,0,.9),0 1px 3px #000!important;pointer-events:none!important;white-space:nowrap!important;text-transform:uppercase!important}
+        .leaflet-tooltip{opacity:1!important}
+        .path-lbl{background:rgba(11,14,20,.85)!important;border:1px solid rgba(245,158,11,.4)!important;color:#f59e0b!important;font-family:var(--fh)!important;font-size:11px!important;font-weight:700!important;letter-spacing:1px!important;border-radius:4px!important;padding:2px 7px!important;pointer-events:none!important}
+        .leaflet-control-attribution{background:rgba(11,14,20,.7)!important;color:var(--td)!important;font-size:9px!important}
 
-        /* Floating UI Buttons */
-        .top-bar { position: absolute; top: 15px; left: 15px; z-index: 1000; }
-        
-        .icon-btn { 
-            background: var(--surface); border: none; width: 50px; height: 50px; 
-            border-radius: 50%; box-shadow: 0 4px 10px var(--shadow);
-            font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: transform 0.1s, background 0.2s; color: var(--text);
-        }
-        .icon-btn:active { transform: scale(0.92); background: #f1f3f4; }
-        
-        /* GPS Button Position - 90px Abstand nach unten, damit die +/- Tasten der Karte frei bleiben */
-        .locate-btn { position: absolute; bottom: 90px; right: 15px; z-index: 1000; }
+        /* TOP BAR */
+        #topbar{position:fixed;top:0;left:0;right:0;z-index:500;padding:max(12px,env(safe-area-inset-top,12px)) 12px 0;pointer-events:none}
+        #tbrow{display:flex;align-items:center;gap:8px;padding-bottom:10px}
+        #tbrow>*{pointer-events:all}
+        .ibtn{width:42px;height:42px;flex-shrink:0;background:var(--s1);border:1px solid var(--bd2);border-radius:var(--r);color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);transition:background .15s,transform .1s}
+        .ibtn:active{background:var(--s2);transform:scale(.9)}
+        #titlepill{flex:1;min-width:0;background:var(--s1);border:1px solid var(--bd2);border-radius:var(--r);padding:7px 12px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px}
+        .logobadge{width:28px;height:28px;flex-shrink:0;background:var(--ac);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:11px;font-weight:800;color:var(--bg);letter-spacing:-.5px}
+        .ttl{font-family:var(--fh);font-size:15px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx);line-height:1.1}
+        .tsub{font-size:10px;color:var(--td)}
 
-        /* Sidebar / Legende */
-        #sidebar {
-            position: absolute; top: 0; left: 0; width: 340px; max-width: 85%; height: 100%;
-            background: var(--surface); z-index: 2000; box-shadow: 4px 0 20px var(--shadow);
-            transform: translateX(-105%); /* Hardware-beschleunigtes Verstecken */
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            display: flex; flex-direction: column;
-        }
-        #sidebar.open { transform: translateX(0); }
-        
-        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); }
-        .sidebar-header h2 { margin: 0; font-size: 18px; color: var(--text); }
-        .close-btn { background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--text-light); padding: 0; }
+        /* FILTER BAR */
+        #fbar{position:fixed;top:max(66px,calc(env(safe-area-inset-top,0px) + 66px));left:0;right:0;z-index:499;display:flex;gap:6px;padding:4px 12px 8px;overflow-x:auto;scrollbar-width:none;pointer-events:none}
+        #fbar::-webkit-scrollbar{display:none}
+        #fbar>*{pointer-events:all}
+        .chip{flex-shrink:0;height:32px;padding:0 13px;border-radius:20px;border:1px solid var(--bd2);font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;background:rgba(11,14,20,.88);color:var(--td);cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:5px}
+        .chip:active{transform:scale(.94)}
+        .chip.on{border-color:transparent;color:#000}
+        .chip[data-f=all].on{background:var(--tx)}
+        .chip[data-f=beginner].on{background:var(--beg)}
+        .chip[data-f=mittel].on{background:var(--mit)}
+        .chip[data-f=expert].on{background:var(--exp)}
+        .chip[data-f=logistik].on{background:var(--log)}
 
-        .sidebar-content { overflow-y: auto; flex-grow: 1; padding: 10px 0; -webkit-overflow-scrolling: touch; }
-        
-        .list-item { padding: 12px 20px; border-bottom: 1px solid #f1f3f4; transition: background 0.2s; }
-        .list-item:active { background: #f1f3f4; }
-        .list-header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; cursor: pointer; }
-        .list-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .list-title { font-weight: bold; font-size: 15px; color: var(--text); }
-        
-        .list-actions { display: flex; gap: 8px; margin-left: 50px; }
-        .action-chip { 
-            background: #f1f3f4; border: none; padding: 8px 14px; border-radius: 20px; 
-            font-size: 13px; font-weight: bold; color: var(--primary); cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; gap: 6px; flex-grow: 1;
-        }
-        .action-chip:active { background: #e8eaed; }
-        .action-chip.primary { background: var(--primary); color: white; }
-        .action-chip.primary:active { background: var(--primary-hover); }
+        /* FABS */
+        .fabs{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 110px);z-index:490;display:flex;flex-direction:column;gap:8px}
+        .fab{width:46px;height:46px;background:var(--s1);border:1px solid var(--bd2);border-radius:13px;color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.55);transition:all .15s}
+        .fab:active{transform:scale(.88)}
+        .fab.spin svg{animation:spin 1s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
 
-        /* Hintergrund-Verdunkelung */
-        #backdrop {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 1500; opacity: 0; visibility: hidden; transition: opacity 0.3s;
-        }
-        #backdrop.show { opacity: 1; visibility: visible; }
+        /* LEGEND */
+        #legend{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 110px);z-index:490;background:rgba(11,14,20,.88);border:1px solid var(--bd2);border-radius:var(--r);padding:9px 12px;backdrop-filter:blur(10px)}
+        .lgnd-t{font-family:var(--fh);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:7px}
+        .lgnd-r{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+        .lgnd-r:last-child{margin-bottom:0}
+        .lgnd-d{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+        .lgnd-l{font-family:var(--fh);font-size:11px;font-weight:700;text-transform:uppercase;color:var(--tx)}
 
-        /* MARKER PINS AUF DER KARTE */
-        .custom-pin-wrap { position: relative; width: 40px; height: 50px; display: flex; justify-content: center; outline: none; }
-        .custom-pin {
-            width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
-            border: 2px solid white; box-shadow: 2px 2px 8px rgba(0,0,0,0.5); 
-            display: flex; justify-content: center; align-items: center;
-        }
-        /* Perfekte Emoji-Zentrierung für iOS & Android */
-        .pin-emoji { transform: rotate(45deg); font-size: 16px; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; padding-bottom: 2px; padding-right: 2px; box-sizing: border-box; }
-        
-        /* Text-Labels unter den Markern (durchklickbar!) */
-        .map-label {
-            background: transparent !important; border: none !important; box-shadow: none !important;
-            color: white; font-weight: 800; font-size: 12px; letter-spacing: 0.5px;
-            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0px 3px 6px rgba(0,0,0,0.9);
-            margin-top: -2px; 
-            pointer-events: none; /* WICHTIG: Erlaubt Klicks DURCH den Text direkt auf den Marker */
-        }
+        /* BACKDROP */
+        #backdrop{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.65);opacity:0;visibility:hidden;transition:opacity .3s;backdrop-filter:blur(3px)}
+        #backdrop.show{opacity:1;visibility:visible}
 
-        /* Popups auf der Karte */
-        .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); padding: 5px; }
-        .leaflet-popup-content { margin: 15px; min-width: 200px; text-align: center; }
-        .popup-emoji { font-size: 32px; margin-bottom: 5px; display: block; }
-        .popup-title { margin: 0 0 15px 0; font-size: 16px; font-weight: bold; color: var(--text); }
+        /* SHEET */
+        #sheet{position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--s1);border-top:1px solid var(--bd2);border-radius:20px 20px 0 0;max-height:82vh;transform:translateY(100%);transition:transform .4s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+        #sheet.open{transform:translateY(0)}
+        .s-handle{width:36px;height:4px;border-radius:2px;background:var(--bd2);margin:12px auto 0;flex-shrink:0}
+        .s-head{padding:10px 16px 12px;flex-shrink:0;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px}
+        .s-title{font-family:var(--fh);font-size:19px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+        .s-cnt{font-family:var(--fh);font-size:12px;font-weight:700;color:var(--td);background:var(--s2);padding:3px 9px;border-radius:20px;border:1px solid var(--bd)}
+        .s-close{width:30px;height:30px;background:var(--s2);border:1px solid var(--bd);border-radius:50%;color:var(--td);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;transition:all .15s}
+        .s-close:active{background:var(--s3)}
+        .s-scroll{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+        .s-scroll::-webkit-scrollbar{width:3px}
+        .s-scroll::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+        .cat-head{padding:14px 16px 6px;font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--tm);display:flex;align-items:center;gap:8px}
+        .cat-head::after{content:'';flex:1;height:1px;background:var(--bd)}
+        .lrow{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--bd);transition:background .12s;cursor:pointer}
+        .lrow:active{background:var(--s2)}
+        .lrow:last-child{border-bottom:none}
+        .l-ico{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+        .l-inf{flex:1;min-width:0}
+        .l-nm{font-family:var(--fh);font-size:15px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+        .l-co{font-size:10px;color:var(--td);font-family:monospace;margin-top:2px}
+        .l-btns{display:flex;gap:6px;flex-shrink:0}
+        .lbtn{width:34px;height:34px;border-radius:9px;background:var(--s2);border:1px solid var(--bd);color:var(--td);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+        .lbtn:active{transform:scale(.86);background:var(--s3)}
+        .lbtn.nav{background:var(--ac);border-color:var(--ac);color:var(--bg)}
+        .lbtn.nav:active{background:var(--acd)}
 
-        /* QR-Code & Teilen Modal */
-        #qrModal {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            background: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-            z-index: 3000; opacity: 0; visibility: hidden; transition: all 0.2s ease-out; text-align: center; width: 85%; max-width: 320px; box-sizing: border-box;
-        }
-        #qrModal.show { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
-        #qrModal img { width: 180px; height: 180px; margin: 15px auto; display: block; border-radius: 8px; border: 1px solid #eee; padding: 5px; }
-        
-        /* 16px verhindert, dass iPhones beim Reinklicken automatisch reinzoomen */
-        #qrModal input { 
-            width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid var(--border); 
-            border-radius: 10px; font-size: 16px; margin-bottom: 15px; color: var(--text-light); background: #f8f9fa; outline: none;
-        }
-        .modal-buttons { display: flex; gap: 10px; }
+        /* POPUP */
+        .p-top{padding:14px 14px 10px;border-bottom:1px solid var(--bd)}
+        .p-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-family:var(--fh);font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--bg);margin-bottom:8px}
+        .p-name{font-family:var(--fh);font-size:18px;font-weight:800;color:var(--tx);line-height:1.2;margin-bottom:2px;padding-right:28px}
+        .p-crds{font-size:10px;color:var(--tm);font-family:monospace}
+        .p-desc{font-size:12px;color:var(--td);margin-top:6px;line-height:1.4}
+        .p-acts{padding:10px 14px;display:flex;gap:8px}
+        .pbtn{flex:1;padding:9px 8px;border-radius:10px;border:1px solid var(--bd2);font-family:var(--fh);font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+        .pbtn:active{transform:scale(.94)}
+        .pbtn.nav{background:var(--ac);border-color:var(--ac);color:var(--bg);flex:2}
+        .pbtn.nav:active{background:var(--acd)}
+        .pbtn.shr{background:var(--s2);color:var(--td)}
+
+        /* QR MODAL */
+        #qrm{position:fixed;top:50%;left:50%;z-index:1100;transform:translate(-50%,-50%) scale(.88);background:var(--s1);border:1px solid var(--bd2);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.8);width:90%;max-width:310px;padding:20px;text-align:center;opacity:0;visibility:hidden;transition:all .25s cubic-bezier(.32,.72,0,1)}
+        #qrm.show{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+        .qr-nm{font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--tx);margin-bottom:4px}
+        .qr-hint{font-size:11px;color:var(--td);margin-bottom:14px}
+        #qr-wrap{width:160px;height:160px;margin:0 auto 14px;background:#fff;border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:center}
+        #qr-img{width:144px;height:144px;display:block;border-radius:4px}
+        #qr-inp{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--bd2);border-radius:9px;color:var(--td);font-size:12px;font-family:monospace;margin-bottom:12px;outline:none}
+        .qr-acts{display:flex;gap:8px}
+        .qbtn{flex:1;padding:10px 8px;border-radius:10px;border:none;font-family:var(--fh);font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+        .qbtn:active{transform:scale(.94)}
+        .qbtn.cl{background:var(--s2);color:var(--td)}
+        .qbtn.cp{background:var(--s3);color:var(--tx)}
+        .qbtn.dl{background:var(--ac);color:var(--bg)}
+
+        /* GPS HINT */
+        #gpshint{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 160px);z-index:491;background:var(--s1);border:1px solid var(--bd2);border-radius:var(--r);padding:12px 14px 10px;max-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.55);font-size:12px;color:var(--td);line-height:1.4;opacity:0;visibility:hidden;transition:all .3s;transform:translateX(10px)}
+        #gpshint.show{opacity:1;visibility:visible;transform:translateX(0)}
+        #gpshint strong{color:var(--tx);display:block;margin-bottom:4px;font-family:var(--fh);font-size:13px;font-weight:700}
+        #gpshint-x{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--tm);font-size:16px;line-height:1;background:none;border:none}
+
+        /* TOAST */
+        #toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 110px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--s2);border:1px solid var(--bd2);border-radius:30px;padding:9px 18px;font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:.5px;color:var(--tx);z-index:2000;opacity:0;pointer-events:none;transition:all .28s;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.55)}
+        #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+        /* PIN */
+        .pm{display:flex;flex-direction:column;align-items:center}
+        .pm-h{width:30px;height:30px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,.25);box-shadow:0 3px 10px rgba(0,0,0,.55)}
+        .pm-i{transform:rotate(45deg);font-size:13px;line-height:1}
+        .pm-d{width:4px;height:4px;border-radius:50%;margin-top:2px;opacity:.6}
+        .pm.lg .pm-h{width:36px;height:36px}
+        .pm.lg .pm-i{font-size:16px}
+
+        /* ═══════════════════════════════════════════════════
+           GPX PANEL
+        ═══════════════════════════════════════════════════ */
+        #gpx-panel{position:fixed;bottom:0;left:0;right:0;z-index:901;background:var(--s1);border-top:1px solid var(--bd2);border-radius:20px 20px 0 0;max-height:85vh;transform:translateY(100%);transition:transform .4s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+        #gpx-panel.open{transform:translateY(0)}
+        .gpx-tabs{display:flex;gap:0;flex-shrink:0;border-bottom:1px solid var(--bd);margin:0 16px}
+        .gpx-tab{flex:1;padding:10px 8px;background:none;border:none;border-bottom:2px solid transparent;font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--td);cursor:pointer;transition:all .2s;margin-bottom:-1px}
+        .gpx-tab.on{color:var(--ac);border-bottom-color:var(--ac)}
+        .gpx-content{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        .gpx-content.on{display:flex;flex-direction:column}
+        .gpx-section{padding:14px 16px;border-bottom:1px solid var(--bd)}
+        .gpx-section:last-child{border-bottom:none}
+        .gpx-label{font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:8px;display:block}
+        .gpx-row{display:flex;gap:8px;align-items:stretch}
+        .gpx-select{flex:1;background:var(--s2);border:1px solid var(--bd2);border-radius:9px;color:var(--tx);font-family:var(--fh);font-size:13px;font-weight:700;padding:8px 12px;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
+        .gpx-select:focus{border-color:var(--ac)}
+        .gpx-input{flex:1;background:var(--s2);border:1px solid var(--bd2);border-radius:9px;color:var(--tx);font-family:var(--fb);font-size:13px;padding:9px 12px;outline:none}
+        .gpx-input::placeholder{color:var(--tm)}
+        .gpx-input:focus{border-color:var(--ac)}
+        .gpx-btn{padding:9px 14px;border-radius:9px;border:1px solid var(--bd2);font-family:var(--fh);font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;white-space:nowrap}
+        .gpx-btn:active{transform:scale(.93)}
+        .gpx-btn.prim{background:var(--ac);border-color:var(--ac);color:var(--bg)}
+        .gpx-btn.prim:active{background:var(--acd)}
+        .gpx-btn.sec{background:var(--s2);color:var(--tx)}
+        .gpx-btn.danger{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#ef4444}
+        /* File-Input versteckt, styled Button darüber */
+        #gpx-file-input{display:none}
+        .gpx-file-label{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1.5px dashed var(--bd2);border-radius:12px;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;text-align:center}
+        .gpx-file-label:hover,.gpx-file-label:active{border-color:var(--ac);color:var(--ac);background:rgba(200,255,0,.05)}
+        /* Track Liste */
+        .trk-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--bd);transition:background .12s}
+        .trk-row:last-child{border-bottom:none}
+        .trk-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+        .trk-inf{flex:1;min-width:0}
+        .trk-nm{font-family:var(--fh);font-size:14px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .trk-meta{font-size:10px;color:var(--td);margin-top:1px}
+        .trk-btns{display:flex;gap:5px;flex-shrink:0}
+        .trk-btn{width:32px;height:32px;border-radius:8px;background:var(--s2);border:1px solid var(--bd);color:var(--td);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+        .trk-btn:active{transform:scale(.86)}
+        .trk-btn.on{background:var(--ac);border-color:var(--ac);color:var(--bg)}
+        /* Aufnahme / Recording */
+        .rec-timer{font-family:var(--fh);font-size:42px;font-weight:800;letter-spacing:2px;color:var(--tx);text-align:center;padding:16px 0 8px;line-height:1}
+        .rec-status{font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:14px}
+        .rec-stats{display:flex;gap:12px;padding:0 16px 14px}
+        .rec-stat{flex:1;background:var(--s2);border-radius:10px;padding:10px;text-align:center}
+        .rec-stat-val{font-family:var(--fh);font-size:20px;font-weight:800;color:var(--tx);line-height:1.1}
+        .rec-stat-lbl{font-family:var(--fh);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tm);margin-top:2px}
+        .rec-controls{display:flex;gap:8px;padding:0 16px 14px}
+        #rec-bar{position:fixed;top:max(66px,calc(env(safe-area-inset-top,0px)+66px));left:50%;transform:translateX(-50%) translateY(-6px);z-index:498;display:flex;align-items:center;gap:8px;background:rgba(239,68,68,.9);border-radius:20px;padding:5px 14px 5px 10px;opacity:0;visibility:hidden;transition:all .3s;backdrop-filter:blur(8px)}
+        #rec-bar.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+        .rec-dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse-rec 1.4s ease-in-out infinite}
+        @keyframes pulse-rec{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+        .rec-bar-txt{font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.5px;color:#fff}
+        /* Kategorie-Filter im GPX-Panel */
+        .cat-filter-row{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 14px}
+        .cat-fbtn{padding:6px 12px;border-radius:20px;border:1px solid var(--bd2);font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;background:var(--s2);color:var(--td);cursor:pointer;transition:all .2s}
+        .cat-fbtn:active{transform:scale(.93)}
+        .cat-fbtn.on{border-color:transparent;color:#000}
+        .cat-fbtn[data-c=beginner].on{background:#27AE60}
+        .cat-fbtn[data-c=mittel].on{background:#D4A017}
+        .cat-fbtn[data-c=expert].on{background:#8E44AD}
+        .cat-fbtn[data-c=all].on{background:var(--tx)}
+        /* Fab Nummer-Badge */
+        .fab-badge{position:absolute;top:-4px;right:-4px;background:var(--ac);color:var(--bg);border-radius:8px;font-family:var(--fh);font-size:10px;font-weight:800;padding:1px 5px;line-height:1.4;pointer-events:none}
+        #gpx-fab{position:relative}
+        /* CORS Hint */
+        .cors-hint{font-size:11px;color:var(--td);margin-top:6px;line-height:1.5}
+        .cors-hint a{color:var(--ac)}
     </style>
 </head>
 <body>
+<div id="map"></div>
 
-    <!-- UI Overlay Oben -->
-    <div class="top-bar">
-        <button class="icon-btn" onclick="toggleMenu()" title="Legende">☰</button>
+<!-- TOP BAR -->
+<div id="topbar">
+  <div id="tbrow">
+    <button class="ibtn" onclick="toggleSheet()" aria-label="Menü">
+      <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M0 1H18M0 7H12M0 13H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <div id="titlepill">
+      <div class="logobadge">MUNI</div>
+      <div><div class="ttl">GMTW Trail Map</div><div class="tsub">Hohensyburg · Herdecke</div></div>
     </div>
-    
-    <!-- GPS Location Button -->
-    <button class="icon-btn locate-btn" onclick="locateUser()" title="Standort">🎯</button>
+    <button class="ibtn" id="layer-btn" onclick="toggleLayer()" aria-label="Karte wechseln">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 5.5L9 10L1 5.5L9 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M1 9.5L9 14L17 9.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
 
-    <!-- Dunkler Hintergrund bei offenen Menüs -->
-    <div id="backdrop" onclick="closeAllOverlays()"></div>
+<!-- FILTER -->
+<div id="fbar">
+  <button class="chip on" data-f="all"      onclick="setFilter('all',this)">Alle</button>
+  <button class="chip"    data-f="beginner" onclick="setFilter('beginner',this)">🟢 Beginner</button>
+  <button class="chip"    data-f="mittel"   onclick="setFilter('mittel',this)">🟡 Mittel</button>
+  <button class="chip"    data-f="expert"   onclick="setFilter('expert',this)">🔴 Expert</button>
+  <button class="chip"    data-f="logistik" onclick="setFilter('logistik',this)">🔵 Logistik</button>
+</div>
 
-    <!-- Sidebar Legende -->
-    <div id="sidebar">
-        <div class="sidebar-header">
-            <h2>GMTW Streckenplan</h2>
-            <button class="close-btn" onclick="closeAllOverlays()">×</button>
-        </div>
-        <div class="sidebar-content" id="legend-list">
-            <!-- Wird von JS gefüllt -->
-        </div>
+<!-- FABS -->
+<div class="fabs">
+  <button class="fab" id="gps-fab" onclick="locateUser()" aria-label="GPS">
+    <svg id="gps-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="currentColor"/><path d="M10 2V5M10 15V18M18 10H15M5 10H2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.2" opacity=".35"/></svg>
+  </button>
+  <button class="fab" id="gpx-fab" onclick="openGpxPanel('load')" aria-label="GPX Tracks" style="position:relative">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15L7 9L11 12L15 6L18 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3" cy="15" r="1.8" fill="currentColor"/><circle cx="18" cy="9" r="1.8" fill="currentColor"/></svg>
+    <span class="fab-badge" id="gpx-cnt" style="display:none">0</span>
+  </button>
+  <button class="fab" id="rec-fab" onclick="openGpxPanel('rec')" aria-label="Aufnahme starten">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="3" fill="currentColor"/></svg>
+  </button>
+  <button class="fab" onclick="fitAll()" aria-label="Übersicht">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="12" y="1" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="1" y="12" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="12" y="12" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
+  </button>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <div class="lgnd-t">Legende</div>
+  <div class="lgnd-r"><div class="lgnd-d" style="background:var(--beg)"></div><span class="lgnd-l">Beginner</span></div>
+  <div class="lgnd-r"><div class="lgnd-d" style="background:var(--mit)"></div><span class="lgnd-l">Mittel</span></div>
+  <div class="lgnd-r"><div class="lgnd-d" style="background:var(--exp)"></div><span class="lgnd-l">Expert</span></div>
+  <div class="lgnd-r"><div class="lgnd-d" style="background:var(--log)"></div><span class="lgnd-l">Logistik</span></div>
+</div>
+
+<div id="backdrop" onclick="closeAll()"></div>
+
+<!-- SHEET -->
+<div id="sheet">
+  <div class="s-handle"></div>
+  <div class="s-head">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="s-title">Trail Punkte</span>
+      <span class="s-cnt" id="s-cnt">0</span>
     </div>
+    <button class="s-close" onclick="closeAll()">×</button>
+  </div>
+  <div class="s-scroll" id="s-list"></div>
+</div>
 
-    <!-- QR Teilen Modal -->
-    <div id="qrModal">
-        <h3 style="margin:0 0 5px 0; color:var(--text)" id="qrTitle">Marker teilen</h3>
-        <p style="font-size:13px; color:var(--text-light); margin:0; line-height: 1.4;">Code scannen oder Link kopieren.</p>
-        
-        <img id="qrImage" src="" alt="QR Code laden...">
-        
-        <input type="text" id="shareLink" readonly onclick="this.select()">
-        
-        <div class="modal-buttons">
-            <button class="action-chip" onclick="closeAllOverlays()">Schließen</button>
-            <button class="action-chip primary" onclick="copyLink()">📋 Kopieren</button>
-        </div>
+<!-- QR MODAL -->
+<div id="qrm">
+  <div class="qr-nm" id="qr-nm">Standort</div>
+  <div class="qr-hint">QR scannen → startet Navigation in Google Maps</div>
+  <div id="qr-wrap"><img id="qr-img" src="" alt="QR Code" crossorigin="anonymous"></div>
+  <input id="qr-inp" type="text" readonly onclick="this.select()">
+  <div class="qr-acts">
+    <button class="qbtn cl" onclick="closeAll()">← Zurück</button>
+    <button class="qbtn cp" onclick="copyQR()">📋 Kopieren</button>
+    <button class="qbtn dl" onclick="downloadQR()">⬇ QR</button>
+  </div>
+</div>
+
+<!-- GPS HINT -->
+<div id="gpshint">
+  <button id="gpshint-x" onclick="hideGpsHint()">×</button>
+  <strong id="gpshint-t">GPS Problem</strong>
+  <span id="gpshint-m">Standortzugriff verweigert.</span>
+</div>
+
+<!-- AUFNAHME STATUS BAR -->
+<div id="rec-bar">
+  <div class="rec-dot"></div>
+  <span class="rec-bar-txt" id="rec-bar-txt">00:00:00</span>
+</div>
+
+<!-- GPX PANEL -->
+<div id="gpx-panel">
+  <div class="s-handle"></div>
+  <div class="s-head">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="s-title">GPX & Tracks</span>
+      <span class="s-cnt" id="gpx-track-cnt">0 Tracks</span>
     </div>
+    <button class="s-close" onclick="closeGpxPanel()">×</button>
+  </div>
+  <!-- TABS -->
+  <div class="gpx-tabs">
+    <button class="gpx-tab on" data-tab="load" onclick="switchGpxTab('load',this)">Laden</button>
+    <button class="gpx-tab" data-tab="tracks" onclick="switchGpxTab('tracks',this)">Tracks</button>
+    <button class="gpx-tab" data-tab="rec" onclick="switchGpxTab('rec',this)">Aufnahme</button>
+  </div>
 
-    <!-- Die Karte -->
-    <div id="map"></div>
+  <!-- TAB: LADEN -->
+  <div class="gpx-content on" id="gpx-tab-load">
+    <!-- Kategorie Auswahl -->
+    <div class="gpx-section">
+      <span class="gpx-label">Kategorie für neuen Track</span>
+      <select class="gpx-select" id="gpx-cat">
+        <option value="beginner">🟢 Beginner</option>
+        <option value="mittel" selected>🟡 Mittel</option>
+        <option value="expert">🔴 Expert</option>
+      </select>
+    </div>
+    <!-- Datei Upload -->
+    <div class="gpx-section">
+      <span class="gpx-label">GPX vom Gerät laden</span>
+      <label class="gpx-file-label" for="gpx-file-input">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 13V4M6 8L10 4L14 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 16H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        .gpx Datei(en) auswählen oder hierher ziehen
+      </label>
+      <input type="file" id="gpx-file-input" accept=".gpx" multiple onchange="handleGpxFiles(this)">
+    </div>
+    <!-- URL laden -->
+    <div class="gpx-section">
+      <span class="gpx-label">GPX per URL laden</span>
+      <div class="gpx-row" style="margin-bottom:6px">
+        <input class="gpx-input" id="gpx-url-inp" type="url" placeholder="https://…/track.gpx">
+        <button class="gpx-btn prim" onclick="loadGpxFromUrl()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7H12M8 3L12 7L8 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Laden
+        </button>
+      </div>
+      <div class="cors-hint">Bei CORS-Fehler: <a href="#" onclick="useCorsProxy();return false">CORS-Proxy aktivieren</a> (Datenschutz beachten!)</div>
+    </div>
+  </div>
 
-    <script>
-        // ==========================================
-        // 1. DATEN-BASIS (Logische Emojis & Korrekturen)
-        // ==========================================
-        const locations = [
-            { id: "camp", name: "GMTW Camp", lat: 51.417704, lng: 7.494867, color: "#388e3c", emoji: "⛺" },
-            { id: "muni", name: "Muni Start Beginner / Mittel", lat: 51.421812, lng: 7.492612, color: "#d32f2f", emoji: "🚩" },
-            { id: "ein-beg", name: "Einstieg Beginner", lat: 51.419668, lng: 7.484089, color: "#4caf50", emoji: "🟢" },
-            { id: "ein-beg-mit", name: "Einstieg Beginner/Mittel", lat: 51.420702, lng: 7.483682, color: "#fbc02d", emoji: "🟡" },
-            { id: "ein-mit", name: "Einstieg Mittel", lat: 51.421702, lng: 7.478925, color: "#ff9800", emoji: "🟠" },
-            { id: "sam-camp", name: "Sammelpunkt zu Camp", lat: 51.418163, lng: 7.478551, color: "#d32f2f", emoji: "👥" },
-            { id: "sam-beg", name: "Sammelpunkt Beginner", lat: 51.419798, lng: 7.484684, color: "#1a73e8", emoji: "👥" },
-            { id: "end-mit", name: "Ende Mittel", lat: 51.418704, lng: 7.477420, color: "#ff9800", emoji: "🏁" },
-            { id: "end-ein", name: "Ende einfach", lat: 51.418374, lng: 7.478817, color: "#4caf50", emoji: "🏁" },
-            { id: "st-exp", name: "Start Expert", lat: 51.418657, lng: 7.477602, color: "#9c27b0", emoji: "🔴" },
-            { id: "exp-zone", name: "Expert zone", lat: 51.418692, lng: 7.474000, color: "#212121", emoji: "💀" }, // Extra nach links verschoben
-            { id: "camp-tor", name: "Camp Tor", lat: 51.417482, lng: 7.490904, color: "#795548", emoji: "🚪" },
-            { id: "wc", name: "Dusche / WC", lat: 51.418808, lng: 7.493754, color: "#03a9f4", emoji: "🚿" },
-            { id: "camping", name: "Campingplatz Hohensyburg", lat: 51.419200, lng: 7.495500, color: "#ff9800", emoji: "⛺" }
-        ];
+  <!-- TAB: TRACKS -->
+  <div class="gpx-content" id="gpx-tab-tracks">
+    <!-- Kategorie-Filter -->
+    <div class="cat-filter-row">
+      <button class="cat-fbtn on" data-c="all" onclick="filterTracks('all',this)">Alle</button>
+      <button class="cat-fbtn" data-c="beginner" onclick="filterTracks('beginner',this)">🟢 Beginner</button>
+      <button class="cat-fbtn" data-c="mittel" onclick="filterTracks('mittel',this)">🟡 Mittel</button>
+      <button class="cat-fbtn" data-c="expert" onclick="filterTracks('expert',this)">🔴 Expert</button>
+    </div>
+    <div id="trk-list"><div style="padding:20px 16px;text-align:center;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Noch keine Tracks geladen</div></div>
+  </div>
 
-        // Die gelbe gestrichelte Linie
-        const wegZurueck = [
-            [51.418146, 7.478489],
-            [51.417421, 7.490685]
-        ];
+  <!-- TAB: AUFNAHME -->
+  <div class="gpx-content" id="gpx-tab-rec">
+    <div class="gpx-section" style="text-align:center;padding-bottom:0;border-bottom:none">
+      <div class="rec-timer" id="rec-timer">00:00:00</div>
+      <div class="rec-status" id="rec-status-txt" style="color:var(--tm)">Bereit</div>
+    </div>
+    <div class="rec-stats">
+      <div class="rec-stat"><div class="rec-stat-val" id="rec-dist">0.0</div><div class="rec-stat-lbl">km</div></div>
+      <div class="rec-stat"><div class="rec-stat-val" id="rec-pts">0</div><div class="rec-stat-lbl">Punkte</div></div>
+      <div class="rec-stat"><div class="rec-stat-val" id="rec-speed">0.0</div><div class="rec-stat-lbl">km/h</div></div>
+    </div>
+    <div class="rec-controls">
+      <button class="gpx-btn prim" id="rec-start-btn" onclick="recStart()" style="flex:2">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="7" r="3" fill="currentColor"/></svg>
+        Aufnahme starten
+      </button>
+      <button class="gpx-btn sec" id="rec-pause-btn" onclick="recPause()" style="display:none;flex:1">Pause</button>
+      <button class="gpx-btn danger" id="rec-stop-btn" onclick="recStop()" style="display:none">Stop</button>
+    </div>
+    <div class="gpx-section" id="rec-save-section" style="display:none">
+      <span class="gpx-label">Strecke speichern &amp; laden</span>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="gpx-row">
+          <input class="gpx-input" id="rec-name-inp" type="text" placeholder="Streckenname…">
+        </div>
+        <select class="gpx-select" id="rec-save-cat">
+          <option value="beginner">🟢 Beginner</option>
+          <option value="mittel" selected>🟡 Mittel</option>
+          <option value="expert">🔴 Expert</option>
+        </select>
+        <button class="gpx-btn prim" onclick="recAddToMap()" style="width:100%;justify-content:center">
+          ＋ In Karte laden &amp; anzeigen
+        </button>
+        <div class="gpx-row">
+          <button class="gpx-btn sec" onclick="recExportGpx()" style="flex:1">⬇ GPX</button>
+          <button class="gpx-btn sec" onclick="recExportJson()" style="flex:1">⬇ JSON</button>
+        </div>
+        <button class="gpx-btn danger" onclick="recReset()" style="width:100%">🗑 Aufnahme verwerfen</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        let mapMarkers = {}; // Speichert die Leaflet Marker-Objekte
 
-        // ==========================================
-        // 2. KARTEN-INITIALISIERUNG
-        // ==========================================
-        // tap: false ist extrem wichtig für iOS Safari, sonst gehen Klicks teilweise verloren
-        var map = L.map('map', { zoomControl: false, tap: false }).setView([51.419, 7.485], 16);
-        
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
+<!-- DRAG & DROP Overlay für GPX -->
+<div id="gpx-drop-overlay" style="display:none;position:fixed;inset:0;z-index:1500;background:rgba(200,255,0,.12);border:3px dashed var(--ac);pointer-events:none;align-items:center;justify-content:center;font-family:var(--fh);font-size:18px;font-weight:800;letter-spacing:1px;color:var(--ac);text-transform:uppercase">
+  GPX Datei hier ablegen
+</div>
+<!-- TRACK QR MODAL -->
+<div id="trk-qrm" style="position:fixed;top:50%;left:50%;z-index:1100;transform:translate(-50%,-50%) scale(.88);background:var(--s1);border:1px solid var(--bd2);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.8);width:92%;max-width:340px;padding:20px;text-align:center;opacity:0;visibility:hidden;transition:all .25s cubic-bezier(.32,.72,0,1)">
+  <div style="font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--tx);margin-bottom:2px" id="trk-qr-nm">Track</div>
+  <div style="font-size:11px;color:var(--td);margin-bottom:12px" id="trk-qr-hint">GPX laden oder QR scannen</div>
+  <div style="width:180px;height:180px;margin:0 auto 12px;background:#fff;border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:center">
+    <img id="trk-qr-img" src="" alt="QR" style="width:164px;height:164px;display:block;border-radius:4px" crossorigin="anonymous">
+  </div>
+  <div style="font-size:10px;color:var(--td);margin-bottom:12px;padding:8px;background:var(--s2);border-radius:8px;text-align:left;line-height:1.5" id="trk-qr-info"></div>
+  <div style="display:flex;gap:8px;margin-bottom:8px">
+    <button class="qbtn sec" onclick="closeAll()" style="flex:1;background:var(--s2);color:var(--td)">← Zurück</button>
+    <button class="qbtn dl" onclick="trkQrDownloadGpx()" style="flex:2" id="trk-qr-dl-btn">⬇ GPX laden</button>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="qbtn cp" onclick="trkQrDownloadImg()" style="flex:1;background:var(--s3);color:var(--tx)">⬇ QR Bild</button>
+    <button class="qbtn cp" onclick="trkQrCopyUrl()" style="flex:1;background:var(--s3);color:var(--tx)">📋 Link</button>
+  </div>
+</div>
+<div id="toast"></div>
 
-        // Map Layers
-        var topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenTopoMap' }).addTo(map);
-        var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '© Esri' });
+<script>
+// ───────────────────────────────────────────────────────────
+// DATA — aus KML extrahiert + Zeltplatz Eingang ergänzt
+// ───────────────────────────────────────────────────────────
+const LOCS = [
+  // BEGINNER
+  { id:"muni",     name:"Muni Start Beginner/Mittel", lat:51.421812, lng:7.492612, color:"#22c55e", emoji:"🚩", cat:"beginner", desc:"Startpunkt für Muni-Fahrer aller Levels" },
+  { id:"ein-beg",  name:"Einstieg Beginner",          lat:51.419668, lng:7.484089, color:"#22c55e", emoji:"🟢", cat:"beginner", desc:"Haupteinstieg für Anfänger" },
+  { id:"ein-bm",   name:"Einstieg Beginner/Mittel",   lat:51.420365, lng:7.483406, color:"#22c55e", emoji:"🟡", cat:"beginner", desc:"Gemischter Einstieg — Beginner & Mittel" },
+  { id:"end-ein",  name:"Ende Beginner",               lat:51.418374, lng:7.478817, color:"#22c55e", emoji:"🏁", cat:"beginner", desc:"Ziel der einfachen Strecke" },
+  // MITTEL
+  { id:"ein-mit",  name:"Einstieg Mittel",            lat:51.423421, lng:7.480829, color:"#f59e0b", emoji:"🟡", cat:"mittel",   desc:"Einstieg in die mittlere Strecke" },
+  { id:"end-mit",  name:"Ende Mittel",                lat:51.418704, lng:7.477420, color:"#f59e0b", emoji:"🏁", cat:"mittel",   desc:"Ziel der mittleren Strecke" },
+  { id:"sam-mit",  name:"Sammelpunkt Mittel",          lat:51.423371, lng:7.513606, color:"#f59e0b", emoji:"👥", cat:"mittel",   desc:"Sammelpunkt für die mittlere Strecke — Ruhrbereich" },
+  { id:"ziel-mit", name:"Ziel Mittel",                 lat:51.419329, lng:7.511120, color:"#f59e0b", emoji:"🏆", cat:"mittel",   desc:"Ziel der mittleren Strecke — an der Ruhr" },
+  // EXPERT
+  { id:"st-exp",   name:"Start Expert",               lat:51.418657, lng:7.477602, color:"#ef4444", emoji:"💀", cat:"expert",   desc:"Nur für erfahrene Fahrer!" },
+  { id:"exp-zone", name:"Expert Zone",                lat:51.418692, lng:7.475410, color:"#ef4444", emoji:"⚠️", cat:"expert",  desc:"Hochanspruchsvolles Gelände" },
+  { id:"exp-kurs", name:"Zerstörer",                lat:51.416403, lng:7.453939, color:"#ef4444", emoji:"🎇️", cat:"expert",  desc:"Hochanspruchsvolles Strecken links sehr schwer, rechts schwer" },
+  // LOGISTIK
+  { id:"camp",      name:"GMTW Camp",             lat:51.417704, lng:7.494867, color:"#38bdf8", emoji:"⛺", cat:"logistik", desc:"Hauptcamp des Events — Basisstation", large:true },
+  { id:"camp-tor",  name:"Camp Tor",              lat:51.417482, lng:7.490904, color:"#38bdf8", emoji:"🚧", cat:"logistik", desc:"Haupteingang zum GMTW Camp" },
+  { id:"zeltplatz", name:"Zeltplatz Eingang",     lat:51.420130, lng:7.495086, color:"#38bdf8", emoji:"🏕️",cat:"logistik", desc:"Eingang Campingplatz Hohensyburg · Syburger Dorfstr. 69" },
+  { id:"sam-beg",   name:"Sammelpunkt Beginner",  lat:51.419799, lng:7.484685, color:"#38bdf8", emoji:"👥", cat:"logistik", desc:"Treffpunkt nach dem Aufstieg vom Camp" },
+  { id:"sam-camp",  name:"Sammelpunkt → Camp",    lat:51.418164, lng:7.478552, color:"#38bdf8", emoji:"🔁", cat:"logistik", desc:"Treffpunkt für den Rückweg ins Camp" },
+  { id:"wc",        name:"Dusche / WC",           lat:51.418808, lng:7.493754, color:"#a78bfa", emoji:"🚿", cat:"logistik", desc:"Sanitäreinrichtungen am Camp" },
+];
 
-        // Layer-Wechsler oben rechts
-        L.control.layers({ "🌲 Topografie & Trails": topoLayer, "🌍 Satellit (3D)": satLayer }, null, {position: 'topright'}).addTo(map);
+const CATS = {
+  beginner: { label:"Beginner",                color:"var(--beg)" },
+  mittel:   { label:"Mittel",                  color:"var(--mit)" },
+  expert:   { label:"Expert",                  color:"var(--exp)" },
+  logistik: { label:"Logistik & Einrichtungen",color:"var(--log)" },
+};
 
-        // Linie auf Karte zeichnen
-        L.polyline(wegZurueck, {color: '#fbc02d', weight: 4, dashArray: '10, 10'}).addTo(map)
-         .bindTooltip("Weg zurück", {permanent: true, direction: 'center', className: 'map-label'});
+// KML Linie
+const WEG = [[51.418146,7.478490],[51.417422,7.490686]];
 
-        // ==========================================
-        // 3. MARKER & LEGENDE ERSTELLEN
-        // ==========================================
-        const legendContainer = document.getElementById('legend-list');
+// ───────────────────────────────────────────────────────────
+// MAP
+// ───────────────────────────────────────────────────────────
+const map = L.map('map',{zoomControl:false,tap:false}).setView([51.4192,7.4855],16);
+L.control.zoom({position:'bottomright'}).addTo(map);
 
-        locations.forEach(loc => {
-            // A. SVG Design für Marker
-            let customIcon = L.divIcon({
-                className: '', 
-                html: `
-                    <div class="custom-pin-wrap">
-                        <div class="custom-pin" style="background-color: ${loc.color};">
-                            <span class="pin-emoji">${loc.emoji}</span>
-                        </div>
-                    </div>`,
-                iconSize: [40, 50], iconAnchor: [20, 50], popupAnchor: [0, -45]
-            });
+const TOPO = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenTopoMap'}).addTo(map);
+const SAT  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri'});
+let isSat = false;
+function toggleLayer(){
+  if(isSat){map.removeLayer(SAT);map.addLayer(TOPO);isSat=false;toast('🌲 Topo Ansicht')}
+  else{map.removeLayer(TOPO);map.addLayer(SAT);isSat=true;toast('🛰 Satellit Ansicht')}
+}
 
-            // B. Marker platzieren
-            let marker = L.marker([loc.lat, loc.lng], {icon: customIcon}).addTo(map);
-            
-            // Name unter Marker anheften
-            marker.bindTooltip(loc.name, {
-                permanent: true, direction: 'bottom', offset: [0, 5], className: 'map-label'
-            });
+// Weg zurück
+L.polyline(WEG,{color:'#f59e0b',weight:3.5,dashArray:'8 10',lineCap:'round',opacity:.85})
+  .addTo(map).bindTooltip('Weg zurück ins Camp',{permanent:true,direction:'center',className:'path-lbl'});
 
-            // Popup beim Anklicken des Markers generieren
-            let popupHTML = `
-                <div class="popup-emoji">${loc.emoji}</div>
-                <h3 class="popup-title">${loc.name}</h3>
-                <button class="action-chip primary" style="width:100%; margin-bottom:8px;" onclick="navTo(${loc.lat}, ${loc.lng})">🧭 Route starten</button>
-                <button class="action-chip" style="width:100%;" onclick="shareLoc('${loc.id}', '${loc.name}')">🔗 Marker teilen</button>
-            `;
-            marker.bindPopup(popupHTML);
+// ───────────────────────────────────────────────────────────
+// MARKERS
+// ───────────────────────────────────────────────────────────
+const MKR={};
+let curFilter='all';
 
-            mapMarkers[loc.id] = marker; // Ins Verzeichnis aufnehmen
+function mkIcon(loc){
+  const s=loc.large?36:30, is=loc.large?16:13;
+  return L.divIcon({
+    className:'',
+    html:`<div class="pm${loc.large?' lg':''}"><div class="pm-h" style="background:${loc.color}"><span class="pm-i" style="font-size:${is}px">${loc.emoji}</span></div><div class="pm-d" style="background:${loc.color}"></div></div>`,
+    iconSize:[s,s+8],iconAnchor:[s/2,s+8],popupAnchor:[0,-(s+12)]
+  });
+}
 
-            // C. Sidebar/Legende befüllen
-            let listItem = document.createElement('div');
-            listItem.className = 'list-item';
-            listItem.innerHTML = `
-                <div class="list-header" onclick="focusMarker('${loc.id}')">
-                    <div class="list-icon" style="background-color: ${loc.color};">${loc.emoji}</div>
-                    <div class="list-title">${loc.name}</div>
-                </div>
-                <div class="list-actions">
-                    <button class="action-chip primary" onclick="navTo(${loc.lat}, ${loc.lng})">🧭 Route</button>
-                    <button class="action-chip" onclick="shareLoc('${loc.id}', '${loc.name}')">🔗 Teilen</button>
-                </div>
-            `;
-            legendContainer.appendChild(listItem);
-        });
+function mkPopup(loc){
+  const c=CATS[loc.cat];
+  return `<div style="background:var(--s1)">
+    <div class="p-top">
+      <div class="p-badge" style="background:${loc.color}">${c.label}</div>
+      <div class="p-name">${loc.name}</div>
+      <div class="p-crds">${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}</div>
+      ${loc.desc?`<div class="p-desc">${loc.desc}</div>`:''}
+    </div>
+    <div class="p-acts">
+      <button class="pbtn nav" onclick="navTo(${loc.lat},${loc.lng},'${esc(loc.name)}')">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L12 6.5L6.5 12M1 6.5H11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Navigation
+      </button>
+      <button class="pbtn shr" onclick="openQR('${loc.id}')" title="QR-Code für Navigation">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="12" cy="3" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="3" cy="7.5" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 9L10 11M5 6L10 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Nav-QR
+      </button>
+    </div>
+  </div>`;
+}
 
-        // ==========================================
-        // 4. FUNKTIONEN (Sicher & Robust)
-        // ==========================================
+function esc(s){return s.replace(/'/g,"\\'")}
 
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('backdrop');
-            if (sidebar.classList.contains('open')) {
-                sidebar.classList.remove('open');
-                backdrop.classList.remove('show');
-            } else {
-                sidebar.classList.add('open');
-                backdrop.classList.add('show');
-            }
-        }
+LOCS.forEach(loc=>{
+  const m=L.marker([loc.lat,loc.lng],{icon:mkIcon(loc)}).addTo(map);
+  m.bindTooltip(loc.name,{permanent:true,direction:'bottom',offset:[0,4],className:'map-label'});
+  m.bindPopup(mkPopup(loc),{maxWidth:292,minWidth:250});
+  MKR[loc.id]={m,loc};
+});
 
-        function closeAllOverlays() {
-            document.getElementById('sidebar').classList.remove('open');
-            document.getElementById('qrModal').classList.remove('show');
-            document.getElementById('backdrop').classList.remove('show');
-        }
+// ───────────────────────────────────────────────────────────
+// SHEET
+// ───────────────────────────────────────────────────────────
+function buildList(){
+  const c=document.getElementById('s-list'); c.innerHTML='';
+  let n=0;
+  ['beginner','mittel','expert','logistik'].forEach(cat=>{
+    const items=LOCS.filter(l=>l.cat===cat&&(curFilter==='all'||curFilter===cat));
+    if(!items.length)return;
+    const h=document.createElement('div'); h.className='cat-head'; h.textContent=CATS[cat].label; c.appendChild(h);
+    items.forEach(loc=>{
+      n++;
+      const r=document.createElement('div'); r.className='lrow';
+      r.innerHTML=`<div class="l-ico" style="background:${loc.color}22"><span>${loc.emoji}</span></div>
+        <div class="l-inf"><div class="l-nm">${loc.name}</div><div class="l-co">${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}</div></div>
+        <div class="l-btns">
+          <button class="lbtn nav" title="Navigation" onclick="event.stopPropagation();navTo(${loc.lat},${loc.lng},'${esc(loc.name)}')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L12 6.5L6.5 12M1 6.5H11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="lbtn" title="QR Teilen" onclick="event.stopPropagation();openQR('${loc.id}')"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="11" cy="3" r="1.8" stroke="currentColor" stroke-width="1.4"/><circle cx="3" cy="7" r="1.8" stroke="currentColor" stroke-width="1.4"/><circle cx="11" cy="11" r="1.8" stroke="currentColor" stroke-width="1.4"/><path d="M4.8 8L9 10.5M4.8 6L9 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+        </div>`;
+      r.addEventListener('click',()=>focusMarker(loc.id));
+      c.appendChild(r);
+    });
+  });
+  document.getElementById('s-cnt').textContent=n;
+}
 
-        function focusMarker(id) {
-            closeAllOverlays();
-            let loc = locations.find(l => l.id === id);
-            map.flyTo([loc.lat, loc.lng], 18, { animate: true, duration: 1.2 });
-            setTimeout(() => mapMarkers[id].openPopup(), 1200); // Öffnet Popup nach Kameraflug
-        }
+function toggleSheet(){
+  const s=document.getElementById('sheet'),b=document.getElementById('backdrop');
+  if(s.classList.contains('open')){s.classList.remove('open');b.classList.remove('show')}
+  else{buildList();s.classList.add('open');b.classList.add('show')}
+}
+function closeAll(){
+  document.getElementById('sheet').classList.remove('open');
+  document.getElementById('qrm').classList.remove('show');
+  const _tqm=document.getElementById('trk-qrm');if(_tqm){_tqm.style.opacity='0';_tqm.style.visibility='hidden';_tqm.style.transform='translate(-50%,-50%) scale(.88)';};
+  document.getElementById('backdrop').classList.remove('show');
+  const gp=document.getElementById('gpx-panel');
+  if(gp) gp.classList.remove('open');
+}
 
-        function navTo(lat, lng) {
-            // Startet Navigation via Google Maps App/Web
-            let url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=bicycling`;
-            window.open(url, '_blank');
-        }
+// ───────────────────────────────────────────────────────────
+// FILTER
+// ───────────────────────────────────────────────────────────
+function setFilter(f,el){
+  curFilter=f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  LOCS.forEach(loc=>{
+    const lm=MKR[loc.id].m;
+    (f==='all'||loc.cat===f)?map.addLayer(lm):map.removeLayer(lm);
+  });
+  buildList();
+}
 
-        function shareLoc(id, name) {
-            closeAllOverlays(); 
-            document.getElementById('backdrop').classList.add('show');
-            
-            // Saubere URL bauen (schneidet eventuell alte ?loc Parameter ab)
-            let baseUrl = window.location.origin + window.location.pathname;
-            let shareUrl = `${baseUrl}?loc=${id}`;
-            let qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}&margin=10`;
-            
-            document.getElementById('qrTitle').innerText = name;
-            document.getElementById('qrImage').src = qrSrc;
-            document.getElementById('shareLink').value = shareUrl;
-            
-            document.getElementById('qrModal').classList.add('show');
-        }
+// ───────────────────────────────────────────────────────────
+// MARKER ACTIONS
+// ───────────────────────────────────────────────────────────
+function focusMarker(id){
+  closeAll();
+  const{m,loc}=MKR[id];
+  map.flyTo([loc.lat,loc.lng],18,{animate:true,duration:1.2});
+  setTimeout(()=>m.openPopup(),1250);
+}
+function fitAll(){
+  const vis=LOCS.filter(l=>curFilter==='all'||l.cat===curFilter);
+  if(!vis.length)return;
+  map.flyToBounds(L.latLngBounds(vis.map(l=>[l.lat,l.lng])),{padding:[55,55],maxZoom:17,animate:true,duration:1.3});
+}
 
-        function copyLink() {
-            let linkInput = document.getElementById('shareLink');
-            linkInput.select();
-            linkInput.setSelectionRange(0, 99999); // Für Safari auf iOS
-            
-            // Moderne Clipboard API
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(linkInput.value).then(() => {
-                    alert("✅ Link erfolgreich kopiert!");
-                }).catch(() => {
-                    document.execCommand('copy');
-                    alert("✅ Link erfolgreich kopiert!");
-                });
-            } else {
-                // Fallback für ältere Browser
-                document.execCommand('copy');
-                alert("✅ Link erfolgreich kopiert!");
-            }
-        }
+// ───────────────────────────────────────────────────────────
+// NAVIGATION — plattformspezifisch
+// ───────────────────────────────────────────────────────────
+function navTo(lat,lng,name){
+  const ua=navigator.userAgent||'';
+  const isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
+  const isAndroid=/Android/i.test(ua);
+  const gmapsUrl=`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=bicycling`;
 
-        // GPS Ortung
-        let userMarker = null;
-        function locateUser() {
-            if (!navigator.geolocation) {
-                alert("Dein Browser unterstützt kein GPS.");
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    let lat = pos.coords.latitude, lng = pos.coords.longitude;
-                    map.flyTo([lat, lng], 17, { animate: true, duration: 1 });
-                    
-                    if(userMarker) map.removeLayer(userMarker);
-                    
-                    userMarker = L.circleMarker([lat, lng], { 
-                        radius: 8, fillColor: "#1a73e8", color: "#fff", weight: 3, fillOpacity: 1 
-                    }).addTo(map);
-                    userMarker.bindPopup("<b>Dein aktueller Standort</b>").openPopup();
-                }, 
-                err => {
-                    alert("GPS Zugriff fehlgeschlagen. Bitte erlaube den Standort in den Browser-Einstellungen.");
-                }, 
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-            );
-        }
+  if(isIOS){
+    // Apple Maps App via maps:// — blur-Event prüft ob App geöffnet hat
+    let appOpened=false;
+    const onBlur=()=>{appOpened=true};
+    window.addEventListener('blur',onBlur,{once:true});
+    window.location.href=`maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+    setTimeout(()=>{
+      window.removeEventListener('blur',onBlur);
+      if(!appOpened) window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`,'_blank');
+    },700);
 
-        // ==========================================
-        // 5. DEEP LINKING (Beim Laden prüfen)
-        // ==========================================
-        window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-            const targetId = params.get('loc');
-            
-            if (targetId && mapMarkers[targetId]) {
-                setTimeout(() => {
-                    let loc = locations.find(l => l.id === targetId);
-                    map.flyTo([loc.lat, loc.lng], 19, { animate: true, duration: 1.5 });
-                    setTimeout(() => mapMarkers[targetId].openPopup(), 1500);
-                }, 400); // 400ms warten, damit die Kartenkacheln sauber laden können
-            }
-        };
+  } else if(isAndroid){
+    // Strategie: geo: URI → öffnet System-Maps-App-Chooser (kein double-fire)
+    // Fallback: Google Maps Web
+    const geoUri = `geo:${lat},${lng}?q=${lat},${lng}`;
+    const appOpened = {v:false};
+    window.addEventListener('blur',()=>{appOpened.v=true},{once:true});
+    window.location.href = geoUri;
+    setTimeout(()=>{
+      if(!appOpened.v) window.open(gmapsUrl,'_blank');
+    }, 1000);
 
-    </script>
+  } else {
+    window.open(gmapsUrl,'_blank');
+  }
+}
+
+// ───────────────────────────────────────────────────────────
+// QR SHARE + DOWNLOAD
+// ───────────────────────────────────────────────────────────
+// QR immer → Google Maps Navigation URL (universal, iOS + Android + Desktop)
+let curQrUrl='';
+let curQrLocId='';
+
+function openQR(id){
+  const loc=LOCS.find(l=>l.id===id); if(!loc)return;
+  // Universal Google Maps URL — öffnet auf Handy die App, auf Desktop den Browser
+  curQrUrl=`https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=bicycling`;
+  curQrLocId=id;
+  const qrSrc=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(curQrUrl)}&bgcolor=ffffff&color=0b0e14&margin=12&format=png`;
+  document.getElementById('qr-nm').textContent=loc.name;
+  const img=document.getElementById('qr-img');
+  img.src=''; // Reset zuerst, damit onload sicher feuert
+  img.src=qrSrc;
+  document.getElementById('qr-inp').value=curQrUrl;
+  closeAll();
+  document.getElementById('qrm').classList.add('show');
+  document.getElementById('backdrop').classList.add('show');
+}
+
+function copyQR(){
+  if(!curQrUrl)return;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(curQrUrl)
+      .then(()=>toast('✅ Navigation-Link kopiert!'))
+      .catch(()=>{legacyCopy(curQrUrl);toast('✅ Navigation-Link kopiert!')});
+  } else {legacyCopy(curQrUrl);toast('✅ Navigation-Link kopiert!')}
+}
+
+function legacyCopy(t){
+  const el=document.createElement('textarea');
+  el.value=t; el.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';
+  document.body.appendChild(el); el.focus(); el.select();
+  try{document.execCommand('copy')}catch(e){}
+  document.body.removeChild(el);
+}
+
+async function downloadQR(){
+  const img=document.getElementById('qr-img');
+  if(!img.src||img.src===window.location.href){toast('⏳ QR wird geladen…');return}
+  try{
+    const r=await fetch(img.src);
+    if(!r.ok)throw new Error('fetch failed');
+    const b=await r.blob();
+    const u=URL.createObjectURL(b),a=document.createElement('a');
+    a.href=u; a.download=`GMTW_${curQrLocId||'punkt'}_Navigation_QR.png`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(u); toast('⬇ QR gespeichert!');
+  }catch(e){
+    // Fallback: direkt öffnen
+    window.open(img.src,'_blank'); toast('🔗 QR in neuem Tab geöffnet');
+  }
+}
+
+// ───────────────────────────────────────────────────────────
+// GPS — robust, multi-platform
+// ───────────────────────────────────────────────────────────
+let userMkr=null, gpsWatcher=null, gpsOn=false;
+
+async function locateUser(){
+  const fab=document.getElementById('gps-fab');
+  if(!('geolocation'in navigator)){showGpsHint('GPS nicht verfügbar','Dein Browser unterstützt keine Geolocation-API.');return}
+
+  // Check permission
+  if(navigator.permissions){
+    try{
+      const p=await navigator.permissions.query({name:'geolocation'});
+      if(p.state==='denied'){showGpsHint('Zugriff verweigert','Erlaube den Standort in den Browser-/App-Einstellungen und lade die Seite neu.');return}
+    }catch(e){}
+  }
+
+  // Toggle off
+  if(gpsOn){
+    if(gpsWatcher!==null){navigator.geolocation.clearWatch(gpsWatcher);gpsWatcher=null}
+    if(userMkr){map.removeLayer(userMkr);userMkr=null}
+    gpsOn=false; fab.classList.remove('spin'); fab.style.borderColor='';
+    toast('📍 GPS deaktiviert'); return;
+  }
+
+  fab.classList.add('spin'); toast('📡 GPS wird aktiviert…');
+
+  gpsWatcher=navigator.geolocation.watchPosition(
+    pos=>{
+      const{latitude:lat,longitude:lng,accuracy:acc}=pos.coords;
+      if(!gpsOn){
+        gpsOn=true; fab.classList.remove('spin');
+        fab.style.borderColor='var(--log)'; fab.style.borderWidth='2px';
+        map.flyTo([lat,lng],17,{animate:true,duration:1});
+        toast(`✅ Standort (±${Math.round(acc)}m)`);
+      }
+      const dotIcon=L.divIcon({
+        className:'',
+        html:`<div style="position:relative;width:22px;height:22px;display:flex;align-items:center;justify-content:center"><div style="position:absolute;width:38px;height:38px;border-radius:50%;background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.35);top:50%;left:50%;transform:translate(-50%,-50%)"></div><div style="width:16px;height:16px;border-radius:50%;background:#38bdf8;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div></div>`,
+        iconSize:[22,22],iconAnchor:[11,11]
+      });
+      if(userMkr)map.removeLayer(userMkr);
+      userMkr=L.marker([lat,lng],{icon:dotIcon,zIndexOffset:1000}).addTo(map)
+        .bindPopup(`<div class="p-top"><div class="p-name">Dein Standort</div><div class="p-crds">${lat.toFixed(5)}, ${lng.toFixed(5)}</div><div class="p-desc">Genauigkeit: ±${Math.round(acc)} m</div></div>`);
+    },
+    err=>{
+      fab.classList.remove('spin'); fab.style.borderColor=''; gpsOn=false;
+      const msgs={1:['Zugriff verweigert','Standortzugriff in Einstellungen erlauben.'],2:['Kein Signal','Ins Freie gehen oder WLAN aktivieren.'],3:['Zeitüberschreitung','GPS-Signal nicht gefunden. Erneut versuchen.']};
+      const[t,m]=msgs[err.code]||['GPS Fehler',err.message];
+      showGpsHint(t,m);
+    },
+    {enableHighAccuracy:true,timeout:20000,maximumAge:5000}
+  );
+}
+
+function showGpsHint(t,m){
+  document.getElementById('gpshint-t').textContent=t;
+  document.getElementById('gpshint-m').textContent=m;
+  document.getElementById('gpshint').classList.add('show');
+  setTimeout(hideGpsHint,8000);
+}
+function hideGpsHint(){document.getElementById('gpshint').classList.remove('show')}
+
+// ───────────────────────────────────────────────────────────
+// TOAST
+// ───────────────────────────────────────────────────────────
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2700);
+}
+
+// ───────────────────────────────────────────────────────────
+// DEEP LINK
+// ───────────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  const id=new URLSearchParams(window.location.search).get('loc');
+  if(id&&MKR[id])setTimeout(()=>focusMarker(id),700);
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// GPX SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+// Konstante GPX-Farben pro Schwierigkeit
+const GPX_COLORS = { beginner:'#27AE60', mittel:'#D4A017', expert:'#8E44AD' };
+
+// Proxy für CORS-Probleme
+let useProxy = false;
+function useCorsProxy(){ useProxy=!useProxy; toast(useProxy?'🔀 CORS-Proxy aktiv':'🔀 Direktverbindung'); }
+
+// Track-Datenspeicher
+const trackStore = { tracks:[], _id:1 };
+
+let gpxFilter = 'all'; // aktueller Kategorie-Filter in Track-Liste
+
+// GPX Panel öffnen/schließen
+function openGpxPanel(tab='load'){
+  closeAll(); // Sheet etc. schließen
+  const p=document.getElementById('gpx-panel');
+  const b=document.getElementById('backdrop');
+  p.classList.add('open'); b.classList.add('show');
+  switchGpxTab(tab, document.querySelector(`.gpx-tab[data-tab="${tab}"]`));
+  map.invalidateSize();
+}
+function closeGpxPanel(){
+  document.getElementById('gpx-panel').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('show');
+  map.invalidateSize();
+}
+function switchGpxTab(tab, btn){
+  document.querySelectorAll('.gpx-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.gpx-content').forEach(c=>c.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  else document.querySelector(`.gpx-tab[data-tab="${tab}"]`).classList.add('on');
+  const el=document.getElementById(`gpx-tab-${tab}`);
+  if(el){ el.classList.add('on'); if(tab==='tracks') renderTrackList(); }
+}
+
+// ── GPX Datei-Upload ────────────────────────────────────────
+function handleGpxFiles(input){
+  const cat=document.getElementById('gpx-cat').value;
+  Array.from(input.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const gpxStr=e.target.result;
+      // Validierung: muss <gpx enthalten
+      if(!gpxStr.includes('<gpx')){
+        toast('❌ Keine gültige GPX-Datei: '+file.name); return;
+      }
+      if(trackStore.tracks.length>=50){ toast('⚠️ Max. 50 Tracks'); return; }
+      loadGpxFromString(gpxStr, file.name.replace('.gpx',''), cat);
+    };
+    reader.onerror=()=>toast('❌ Fehler beim Lesen: '+file.name);
+    reader.readAsText(file);
+  });
+  input.value=''; // Reset damit gleiche Datei wieder wählbar
+}
+
+// ── GPX URL laden ───────────────────────────────────────────
+function loadGpxFromUrl(){
+  let url=document.getElementById('gpx-url-inp').value.trim();
+  if(!url){ toast('⚠️ Bitte URL eingeben'); return; }
+  if(trackStore.tracks.length>=50){ toast('⚠️ Max. 50 Tracks'); return; }
+  if(useProxy) url=`https://corsproxy.io/?${encodeURIComponent(url)}`;
+  const cat=document.getElementById('gpx-cat').value;
+  const name=url.split('/').pop().replace('.gpx','').replace(/_/g,' ')||'Track';
+  toast('⏳ Lade GPX…');
+  createGpxLayer(url, false, cat, name);
+  document.getElementById('gpx-url-inp').value='';
+}
+
+// ── GPX String → Blob URL → Layer ────────────────────────────
+function loadGpxFromString(gpxStr, name, cat){
+  const blob=new Blob([gpxStr],{type:'application/gpx+xml'});
+  const blobUrl=URL.createObjectURL(blob);
+  createGpxLayer(blobUrl, false, cat, name, ()=>URL.revokeObjectURL(blobUrl));
+}
+
+// ── Gemeinsamer Layer-Ersteller ───────────────────────────────
+function createGpxLayer(source, isString, cat, name, onDone){
+  const color=GPX_COLORS[cat]||'#27AE60';
+  const id='trk-'+trackStore._id++;
+
+  const layer=new L.GPX(source,{
+    async:true,
+    marker_options:{ startIconUrl:null, endIconUrl:null, shadowUrl:null, wptIconUrls:{'':null} },
+    polyline_options:{ color, weight:4, opacity:.85, lineCap:'round', lineJoin:'round' }
+  });
+
+  layer.on('loaded', function(e){
+    const gl=e.target;
+    let dist='?', dur='?';
+    try{ dist=(gl.get_distance()/1000).toFixed(2); }catch(ex){}
+    try{
+      const d=gl.get_total_time();
+      if(d){ const m=Math.round(d/60000); dur=`${Math.floor(m/60)}h ${m%60}m`; }
+    }catch(ex){}
+
+    const track={ id, name, cat, color, gpxLayer:gl, visible:true, sourceUrl:source&&source.startsWith('http')?source:null,
+      bounds: (()=>{ try{ const b=gl.getBounds(); return b&&b.isValid&&b.isValid()?b:null; }catch(e){ return null; }})(),
+      stats:{ dist, dur }
+    };
+    trackStore.tracks.push(track);
+    updateGpxBadge();
+    renderTrackList();
+    toast(`✅ "${name}" geladen (${dist} km)`);
+    setTimeout(()=>{ if(onDone) onDone(); }, 2000); // Blob URL erst nach Rendering freigeben
+    // Auf Track zoomen
+    if(track.bounds) map.flyToBounds(track.bounds,{padding:[40,40],maxZoom:16,animate:true,duration:1.2});
+    switchGpxTab('tracks', null);
+  });
+
+  layer.on('error', function(e){
+    toast('❌ GPX Fehler – prüfe URL oder aktiviere CORS-Proxy');
+    console.warn('GPX error',e);
+  });
+
+  layer.addTo(map);
+}
+
+// ── Track Sichtbarkeit ──────────────────────────────────────
+function toggleTrack(id){
+  const t=trackStore.tracks.find(t=>t.id===id); if(!t) return;
+  if(t.visible){ map.removeLayer(t.gpxLayer); t.visible=false; }
+  else{ t.gpxLayer.addTo(map); t.visible=true; }
+  renderTrackList();
+}
+
+// ── Track löschen ───────────────────────────────────────────
+function removeTrack(id){
+  const idx=trackStore.tracks.findIndex(t=>t.id===id); if(idx<0) return;
+  const t=trackStore.tracks[idx];
+  map.removeLayer(t.gpxLayer);
+  trackStore.tracks.splice(idx,1);
+  updateGpxBadge();
+  renderTrackList();
+  toast('🗑 Track entfernt');
+}
+
+// ── Auf Track zoomen ────────────────────────────────────────
+function zoomTrack(id){
+  const t=trackStore.tracks.find(t=>t.id===id); if(!t) return;
+  try{
+    if(t.bounds&&t.bounds.isValid()) map.flyToBounds(t.bounds,{padding:[40,40],maxZoom:16,animate:true,duration:1});
+    else if(t.gpxLayer){ const b=t.gpxLayer.getBounds(); if(b.isValid()) map.flyToBounds(b,{padding:[40,40],maxZoom:16}); }
+  }catch(e){ console.warn("zoomTrack error",e); }
+}
+
+// ── Kategorie-Filter ────────────────────────────────────────
+function filterTracks(cat, btn){
+  gpxFilter=cat;
+  document.querySelectorAll('.cat-fbtn').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  renderTrackList();
+}
+
+// ── Track-Liste rendern ─────────────────────────────────────
+function renderTrackList(){
+  const cont=document.getElementById('trk-list'); if(!cont) return;
+  const filtered=gpxFilter==='all'?trackStore.tracks:trackStore.tracks.filter(t=>t.cat===gpxFilter);
+  if(!filtered.length){
+    cont.innerHTML='<div style="padding:20px 16px;text-align:center;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px">'+(trackStore.tracks.length?'Keine Tracks in dieser Kategorie':'Noch keine Tracks geladen')+'</div>';
+    return;
+  }
+  cont.innerHTML='';
+  filtered.forEach(t=>{
+    const row=document.createElement('div'); row.className='trk-row';
+    row.innerHTML=`<div class="trk-dot" style="background:${t.color}"></div>
+      <div class="trk-inf">
+        <div class="trk-nm">${t.name}</div>
+        <div class="trk-meta">${t.cat.charAt(0).toUpperCase()+t.cat.slice(1)} · ${t.stats.dist} km · ${t.stats.dur}</div>
+      </div>
+      <div class="trk-btns">
+        <button class="trk-btn${t.visible?' on':''}" title="${t.visible?'Ausblenden':'Einblenden'}" onclick="toggleTrack('${t.id}')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">${t.visible?'<path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="1.8" fill="currentColor"/>':'<path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4" opacity=".3"/><path d="M2 2L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'}</svg>
+        </button>
+        <button class="trk-btn" title="Zoomen" onclick="zoomTrack('${t.id}')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M9 9L13 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="trk-btn" title="Löschen" onclick="removeTrack('${t.id}')" style="color:#ef4444">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4H12M5 4V2H9V4M11 4L10 12H4L3 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>`;
+    cont.appendChild(row);
+  });
+  document.getElementById('gpx-track-cnt').textContent=trackStore.tracks.length+' Track'+(trackStore.tracks.length!==1?'s':'');
+}
+
+// Badge an GPX-FAB
+function updateGpxBadge(){
+  const b=document.getElementById('gpx-cnt');
+  const n=trackStore.tracks.length;
+  b.textContent=n; b.style.display=n?'':'none';
+}
+
+// ── Drag & Drop GPX auf Karte ──────────────────────────────
+const dropOverlay=document.getElementById('gpx-drop-overlay');
+document.addEventListener('dragover',e=>{
+  if([...e.dataTransfer.items].some(i=>i.kind==='file')){
+    e.preventDefault(); dropOverlay.style.display='flex';
+  }
+});
+document.addEventListener('dragleave',e=>{
+  if(!e.relatedTarget||!document.contains(e.relatedTarget)) dropOverlay.style.display='none';
+});
+document.addEventListener('drop',e=>{
+  e.preventDefault(); dropOverlay.style.display='none';
+  const cat=document.getElementById('gpx-cat').value;
+  [...e.dataTransfer.files].filter(f=>f.name.endsWith('.gpx')).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=ev=>loadGpxFromString(ev.target.result, file.name.replace('.gpx',''), cat);
+    reader.readAsText(file);
+  });
+});
+
+// closeAll überschrieben durch erweiterte Version weiter unten
+
+// ═══════════════════════════════════════════════════════════════
+// STRECKEN-AUFNAHME
+// ═══════════════════════════════════════════════════════════════
+
+const recorder = {
+  isRecording: false,
+  isPaused:    false,
+  points:      [],      // [{lat, lng, ele, time, speed}]
+  watchId:     null,
+  startTime:   null,
+  elapsed:     0,       // ms Gesamtzeit (nur Bewegung)
+  _timerInt:   null,
+  _lastPos:    null,
+  _lastTime:   null,
+  totalDist:   0,       // Meter
+  previewLine: null,
+  MIN_SPEED:   0.5,     // m/s
+  _segStart:   null     // Zeitstempel Segment-Start für Display
+};
+
+// Haversine-Formel
+function haversine(lat1,lng1,lat2,lng2){
+  const R=6371000,r=Math.PI/180;
+  const dLat=(lat2-lat1)*r, dLng=(lng2-lng1)*r;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function recStart(){
+  if(!('geolocation'in navigator)){showGpsHint('GPS nicht verfügbar','Geolocation wird benötigt.');return}
+  recorder.isRecording=true; recorder.isPaused=false;
+  recorder.points=[]; recorder.elapsed=0; recorder.totalDist=0;
+  recorder._lastPos=null; recorder._lastTime=null;
+  recorder.startTime=Date.now();
+  recorder._segStart=Date.now();
+  recUpdateUI();
+  toast('🔴 Aufnahme läuft…');
+  document.getElementById('rec-bar').classList.add('show');
+  // Vorschau-Linie
+  if(recorder.previewLine){ map.removeLayer(recorder.previewLine); recorder.previewLine=null; }
+  recorder.previewLine=L.polyline([],{color:'#ef4444',weight:3,opacity:.8,dashArray:'6 4'}).addTo(map);
+  // GPS Watch
+  recorder.watchId=navigator.geolocation.watchPosition(
+    pos=>recOnPosition(pos),
+    err=>{ toast('❌ GPS-Fehler bei Aufnahme'); recStop(); },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:1000}
+  );
+  // Anzeigeupdate-Timer (jede Sekunde)
+  recorder._timerInt=setInterval(recTickDisplay,1000);
+}
+
+function recOnPosition(pos){
+  if(!recorder.isRecording||recorder.isPaused) return;
+  const {latitude:lat,longitude:lng,altitude:ele,speed,accuracy}=pos.coords;
+  const time=new Date(pos.timestamp).toISOString();
+  const pt={lat,lng,ele:ele||0,time,speed:speed||0};
+
+  // Nur aufnehmen wenn Genauigkeit halbwegs gut
+  if(accuracy>50) return;
+
+  if(recorder._lastPos){
+    const dist=haversine(recorder._lastPos.lat,recorder._lastPos.lng,lat,lng);
+    const dt=(pos.timestamp-recorder._lastTime)/1000;
+    const spd=dt>0?dist/dt:0;
+    const isMoving=(speed!==null&&speed>recorder.MIN_SPEED)||(spd>recorder.MIN_SPEED);
+    if(isMoving){ recorder.elapsed+=pos.timestamp-recorder._lastTime; recorder.totalDist+=dist; }
+  }
+  recorder._lastPos={lat,lng};
+  recorder._lastTime=pos.timestamp;
+  recorder.points.push(pt);
+  // Vorschau-Linie aktualisieren
+  recorder.previewLine.addLatLng([lat,lng]);
+  // Stats
+  document.getElementById('rec-pts').textContent=recorder.points.length;
+  document.getElementById('rec-dist').textContent=(recorder.totalDist/1000).toFixed(2);
+}
+
+function recPause(){
+  if(!recorder.isRecording) return;
+  recorder.isPaused = !recorder.isPaused;
+  if(recorder.isPaused){
+    // Segment beenden: verstrichene Zeit einfrieren
+    if(recorder._segStart !== null){
+      recorder.elapsed += (Date.now() - recorder._segStart);
+      recorder._segStart = null;
+    }
+  } else {
+    // Neues Segment starten
+    recorder._segStart = Date.now();
+  }
+  document.getElementById('rec-pause-btn').textContent = recorder.isPaused ? 'Weiter' : 'Pause';
+  document.getElementById('rec-status-txt').textContent = recorder.isPaused ? 'Pausiert' : 'Aufnahme läuft';
+  document.getElementById('rec-status-txt').style.color = recorder.isPaused ? 'var(--mit)' : '#ef4444';
+  toast(recorder.isPaused ? '⏸ Pause' : '▶ Aufnahme weiter');
+}
+
+function recStop(){
+  // Letztes Segment einfrieren
+  if(recorder._segStart !== null){ recorder.elapsed += (Date.now() - recorder._segStart); recorder._segStart = null; }
+  recorder.isRecording=false; recorder.isPaused=false;
+  if(recorder.watchId!==null){ navigator.geolocation.clearWatch(recorder.watchId); recorder.watchId=null; }
+  clearInterval(recorder._timerInt); recorder._timerInt=null;
+  document.getElementById('rec-bar').classList.remove('show');
+  document.getElementById('rec-status-txt').textContent=`Beendet · ${recorder.points.length} Punkte`;
+  document.getElementById('rec-status-txt').style.color='var(--ac)';
+  document.getElementById('rec-start-btn').style.display='';
+  document.getElementById('rec-pause-btn').style.display='none';
+  document.getElementById('rec-stop-btn').style.display='none';
+  document.getElementById('rec-save-section').style.display='';
+  if(!recorder.points.length){ toast('⚠️ Keine GPS-Punkte aufgezeichnet'); recReset(); return; }
+  toast(`✅ Aufnahme beendet · ${recorder.points.length} Punkte`);
+}
+
+function recReset(){
+  if(recorder.watchId!==null){ navigator.geolocation.clearWatch(recorder.watchId); recorder.watchId=null; }
+  clearInterval(recorder._timerInt); recorder._timerInt=null;
+  if(recorder.previewLine){ map.removeLayer(recorder.previewLine); recorder.previewLine=null; }
+  recorder.isRecording=false; recorder.isPaused=false;
+  recorder.points=[]; recorder.elapsed=0; recorder.totalDist=0;
+  recorder._lastPos=null; recorder._segStart=null; document.getElementById('rec-bar').classList.remove('show');
+  recUpdateUI(); recTickDisplay();
+  document.getElementById('rec-save-section').style.display='none';
+  document.getElementById('rec-name-inp').value='';
+  toast('🗑 Aufnahme verworfen');
+}
+
+function recUpdateUI(){
+  const s=recorder.isRecording;
+  document.getElementById('rec-start-btn').style.display=s?'none':'';
+  document.getElementById('rec-pause-btn').style.display=s?'':'none';
+  document.getElementById('rec-stop-btn').style.display=s?'':'none';
+  document.getElementById('rec-status-txt').textContent=s?'Aufnahme läuft':'Bereit';
+  document.getElementById('rec-status-txt').style.color=s?'#ef4444':'var(--tm)';
+}
+
+function recTickDisplay(){
+  // displayElapsed = gespeicherte Bewegungszeit + aktuelle laufende Zeit (wenn aktiv und nicht pausiert)
+  let display = recorder.elapsed;
+  if(recorder.isRecording && !recorder.isPaused && recorder._segStart !== null){
+    display += (Date.now() - recorder._segStart);
+  }
+  const totalSec = Math.floor(display / 1000);
+  const hh = Math.floor(totalSec / 3600);
+  const mm = Math.floor((totalSec % 3600) / 60);
+  const ss = totalSec % 60;
+  const str = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  document.getElementById('rec-timer').textContent = str;
+  document.getElementById('rec-bar-txt').textContent = str;
+  // Aktuelle Geschwindigkeit vom letzten GPS-Punkt
+  if(recorder.points.length > 0){
+    const last = recorder.points[recorder.points.length - 1];
+    document.getElementById('rec-speed').textContent = ((last.speed||0) * 3.6).toFixed(1);
+  }
+}
+
+// ── GPX Export ─────────────────────────────────────────────
+function recExportGpx(){
+  if(!recorder.points.length){ toast('⚠️ Keine Punkte zum Speichern'); return; }
+  const name=document.getElementById('rec-name-inp').value.trim()||'GMTW_Track';
+  const pts=recorder.points.map(p=>
+    `    <trkpt lat="${p.lat.toFixed(7)}" lon="${p.lng.toFixed(7)}">
+      <ele>${(p.ele||0).toFixed(1)}</ele>
+      <time>${p.time}</time>
+    </trkpt>`
+  ).join('\n');
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GMTW Trail Map" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>${name}</name><time>${new Date().toISOString()}</time></metadata>
+  <trk>
+    <name>${name}</name>
+    <desc>Aufgezeichnet mit GMTW Trail Map · ${(recorder.totalDist/1000).toFixed(2)} km</desc>
+    <trkseg>
+${pts}
+    </trkseg>
+  </trk>
+</gpx>`;
+  dlFile(name+'.gpx', gpx, 'application/gpx+xml');
+  toast('⬇ GPX gespeichert!');
+}
+
+// ── JSON Export ────────────────────────────────────────────
+function recExportJson(){
+  if(!recorder.points.length){ toast('⚠️ Keine Punkte zum Speichern'); return; }
+  const name=document.getElementById('rec-name-inp').value.trim()||'GMTW_Track';
+  const data={ name, creator:'GMTW Trail Map', created:new Date().toISOString(),
+    stats:{ points:recorder.points.length, distanceKm:(recorder.totalDist/1000).toFixed(3),
+            elapsedMs:recorder.elapsed },
+    points:recorder.points
+  };
+  dlFile(name+'.json', JSON.stringify(data,null,2), 'application/json');
+  toast('⬇ JSON gespeichert!');
+}
+
+function dlFile(filename, content, mime){
+  const blob=new Blob([content],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUFNAHME → IN KARTE LADEN
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Konvertiert die aufgezeichneten Punkte in einen GPX-String
+ */
+function recBuildGpxString(name){
+  const pts = recorder.points.map(p =>
+    `    <trkpt lat="${p.lat.toFixed(7)}" lon="${p.lng.toFixed(7)}">\n      <ele>${(p.ele||0).toFixed(1)}</ele>\n      <time>${p.time}</time>\n    </trkpt>`
+  ).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GMTW Trail Map" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${escXml(name)}</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>
+  <trk>
+    <name>${escXml(name)}</name>
+    <desc>Aufgezeichnet mit GMTW Trail Map · ${(recorder.totalDist/1000).toFixed(2)} km</desc>
+    <trkseg>
+${pts}
+    </trkseg>
+  </trk>
+</gpx>`;
+}
+
+function escXml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/**
+ * Aufnahme direkt als Track in die Karte laden (ohne Export/Import)
+ */
+function recAddToMap(){
+  if(!recorder.points.length){ toast('⚠️ Keine Punkte aufgezeichnet'); return; }
+  const name = document.getElementById('rec-name-inp').value.trim() || 'GMTW Aufnahme';
+  const cat  = document.getElementById('rec-save-cat').value;
+
+  // GPX-String bauen → Blob → Layer
+  const gpxStr = recBuildGpxString(name);
+  loadGpxFromString(gpxStr, name, cat);
+
+  // Aufnahme-UI zurücksetzen (Linie bleibt als Layer erhalten)
+  if(recorder.previewLine){ map.removeLayer(recorder.previewLine); recorder.previewLine = null; }
+  recorder.points = []; recorder.elapsed = 0; recorder.totalDist = 0; recorder._segStart = null;
+  document.getElementById('rec-save-section').style.display = 'none';
+  document.getElementById('rec-name-inp').value = '';
+  recUpdateUI();
+  document.getElementById('rec-status-txt').textContent = 'Bereit';
+  document.getElementById('rec-status-txt').style.color = 'var(--tm)';
+  document.getElementById('rec-timer').textContent = '00:00:00';
+  document.getElementById('rec-dist').textContent = '0.0';
+  document.getElementById('rec-pts').textContent = '0';
+  document.getElementById('rec-speed').textContent = '0.0';
+
+  toast(`✅ "${name}" zur Karte hinzugefügt!`);
+  // Zu Tracks-Tab wechseln
+  setTimeout(()=> switchGpxTab('tracks', document.querySelector('.gpx-tab[data-tab="tracks"]')), 500);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRACK QR-CODE SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+let curTrkQrId = null; // ID des aktuell im QR-Modal angezeigten Tracks
+
+/**
+ * QR-Code für einen geladenen Track öffnen
+ * Strategy:
+ * - Der QR-Code encodiert eine data:text/plain URI mit dem GPX-Inhalt
+ *   → beim Scannen lädt der Browser das GPX direkt herunter
+ * - Wenn GPX-Inhalt > 2.5KB (QR limit): QR-Code zeigt Anleitung
+ */
+function openTrackQR(trackId){
+  const t = trackStore.tracks.find(t=>t.id===trackId);
+  if(!t){ toast('❌ Track nicht gefunden'); return; }
+  curTrkQrId = trackId;
+
+  document.getElementById('trk-qr-nm').textContent = t.name;
+
+  // GPX-Inhalt aus dem Layer extrahieren
+  extractGpxFromLayer(t).then(gpxStr => {
+    const gpxBytes = new Blob([gpxStr]).size;
+    const catLabel = t.cat.charAt(0).toUpperCase() + t.cat.slice(1);
+    const hint = `${catLabel} · ${t.stats.dist} km · ${gpxBytes > 1024 ? (gpxBytes/1024).toFixed(1)+' KB' : gpxBytes+' B'}`;
+
+    document.getElementById('trk-qr-info').innerHTML =
+      `<strong>${t.name}</strong><br>Kategorie: ${catLabel} · Distanz: ${t.stats.dist} km`;
+
+    // QR-Code Entscheidung
+    let qrData;
+    let hintText;
+
+    if(t.sourceUrl){
+      // URL-geladen: QR der Original-URL → in GMTW-App öffnbar
+      qrData = t.sourceUrl;
+      hintText = 'QR scannen → Track-URL öffnen';
+    } else if(gpxBytes <= 2500){
+      // Klein genug: Data-URI (Base64 GPX) → Browser lädt GPX herunter beim Scan
+      const b64 = btoa(unescape(encodeURIComponent(gpxStr)));
+      qrData = `data:application/gpx+xml;base64,${b64}`;
+      hintText = 'QR scannen → GPX direkt auf Gerät laden';
+    } else {
+      // Zu groß: Google Maps Waypoints der Start/End-Punkte
+      const coords = extractWaypoints(t);
+      qrData = `https://www.google.com/maps/dir/?api=1&origin=${coords.start}&destination=${coords.end}&travelmode=bicycling`;
+      hintText = 'QR scannen → Start/Ziel in Google Maps';
+      document.getElementById('trk-qr-info').innerHTML +=
+        '<br><span style="color:var(--mit)">⚠️ GPX zu groß für QR — zeigt Start/Ziel</span>';
+    }
+
+    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=0b0e14&margin=10&format=png`;
+    document.getElementById('trk-qr-hint').textContent = hintText;
+    const img = document.getElementById('trk-qr-img');
+    img.src = ''; img.src = qrSrc;
+
+    // Store GPX für Download
+    document.getElementById('trk-qr-dl-btn').dataset.gpx = gpxStr;
+    document.getElementById('trk-qr-dl-btn').dataset.name = t.name;
+
+    closeAll();
+    const modal = document.getElementById('trk-qrm');
+    modal.style.opacity = '0'; modal.style.visibility = 'visible';
+    modal.style.transform = 'translate(-50%,-50%) scale(.88)';
+    requestAnimationFrame(()=>{
+      modal.style.transition = 'all .25s cubic-bezier(.32,.72,0,1)';
+      modal.style.opacity = '1';
+      modal.style.transform = 'translate(-50%,-50%) scale(1)';
+    });
+    document.getElementById('backdrop').classList.add('show');
+  });
+}
+
+/** GPX-Inhalt aus einem leaflet-gpx Layer re-extrahieren */
+async function extractGpxFromLayer(track){
+  // Koordinaten aus den Polylines des GPX-Layers extrahieren
+  const lines = [];
+  track.gpxLayer.eachLayer(layer => {
+    if(layer.getLatLngs){
+      try {
+        const coords = layer.getLatLngs();
+        if(coords && coords.length > 0) lines.push(coords);
+      } catch(e){}
+    }
+  });
+
+  let allPts = [];
+  lines.forEach(segment => {
+    if(Array.isArray(segment[0])){
+      segment.forEach(sub => allPts = allPts.concat(sub));
+    } else {
+      allPts = allPts.concat(segment);
+    }
+  });
+
+  if(!allPts.length) return buildSimpleGpx(track.name, []);
+
+  const pts = allPts.map(ll =>
+    `    <trkpt lat="${ll.lat.toFixed(7)}" lon="${ll.lng.toFixed(7)}"></trkpt>`
+  ).join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GMTW Trail Map" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>${escXml(track.name)}</name></metadata>
+  <trk>
+    <name>${escXml(track.name)}</name>
+    <desc>Kategorie: ${track.cat} · ${track.stats.dist} km</desc>
+    <trkseg>
+${pts}
+    </trkseg>
+  </trk>
+</gpx>`;
+}
+
+function buildSimpleGpx(name, pts){ return `<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1"><trk><name>${escXml(name)}</name></trk></gpx>`; }
+
+function extractWaypoints(track){
+  try{
+    const b = track.gpxLayer.getBounds();
+    return { start:`${b.getSouthWest().lat.toFixed(5)},${b.getSouthWest().lng.toFixed(5)}`,
+             end:`${b.getNorthEast().lat.toFixed(5)},${b.getNorthEast().lng.toFixed(5)}` };
+  }catch(e){ return {start:'0,0',end:'0,0'}; }
+}
+
+/** GPX-Datei direkt herunterladen (aus QR-Modal) */
+function trkQrDownloadGpx(){
+  const btn = document.getElementById('trk-qr-dl-btn');
+  const gpxStr = btn.dataset.gpx;
+  const name = btn.dataset.name || 'GMTW_Track';
+  if(!gpxStr){ toast('❌ Kein GPX verfügbar'); return; }
+  dlFile(name + '.gpx', gpxStr, 'application/gpx+xml');
+  toast('⬇ GPX gespeichert!');
+}
+
+/** QR-Bild herunterladen */
+async function trkQrDownloadImg(){
+  const img = document.getElementById('trk-qr-img');
+  if(!img.src){ toast('⏳ QR wird geladen…'); return; }
+  try{
+    const r = await fetch(img.src);
+    const b = await r.blob();
+    const t = trackStore.tracks.find(t=>t.id===curTrkQrId);
+    const name = (t ? t.name : 'GMTW_Track').replace(/[^a-zA-Z0-9_-]/g,'_');
+    const u = URL.createObjectURL(b);
+    const a = document.createElement('a'); a.href=u; a.download=name+'_QR.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(u); toast('⬇ QR-Bild gespeichert!');
+  }catch(e){ window.open(img.src,'_blank'); }
+}
+
+/** Link des QR-Inhalts kopieren */
+function trkQrCopyUrl(){
+  const t = trackStore.tracks.find(t=>t.id===curTrkQrId);
+  const url = (t && t.sourceUrl) ? t.sourceUrl : window.location.href;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(()=>toast('📋 Link kopiert!'));
+  } else { legacyCopy(url); toast('📋 Link kopiert!'); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRACK QR-Button in renderTrackList ergänzen
+// (ersetze renderTrackList komplett mit verbesserter Version)
+// ═══════════════════════════════════════════════════════════════
+
+function renderTrackList(){
+  const cont = document.getElementById('trk-list'); if(!cont) return;
+  const filtered = gpxFilter==='all' ? trackStore.tracks : trackStore.tracks.filter(t=>t.cat===gpxFilter);
+  if(!filtered.length){
+    cont.innerHTML = '<div style="padding:20px 16px;text-align:center;color:var(--td);font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px">'
+      + (trackStore.tracks.length ? 'Keine Tracks in dieser Kategorie' : 'Noch keine Tracks geladen') + '</div>';
+    return;
+  }
+  cont.innerHTML = '';
+  filtered.forEach(t => {
+    const row = document.createElement('div'); row.className = 'trk-row';
+    row.innerHTML =
+      `<div class="trk-dot" style="background:${t.color}"></div>
+      <div class="trk-inf" style="cursor:pointer" onclick="zoomTrack('${t.id}')">
+        <div class="trk-nm">${t.name}</div>
+        <div class="trk-meta">${t.cat.charAt(0).toUpperCase()+t.cat.slice(1)} · ${t.stats.dist} km · ${t.stats.dur}</div>
+      </div>
+      <div class="trk-btns">
+        <button class="trk-btn${t.visible?' on':''}" title="${t.visible?'Ausblenden':'Einblenden'}" onclick="toggleTrack('${t.id}')">
+          ${t.visible
+            ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="1.8" fill="currentColor"/></svg>'
+            : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C1 7 3 3 7 3s6 4 6 4-2 4-6 4S1 7 1 7Z" stroke="currentColor" stroke-width="1.4" opacity=".3"/><path d="M2 2L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'}
+        </button>
+        <button class="trk-btn" title="QR / GPX Download" onclick="openTrackQR('${t.id}')" style="color:var(--ac)">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/><path d="M8 8h1v1M10 8h1M8 10v1M10 11h1M11 10v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <button class="trk-btn" title="Löschen" onclick="removeTrack('${t.id}')" style="color:#ef4444">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4H12M5 4V2H9V4M11 4L10 12H4L3 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>`;
+    cont.appendChild(row);
+  });
+  document.getElementById('gpx-track-cnt').textContent =
+    trackStore.tracks.length + ' Track' + (trackStore.tracks.length !== 1 ? 's' : '');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRACK QR MODAL close-Unterstützung
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('trk-qrm').addEventListener('click', e => {
+  if(e.target === e.currentTarget) closeAll();
+});
+
+// trk-qrm bei closeAll mit ausblenden (schon in closeAll integriert via show-class fix)
+// Stelle sicher dass das Modal auch via backdrop geschlossen wird
+(function(){
+  const orig = document.getElementById('backdrop').onclick;
+  document.getElementById('backdrop').onclick = function(){
+    closeAll();
+    document.getElementById('trk-qrm').style.opacity = '0';
+    document.getElementById('trk-qrm').style.visibility = 'hidden';
+    document.getElementById('trk-qrm').style.transform = 'translate(-50%,-50%) scale(.88)';
+  };
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// TRACK SOURCE URL SPEICHERN (für QR)
+// ═══════════════════════════════════════════════════════════════
+// createGpxLayer erweitern: sourceUrl im Track-Objekt speichern
+// → wird benötigt für Track-QR bei URL-geladenen Tracks
+// Diese Funktion patcht den createGpxLayer-Handler nachträglich
+const _origCreateGpxLayer = createGpxLayer;
+// (sourceUrl wird direkt im loaded-Event gesetzt - siehe createGpxLayer Patch unten)
+
+// ═══════════════════════════════════════════════════════════════
+// TRK-QRM CSS Fix (Show-State via style, nicht class)
+// ═══════════════════════════════════════════════════════════════
+// closeAll patcht trk-qrm über style attributes (kein .show needed)
+const _closeAllRef = closeAll;
+closeAll = function(){
+  _closeAllRef();
+  const m = document.getElementById('trk-qrm');
+  if(m){ m.style.opacity='0'; m.style.visibility='hidden'; m.style.transform='translate(-50%,-50%) scale(.88)'; }
+};
+
+</script>
 </body>
 </html>
